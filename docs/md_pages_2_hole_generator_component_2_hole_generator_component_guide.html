@@ -91,8 +91,8 @@ $(function(){initNavTree('md_pages_2_hole_generator_component_2_hole_generator_c
   <div class="headertitle"><div class="title">HoleGenerator Component Guide </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md113"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md114"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md115"></a></p>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md116"></a>
 Explosion (Grenade)</h1>
 <div class="image">
 <img src="HoleGeneratorComponent_image.png" alt=""/>
@@ -118,7 +118,7 @@ HoleGeneratorComponent_image.png</div></div>
 <li><b>Distortion Distance</b>: Maximum distortion distance</li>
 </ul>
 <hr  />
-<h1 class="doxsection"><a class="anchor" id="autotoc_md116"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md118"></a>
 Penetration (Bullet)</h1>
 <div class="image">
 <img src="HoleGeneratorComponent_image1.png" alt=""/>
@@ -143,7 +143,7 @@ HoleGeneratorComponent_image1.png</div></div>
 HoleGeneratorComponent_image2.png</div></div>
     <p>Demo preset path : Plugins → <a class="el" href="class_i_v_smoke.html">IVSmoke</a> → DataAssets</p>
 <p><b>To create a new Preset, follow these steps</b></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md119"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md121"></a>
 Create</h1>
 <p>Content Drawer → Right-click → Miscellaneous → Data Asset → Select [<a class="el" href="class_i_v_smoke.html">IVSmoke</a> Hole Preset]</p>
 <div class="image">
@@ -155,13 +155,13 @@ HoleGeneratorComponent_image3.png</div></div>
 <div class="caption">
 HoleGeneratorComponent_image4.png</div></div>
     <hr  />
-<h1 class="doxsection"><a class="anchor" id="autotoc_md121"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md123"></a>
 Usage</h1>
 <div class="image">
 <img src="HoleGeneratorComponent_image5.png" alt=""/>
 <div class="caption">
 API Functions</div></div>
-    <h2 class="doxsection"><a class="anchor" id="autotoc_md122"></a>
+    <h2 class="doxsection"><a class="anchor" id="autotoc_md124"></a>
 <b>Select the Right Interaction Node</b></h2>
 <blockquote class="doxtable">
 <p>Choose the API node that best aligns with the specific physical behavior you intend to simulate</p>
@@ -171,7 +171,7 @@ API Functions</div></div>
 <li><b>Dynamic (Request Dynamic Hole):</b> Tailored for <b>real-time tracking</b>. This node allows the smoke void to follow a moving subject—such as a character or vehicle—maintaining a continuous interaction as the actor navigates through the volume. </li>
 </ol>
 </blockquote>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md123"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md125"></a>
 Before STARTING, Add UIVSmokeHoleRequestComponent!</h2>
 <div class="image">
 <img src="HoleGeneratorComponent_image6.png" alt=""/>
@@ -182,14 +182,14 @@ Please attach the UIVSmokeHoleRequestComponent on the pawn class</div></div>
 <li><b>Role:</b> This component facilitates the interaction queries between the actor and the smoke volume.</li>
 <li><b>Dependency:</b> It is a mandatory requirement if you are using an <b><span class="tt"><a class="el" href="class_a_i_v_smoke_voxel_volume.html">AIVSmokeVoxelVolume</a></span></b> actor equipped with the <b><span class="tt"><a class="el" href="class_u_i_v_smoke_hole_generator_component.html" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e...">UIVSmokeHoleGeneratorComponent</a></span></b> to generate smoke holes.</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md124"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md126"></a>
 Case A. Request Penetration Hole</h2>
 <div class="image">
 <img src="HoleGeneratorComponent_image7.png" alt=""/>
 <div class="caption">
 How to use PenetrationHole function</div></div>
     <p>This node is used to simulate the trajectories of high-speed projectiles that pierce through smoke in a straight line, such as bullets or railgun rounds.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md125"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md127"></a>
 <b>Execution Timing</b></h2>
 <p>Trigger this node when physical detection is confirmed—specifically during events such as <b>Hit</b>, <b>Overlap</b>, or <b>Destruction</b> of the projectile object.</p>
 <table class="markdownTable">
@@ -204,14 +204,14 @@ How to use PenetrationHole function</div></div>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>Bullet Preset</b>  </td><td class="markdownTableBodyNone">Dropdown Menu  </td><td class="markdownTableBodyNone">You must assign an <span class="tt">IVSmokeHolePreset</span> data asset. <b>Note: The Preset type should be set to "Explosion."</b>  </td></tr>
 </table>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md126"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md128"></a>
 Case B. Request Explosion Hole</h2>
 <div class="image">
 <img src="HoleGeneratorComponent_image8.png" alt=""/>
 <div class="caption">
 How to use ExplosionHole function</div></div>
     <p>This node is used to simulate <b>spherical (radial) void areas</b> in smoke, typically caused by explosive devices like grenades, C4, or artillery shells.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md127"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md129"></a>
 <b>Execution Timing</b></h2>
 <p>Trigger this node at the moment the explosion is finalized. This is usually during events such as <b>Hit (OnComponentHit)</b>, <b>Overlap (OnComponentBeginOverlap)</b>, or when the projectile actor is <b>Destroyed</b>.</p>
 <table class="markdownTable">
@@ -224,14 +224,14 @@ How to use ExplosionHole function</div></div>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Explosion Preset</b>  </td><td class="markdownTableBodyNone">Dropdown Menu  </td><td class="markdownTableBodyNone">You must assign a valid <span class="tt">IVSmokeHolePreset</span> data asset. <b>The Preset type must be set to "Explosion."</b>  </td></tr>
 </table>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md128"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md130"></a>
 Case C. Request Dynamic Hole</h2>
 <div class="image">
 <img src="HoleGeneratorComponent_image9.png" alt=""/>
 <div class="caption">
 How to use DynamicHole function</div></div>
     <p>Use this node when you need to <b>dynamically clear smoke or maintain a hole in real-time</b> based on the movement path of an object, such as a character or a vehicle.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md129"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md131"></a>
 <b>Execution Timing</b></h2>
 <p>This node may be triggered by the <b><span class="tt">OnComponentBeginOverlap</span></b> or <b><span class="tt">Trigger</span></b> event from the actor's <span class="tt">CollisionComponent</span>. Once triggered, the system will automatically track the actor and manage the smoke interaction.</p>
 <table class="markdownTable">

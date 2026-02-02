@@ -1,20 +1,20 @@
 var searchData=
 [
-  ['b_20request_20explosion_20hole_0',['Case B. Request Explosion Hole',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md126',1,'']]],
+  ['b_20request_20explosion_20hole_0',['Case B. Request Explosion Hole',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md128',1,'']]],
   ['basic_20usage_1',['2. Basic Usage',['../index.html#autotoc_md11',1,'']]],
   ['bautostart_2',['bAutoStart',['../class_a_i_v_smoke_voxel_volume.html#ab014262f2b3853d39b11917ba3e2e1e6',1,'AIVSmokeVoxelVolume']]],
   ['bcaptureskeletalmeshes_3',['bCaptureSkeletalMeshes',['../class_u_i_v_smoke_settings.html#af5c7b8325420185f1ea036b6cc2c6771',1,'UIVSmokeSettings']]],
   ['bcollisionenabled_4',['bCollisionEnabled',['../class_u_i_v_smoke_collision_component.html#a0f4d27f0dac91f6e5f03d4e7ed7f9683',1,'UIVSmokeCollisionComponent']]],
   ['bdebugenabled_5',['bDebugEnabled',['../class_u_i_v_smoke_collision_component.html#a586d4233fc4c94ba63cc3eb8bf7795e4',1,'UIVSmokeCollisionComponent']]],
   ['bdestroyonfinish_6',['bDestroyOnFinish',['../class_a_i_v_smoke_voxel_volume.html#aed2685aa0c10a3bed0799f8e1e5893fa',1,'AIVSmokeVoxelVolume']]],
-  ['before_20starting_20add_20uivsmokeholerequestcomponent_7',['Before STARTING, Add UIVSmokeHoleRequestComponent!',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md123',1,'']]],
+  ['before_20starting_20add_20uivsmokeholerequestcomponent_7',['Before STARTING, Add UIVSmokeHoleRequestComponent!',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md125',1,'']]],
   ['benabledepthwrite_8',['bEnableDepthWrite',['../class_u_i_v_smoke_settings.html#a0bdc1fbfd6d7a8581279365c57ea08e1',1,'UIVSmokeSettings']]],
   ['benablescattering_9',['bEnableScattering',['../struct_f_i_v_smoke_packed_render_data.html#aceead7e771820dacdbc3c072f23ca30c',1,'FIVSmokePackedRenderData::bEnableScattering'],['../class_u_i_v_smoke_settings.html#a6b7a4ddcd64a42c7b13bae9b3357c712',1,'UIVSmokeSettings::bEnableScattering']]],
   ['benableselfshadowing_10',['bEnableSelfShadowing',['../struct_f_i_v_smoke_packed_render_data.html#a0b6e2811efbfbcf5a64ee0bdce8a405b',1,'FIVSmokePackedRenderData']]],
   ['benablesimulationcollision_11',['bEnableSimulationCollision',['../class_a_i_v_smoke_voxel_volume.html#aee5112a26e67409d062bf6cfbd6788cd',1,'AIVSmokeVoxelVolume']]],
   ['benablesmokerendering_12',['bEnableSmokeRendering',['../class_u_i_v_smoke_settings.html#a5d68272cc49b3c11187e45939c160d7a',1,'UIVSmokeSettings']]],
   ['benablevsm_13',['bEnableVSM',['../struct_f_i_v_smoke_packed_render_data.html#aba57625ebb8dc475b42634aef85eda53',1,'FIVSmokePackedRenderData::bEnableVSM'],['../class_u_i_v_smoke_settings.html#ac6f34dc6539f1aa5f217b22ae64381a8',1,'UIVSmokeSettings::bEnableVSM']]],
-  ['best_20practices_14',['Best Practices',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md107',1,'']]],
+  ['best_20practices_14',['Best Practices',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md109',1,'']]],
   ['binary_20greedy_20meshing_20algorithm_15',['How It Works: Greedy Meshing To maintain high performance, the component &lt;b&gt;does not&lt;/b&gt; create a collision box for every single voxel. Instead, it utilizes a &lt;b&gt;Binary Greedy Meshing&lt;/b&gt; algorithm.',['../md_pages_2_collision_component_2_collision_component_guide.html#autotoc_md26',1,'']]],
   ['bisinfinite_16',['bIsInfinite',['../class_a_i_v_smoke_voxel_volume.html#ad23cc54d625c40b54a59745289d334ca',1,'AIVSmokeVoxelVolume']]],
   ['bisservertimesynced_17',['bIsServerTimeSynced',['../class_f_i_v_smoke_renderer.html#a3eadda520ef7993be400be4653319ab0',1,'FIVSmokeRenderer']]],
@@ -30,6 +30,6 @@ var searchData=
   ['brendersmokeinpreview_27',['bRenderSmokeInPreview',['../struct_f_i_v_smoke_debug_settings.html#a95d0bf8a03e086693f2f88c1843c89fe',1,'FIVSmokeDebugSettings']]],
   ['bshowadvancedoptions_28',['bShowAdvancedOptions',['../class_u_i_v_smoke_settings.html#ac9f6ed7f85b849230d317531dcef546b',1,'UIVSmokeSettings']]],
   ['bshowdebugvolumes_29',['bShowDebugVolumes',['../class_u_i_v_smoke_settings.html#adf2d312d2c8d36d754e4556e4e2cfe95',1,'UIVSmokeSettings']]],
-  ['bullet_30',['Penetration (Bullet)',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md116',1,'']]],
+  ['bullet_30',['Penetration (Bullet)',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md118',1,'']]],
   ['bulletthickness_31',['BulletThickness',['../class_u_i_v_smoke_hole_preset.html#a83f0cc3c20767dd969982ec25fb5b259',1,'UIVSmokeHolePreset']]]
 ];

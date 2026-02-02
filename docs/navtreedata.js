@@ -41,110 +41,112 @@ var NAVTREE =
     ] ],
     [ "Custom Material Guide", "md_pages_2_custom_material_2_custom_material_guide.html", [
       [ "Material", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md39", [
-        [ "Demo Example", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md40", null ]
+        [ "You must define how you want to mix the Scene and Smoke textures.", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md40", null ],
+        [ "Demo Example", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md41", null ],
+        [ "Expanssion Node", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md42", null ]
       ] ],
-      [ "Visual Material Preset", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md42", [
-        [ "Create", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md43", null ],
-        [ "Configuration", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md44", null ]
+      [ "Visual Material Preset", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md44", [
+        [ "Create", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md45", null ],
+        [ "Configuration", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md46", null ]
       ] ],
-      [ "Project Setting Visual Material Preset", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md46", null ],
-      [ "- <b>In the Rendering section, insert it into the Smoke Visual Material Preset slot.</b>", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md47", null ],
-      [ "Example", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md48", null ]
+      [ "Project Setting Visual Material Preset", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md48", null ],
+      [ "- <b>In the Rendering section, insert it into the Smoke Visual Material Preset slot.</b>", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md49", null ],
+      [ "Example", "md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md50", null ]
     ] ],
     [ "Global Settings Guide", "md_pages_2_global_settings_2_global_settings_guide.html", [
-      [ "General", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md52", null ],
-      [ "Quality", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md54", null ],
-      [ "Global Quality Presets", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md55", null ],
-      [ "Custom Quality Mode", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md56", null ],
-      [ "Ray March Quality", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md57", null ],
-      [ "Self-Shadow Quality", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md58", null ],
-      [ "External Shadow Quality", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md59", null ],
-      [ "Performance Impact", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md60", null ],
-      [ "Appearance", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md62", null ],
-      [ "Advanced Options (Show Advanced Options = true)", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md63", null ],
-      [ "Lighting", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md65", null ],
-      [ "Advanced Options (Show Advanced Options = true)", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md66", null ],
-      [ "Shadows", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md68", null ],
-      [ "Self Shadows", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md69", null ],
-      [ "External Shadows", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md70", null ],
-      [ "Post Processing", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md72", null ],
-      [ "Rendering", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md74", null ],
-      [ "Advanced Options (Show Advanced Options = true)", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md75", null ],
-      [ "Depth Write System", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md76", null ],
-      [ "Debug", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md78", null ],
-      [ "Smoke Preset", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md80", [
-        [ "Creating a Smoke Preset", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md81", null ],
-        [ "Preset Properties", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md82", null ],
-        [ "Applying a Preset", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md83", null ],
-        [ "Preset Examples", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md84", null ]
+      [ "General", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md54", null ],
+      [ "Quality", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md56", null ],
+      [ "Global Quality Presets", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md57", null ],
+      [ "Custom Quality Mode", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md58", null ],
+      [ "Ray March Quality", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md59", null ],
+      [ "Self-Shadow Quality", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md60", null ],
+      [ "External Shadow Quality", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md61", null ],
+      [ "Performance Impact", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md62", null ],
+      [ "Appearance", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md64", null ],
+      [ "Advanced Options (Show Advanced Options = true)", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md65", null ],
+      [ "Lighting", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md67", null ],
+      [ "Advanced Options (Show Advanced Options = true)", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md68", null ],
+      [ "Shadows", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md70", null ],
+      [ "Self Shadows", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md71", null ],
+      [ "External Shadows", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md72", null ],
+      [ "Post Processing", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md74", null ],
+      [ "Rendering", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md76", null ],
+      [ "Advanced Options (Show Advanced Options = true)", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md77", null ],
+      [ "Depth Write System", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md78", null ],
+      [ "Debug", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md80", null ],
+      [ "Smoke Preset", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md82", [
+        [ "Creating a Smoke Preset", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md83", null ],
+        [ "Preset Properties", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md84", null ],
+        [ "Applying a Preset", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md85", null ],
+        [ "Preset Examples", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md86", null ]
       ] ],
-      [ "Translucent Sorting", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md86", [
-        [ "How It Works", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md87", null ],
-        [ "Automatic Sorting", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md88", null ],
-        [ "Troubleshooting", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md89", null ],
-        [ "Performance", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md90", null ]
+      [ "Translucent Sorting", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md88", [
+        [ "How It Works", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md89", null ],
+        [ "Automatic Sorting", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md90", null ],
+        [ "Troubleshooting", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md91", null ],
+        [ "Performance", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md92", null ]
       ] ],
-      [ "Editor Preview", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md92", [
-        [ "Starting Preview", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md93", null ],
-        [ "Stopping Preview", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md94", null ],
-        [ "Debug Visualization Options", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md95", null ],
-        [ "Preview Workflow Tips", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md96", null ],
-        [ "Limitations", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md97", null ]
+      [ "Editor Preview", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md94", [
+        [ "Starting Preview", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md95", null ],
+        [ "Stopping Preview", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md96", null ],
+        [ "Debug Visualization Options", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md97", null ],
+        [ "Preview Workflow Tips", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md98", null ],
+        [ "Limitations", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md99", null ]
       ] ],
-      [ "Stat IVSmoke", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md99", [
-        [ "Enabling Stats", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md100", null ],
-        [ "Available Statistics", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md101", null ],
-        [ "Memory Stats (GPU VRAM)", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md102", null ],
-        [ "Cycle Stats (CPU/GPU Time)", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md103", null ],
-        [ "Counter Stats", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md104", null ],
-        [ "Using with Unreal Insights", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md105", null ]
+      [ "Stat IVSmoke", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md101", [
+        [ "Enabling Stats", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md102", null ],
+        [ "Available Statistics", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md103", null ],
+        [ "Memory Stats (GPU VRAM)", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md104", null ],
+        [ "Cycle Stats (CPU/GPU Time)", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md105", null ],
+        [ "Counter Stats", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md106", null ],
+        [ "Using with Unreal Insights", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md107", null ]
       ] ],
-      [ "Best Practices", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md107", [
-        [ "Recommended Level Placement", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md108", null ],
-        [ "Spacing and Distribution", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md109", null ],
-        [ "Volume Sizing", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md110", null ],
-        [ "Performance Tips", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md111", null ]
+      [ "Best Practices", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md109", [
+        [ "Recommended Level Placement", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md110", null ],
+        [ "Spacing and Distribution", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md111", null ],
+        [ "Volume Sizing", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md112", null ],
+        [ "Performance Tips", "md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md113", null ]
       ] ]
     ] ],
     [ "HoleGenerator Component Guide", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html", [
-      [ "Explosion (Grenade)", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md114", null ],
-      [ "Penetration (Bullet)", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md116", null ],
-      [ "Create", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md119", null ],
-      [ "Usage", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md121", [
-        [ "<b>Select the Right Interaction Node</b>", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md122", null ],
-        [ "Before STARTING, Add UIVSmokeHoleRequestComponent!", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md123", null ],
-        [ "Case A. Request Penetration Hole", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md124", null ],
-        [ "<b>Execution Timing</b>", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md125", null ],
-        [ "Case B. Request Explosion Hole", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md126", null ],
+      [ "Explosion (Grenade)", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md116", null ],
+      [ "Penetration (Bullet)", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md118", null ],
+      [ "Create", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md121", null ],
+      [ "Usage", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md123", [
+        [ "<b>Select the Right Interaction Node</b>", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md124", null ],
+        [ "Before STARTING, Add UIVSmokeHoleRequestComponent!", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md125", null ],
+        [ "Case A. Request Penetration Hole", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md126", null ],
         [ "<b>Execution Timing</b>", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md127", null ],
-        [ "Case C. Request Dynamic Hole", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md128", null ],
-        [ "<b>Execution Timing</b>", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md129", null ]
+        [ "Case B. Request Explosion Hole", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md128", null ],
+        [ "<b>Execution Timing</b>", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md129", null ],
+        [ "Case C. Request Dynamic Hole", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md130", null ],
+        [ "<b>Execution Timing</b>", "md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md131", null ]
       ] ]
     ] ],
     [ "Voxel Volume Guide", "md_pages_2_voxel_volume_2_voxel_volume_guide.html", [
-      [ "Core Concepts", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md132", [
-        [ "Volumetric Flood-Fill", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md133", null ],
-        [ "Deterministic Networking", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md134", null ]
+      [ "Core Concepts", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md134", [
+        [ "Volumetric Flood-Fill", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md135", null ],
+        [ "Deterministic Networking", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md136", null ]
       ] ],
-      [ "Simulation Lifecycle", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md136", [
-        [ "1. Expansion Phase", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md137", null ],
-        [ "2. Sustain Phase", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md138", null ],
-        [ "3. Dissipation Phase", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md139", null ],
-        [ "4. Finished", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md140", null ]
+      [ "Simulation Lifecycle", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md138", [
+        [ "1. Expansion Phase", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md139", null ],
+        [ "2. Sustain Phase", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md140", null ],
+        [ "3. Dissipation Phase", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md141", null ],
+        [ "4. Finished", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md142", null ]
       ] ],
-      [ "Configuration Guidelines", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md142", [
-        [ "Performance &amp; Resolution", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md143", null ],
-        [ "Shape Control", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md144", null ],
-        [ "Radii (Aspect Ratio)", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md145", null ],
-        [ "Expansion Noise", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md146", null ]
+      [ "Configuration Guidelines", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md144", [
+        [ "Performance &amp; Resolution", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md145", null ],
+        [ "Shape Control", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md146", null ],
+        [ "Radii (Aspect Ratio)", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md147", null ],
+        [ "Expansion Noise", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md148", null ]
       ] ],
-      [ "Network Synchronization", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md148", [
-        [ "Late-Join Handling (Fast Forwarding)", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md149", null ],
-        [ "Time Synchronization", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md150", null ]
+      [ "Network Synchronization", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md150", [
+        [ "Late-Join Handling (Fast Forwarding)", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md151", null ],
+        [ "Time Synchronization", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md152", null ]
       ] ],
-      [ "Interaction Components", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md152", null ],
-      [ "Debugging", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md154", [
-        [ "Console Commands (CVars)", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md156", null ]
+      [ "Interaction Components", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md154", null ],
+      [ "Debugging", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md156", [
+        [ "Console Commands (CVars)", "md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md158", null ]
       ] ]
     ] ],
     [ "Classes", "annotated.html", [
@@ -167,7 +169,7 @@ var NAVTREEINDEX =
 [
 "_i_v_smoke_8_build_8cs_source.html",
 "files.html",
-"struct_f_i_v_smoke_volume_g_p_u_data.html#ae86657b574f5f952f47c71a28c91c039"
+"struct_f_i_v_smoke_volume_g_p_u_data.html#abcaaa586b72b4d4ceaebe13421b7a0c5"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

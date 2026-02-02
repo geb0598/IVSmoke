@@ -95,6 +95,8 @@ $(function(){initNavTree('md_pages_2_custom_material_2_custom_material_guide.htm
 <h1 class="doxsection"><a class="anchor" id="autotoc_md39"></a>
 Material</h1>
 <h2 class="doxsection"><a class="anchor" id="autotoc_md40"></a>
+You must define how you want to mix the Scene and Smoke textures.</h2>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md41"></a>
 Demo Example</h2>
 <div class="image">
 <img src="CustomMaterial_image.png" alt=""/>
@@ -107,50 +109,70 @@ CustomMaterial_image.png</div></div>
 <img src="CustomMaterial_image1.png" alt=""/>
 <div class="caption">
 CustomMaterial_image1.png</div></div>
+    <h2 class="doxsection"><a class="anchor" id="autotoc_md42"></a>
+Expanssion Node</h2>
+<ul>
+<li>You can search and add the IVSmoke_TextureSample node.</li>
+</ul>
+<div class="image">
+<img src="IVSmoke_CustomMaterial_ExpanssionNode.png" alt=""/>
+<div class="caption">
+IVSmoke_CustomMaterial_ExpanssionNode.png</div></div>
     <ul>
-<li><b>SmokeTexture</b>: Create a <b>SceneTexture</b> node → Scene Texture ID: <b>[PostProcessInput0]</b></li>
-<li><b>SmokeLocalPosAlphaTexture (LocalPos(x,y,z), Alpha)</b>: Create a <b>SceneTexture</b> node → Scene Texture ID: <b>[PostProcessInput1]</b></li>
-<li><b>SmokeWorldPosDepthTexture (WorldPos(x,y,z), Depth)</b>: Create a <b>SceneTexture</b> node → Scene Texture ID: <b>[PostProcessInput4]</b></li>
-<li><b>Output</b>: <b>Emissive Color (RGB)</b></li>
+<li>The IVSmoke_TextureSample node is configured as follows.</li>
+</ul>
+<p><img src="IVSmoke_CustomMaterial_ExpanssionNode_TextureType.png" alt="" class="inline" title="IVSmoke_CustomMaterial_ExpanssionNode_TextureType.png"/>    </p>
+<ul>
+<li><b>Texture Type</b><ul>
+<li><b>SmokeColor</b> : Smoke color texture (SmokeAlbedo(R, G, B), SmokeAlpha)</li>
+<li><b>SmokeLocalPos</b> : Smoke local position texture (Local Position(x, y, z), 0)</li>
+<li><b>SceneColor</b> : Scene Color Texture</li>
+<li><b>SmokeWorldPosLinearDepth</b> : Smoke world position and linear depth (World Position (x, y, z), Linear Depth)</li>
+</ul>
+</li>
+<li>These textures are mapped to PostProcessInput[0, 1, 2, 4] on the SceneTexture node..</li>
+</ul>
+<div class="image">
+<img src="IVSmoke_CustomMaterial_ExpanssionNode_ColorMask.png" alt=""/>
+<div class="caption">
+IVSmoke_CustomMaterial_ExpanssionNode_ColorMask.png</div></div>
+    <ul>
+<li><b>Color Mask</b> : Choose the color channel you want and use it</li>
 </ul>
 <hr  />
-<h1 class="doxsection"><a class="anchor" id="autotoc_md42"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md44"></a>
 Visual Material Preset</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md43"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md45"></a>
 Create</h2>
 <p>Content Drawer → Right-click → Miscellaneous → Data Asset → Select [<a class="el" href="class_i_v_smoke.html">IVSmoke</a> Visual Material Preset]</p>
 <p><img src="IVSmoke_DataAsset.png" alt="" class="inline" title="image.png"/>    </p>
 <p><img src="IVSmoke_DataAsset_VisualMaterialPreset.png" alt="" class="inline" title="image.png"/>    </p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md44"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md46"></a>
 Configuration</h2>
 <p><img src="CustomMaterial_image2.png" alt="" class="inline" title="CustomMaterial_image2.png"/>    </p>
 <ul>
 <li><b>Smoke Visual Material</b>: User-custom smoke material slot<ul>
-<li>If empty, the system returns <b>SmokeTexture</b> as-is</li>
+<li>If empty, it will be rendered through a simple composite shader.</li>
 </ul>
 </li>
-<li><b>Visual Alpha Type</b>: Defines how the smoke alpha is processed<ul>
-<li><b>Use Alpha</b>: Use the alpha value as-is</li>
-<li><b>CutOff</b>: <span class="tt">(Alpha ≤ AlphaThreshold ? 0 : 1)</span></li>
+<li><b>UpSample Filter Type</b> : This filter is applied after upsampling the raymarching results.<ul>
+<li><b>None</b> : Disable filters.</li>
+<li><b>Sharpen</b>: Enhances edges and details, making smoke contours more defined.</li>
+<li><b>Blur</b>: Softens with Gaussian blur for natural, smooth smoke appearance.</li>
+<li><b>Median</b>: Removes noise while preserving edges for clean smoke rendering.</li>
 </ul>
 </li>
-<li><b>Alpha Threshold</b>: Threshold value used in <b>Visual Alpha Type = CutOff</b> mode</li>
-<li><b>Low Opacity Remap Threshold</b>: Handling of very low alpha values</li>
 </ul>
-<div class="fragment"><div class="line">if (SmokeAlpha &lt; LowOpacityRemapThreshold)</div>
-<div class="line">{</div>
-<div class="line">    SmokeAlpha = max(0.0, (SmokeMask - LowOpacityRemapThreshold * 0.5f) * 2.0);</div>
-<div class="line">}</div>
-</div><!-- fragment --> <hr  />
- <h1 class="doxsection"><a class="anchor" id="autotoc_md46"></a>
+<hr  />
+ <h1 class="doxsection"><a class="anchor" id="autotoc_md48"></a>
 Project Setting Visual Material Preset</h1>
 <p><img src="IVSmoke_ProjectSetting_VisualMaterialPreset.png" alt="" class="inline" title="IVSmoke_ProjectSetting_VisualMaterialPreset.png"/>    </p>
 <ul>
 <li><b>Search project setting for <a class="el" href="class_i_v_smoke.html">IVSmoke</a></b> </li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md47"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md49"></a>
 - <b>In the Rendering section, insert it into the Smoke Visual Material Preset slot.</b></h1>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md48"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md50"></a>
 Example</h1>
 <p><b>Demo Material Path</b> : Plugins → <a class="el" href="class_i_v_smoke.html">IVSmoke</a> → DataAssets → D_IVSmoke_VisualMaterialPreset</p>
 <div class="image">
