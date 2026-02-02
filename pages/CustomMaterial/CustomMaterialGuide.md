@@ -1,7 +1,7 @@
 # Custom Material Guide
 
 ## Material
-
+### You must define how you want to mix the Scene and Smoke textures.
 ### Demo Example
 
 ![CustomMaterial_image.png](CustomMaterial_image.png)
@@ -10,10 +10,25 @@
 
 ![CustomMaterial_image1.png](CustomMaterial_image1.png)
 
-- **SmokeTexture**: Create a **SceneTexture** node → Scene Texture ID: **[PostProcessInput0]**
-- **SmokeLocalPosAlphaTexture (LocalPos(x,y,z), Alpha)**: Create a **SceneTexture** node → Scene Texture ID: **[PostProcessInput1]**
-- **SmokeWorldPosDepthTexture (WorldPos(x,y,z), Depth)**: Create a **SceneTexture** node → Scene Texture ID: **[PostProcessInput4]**
-- **Output**: **Emissive Color (RGB)**
+### Expanssion Node
+- You can search and add the IVSmoke_TextureSample node.
+
+![IVSmoke_CustomMaterial_ExpanssionNode.png](IVSmoke_CustomMaterial_ExpanssionNode.png)
+
+- The IVSmoke_TextureSample node is configured as follows.
+
+![IVSmoke_CustomMaterial_ExpanssionNode_TextureType.png](IVSmoke_CustomMaterial_ExpanssionNode_TextureType.png)
+- **Texture Type**
+    - **SmokeColor** : Smoke color texture (SmokeAlbedo(R, G, B), SmokeAlpha)
+    - **SmokeLocalPos** : Smoke local position texture (Local Position(x, y, z), 0)
+    - **SceneColor** : Scene Color Texture 
+    - **SmokeWorldPosLinearDepth** : Smoke world position and linear depth (World Position (x, y, z), Linear Depth)
+
+- These textures are mapped to PostProcessInput[0, 1, 2, 4] on the SceneTexture node..
+
+![IVSmoke_CustomMaterial_ExpanssionNode_ColorMask.png](IVSmoke_CustomMaterial_ExpanssionNode_ColorMask.png)
+
+- **Color Mask** : Choose the color channel you want and use it
 
 ---
 
@@ -29,19 +44,13 @@ Content Drawer → Right-click → Miscellaneous → Data Asset → Select [IVSm
 ![CustomMaterial_image2.png](CustomMaterial_image2.png)
 
 - **Smoke Visual Material**: User-custom smoke material slot
-    - If empty, the system returns **SmokeTexture** as-is
-- **Visual Alpha Type**: Defines how the smoke alpha is processed
-    - **Use Alpha**: Use the alpha value as-is
-    - **CutOff**: `(Alpha ≤ AlphaThreshold ? 0 : 1)`
-- **Alpha Threshold**: Threshold value used in **Visual Alpha Type = CutOff** mode
-- **Low Opacity Remap Threshold**: Handling of very low alpha values
+    - If empty, it will be rendered through a simple composite shader.
+- **UpSample Filter Type** : This filter is applied after upsampling the raymarching results.
+    - **None** : Disable filters.
+    - **Sharpen**: Enhances edges and details, making smoke contours more defined.
+    - **Blur**: Softens with Gaussian blur for natural, smooth smoke appearance.
+    - **Median**: Removes noise while preserving edges for clean smoke rendering.
 
-```
-if (SmokeAlpha < LowOpacityRemapThreshold)
-{
-	SmokeAlpha = max(0.0, (SmokeMask - LowOpacityRemapThreshold * 0.5f) * 2.0);
-}
-```
 ---
 ## Project Setting Visual Material Preset
 ![IVSmoke_ProjectSetting_VisualMaterialPreset.png](IVSmoke_ProjectSetting_VisualMaterialPreset.png)

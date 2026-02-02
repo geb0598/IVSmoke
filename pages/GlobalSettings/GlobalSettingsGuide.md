@@ -108,7 +108,7 @@ Controls the visual characteristics of the smoke.
 | **Smoke Density Falloff** | float | 0.0-1.0 | 0.2 | Edge softness. Lower values create softer, more gradual edges. Higher values create sharper, more defined boundaries. |
 | **Smoke Size** | float | 1.0-1000.0 | 128.0 | Scale of the noise sampling. Larger values create bigger, more billowy smoke patterns. |
 | **Wind Direction** | FVector | - | (0, 0, 0.1) | Direction and speed of wind animation. The magnitude affects speed. |
-| **Sharpness** | float | -1.0 to 1.0 | 0.4 | Post-process sharpening/blur. Negative = blur, Positive = sharpen. |
+
 
 ## Advanced Options (Show Advanced Options = true)
 
