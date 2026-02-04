@@ -57,7 +57,25 @@ void FIVSmokeSceneViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewF
 		return;
 	}
 
-	// Note: No Editor/PIE skip logic needed - Per-World architecture handles both simultaneously
+#if WITH_EDITOR
+	// Skip Editor world rendering when PIE is active
+	// When playing in editor, user focuses on PIE viewport - no need to render smoke in editor viewports
+	// This significantly improves performance by avoiding redundant ray marching in 4 editor viewports
+	if (GEditor && GEditor->IsPlayingSessionInEditor())
+	{
+		if (World->WorldType == EWorldType::Editor)
+		{
+			// Clear any stale cached render data for Editor world
+			ENQUEUE_RENDER_COMMAND(IVSmokeClearEditorRenderData)(
+				[&Renderer, World](FRHICommandListImmediate& RHICmdList)
+				{
+					Renderer.SetCachedRenderData(World, FIVSmokePackedRenderData());
+				}
+			);
+			return;
+		}
+	}
+#endif
 
 	// Sync server time if needed (per-world)
 	if (!Renderer.bIsServerTimeSynced(World))

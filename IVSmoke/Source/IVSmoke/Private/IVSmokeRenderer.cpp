@@ -511,25 +511,47 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(UWorld* World, cons
 
 	const TArray<AIVSmokeVoxelVolume*>& VolumesToProcess = (FilteredVolumes.Num() > 0) ? FilteredVolumes : InVolumes;
 
-	Result.VolumeCount = VolumesToProcess.Num();
+	// Count valid volumes and get resolution info
+	// Note: All volumes in VolumesToProcess passed ShouldRender() which now checks bIsInitialized,
+	// so they are guaranteed to have properly allocated buffers.
+	int32 ValidVolumeCount = 0;
+	for (AIVSmokeVoxelVolume* Vol : VolumesToProcess)
+	{
+		if (IsValid(Vol))
+		{
+			if (ValidVolumeCount == 0)
+			{
+				Result.VoxelResolution = Vol->GetGridResolution();
+			}
+			ValidVolumeCount++;
+		}
+	}
+
+	Result.VolumeCount = ValidVolumeCount;
+
+	// Early return if no valid volumes
+	if (Result.VolumeCount == 0)
+	{
+		return Result;
+	}
+
 	Result.VolumeDataArray.Reserve(Result.VolumeCount);
 	Result.HoleTextures.Reserve(Result.VolumeCount);
 	Result.HoleTextureSizes.Reserve(Result.VolumeCount);
 
-	// Get resolution info from first valid volume
+	// Get hole resolution from first valid volume with HoleGenerator
 	for (AIVSmokeVoxelVolume* Volume : VolumesToProcess)
 	{
 		if (IsValid(Volume))
 		{
-			Result.VoxelResolution = Volume->GetGridResolution();
 			if (UIVSmokeHoleGeneratorComponent* HoleComp = Volume->GetHoleGeneratorComponent())
 			{
 				if (FTextureRHIRef HoleTex = HoleComp->GetHoleTextureRHI())
 				{
 					Result.HoleResolution = HoleTex->GetSizeXYZ();
+					break;
 				}
 			}
-			break;
 		}
 	}
 
@@ -553,7 +575,11 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(UWorld* World, cons
 	Result.PackedVoxelBirthTimes.Reserve(TotalVoxelSize);
 	Result.PackedVoxelDeathTimes.Reserve(TotalVoxelSize);
 
+	// Expected voxel count based on resolution (for defensive validation)
+	const int32 ExpectedVoxelCount = Result.VoxelResolution.X * Result.VoxelResolution.Y * Result.VoxelResolution.Z;
+
 	// Collect data from all volumes (Game Thread - safe to access)
+	int32 ValidVolumeIndex = 0;
 	for (int32 i = 0; i < VolumesToProcess.Num(); ++i)
 	{
 		AIVSmokeVoxelVolume* Volume = VolumesToProcess[i];
@@ -565,12 +591,21 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(UWorld* World, cons
 		//~==========================================================================
 		// Copy VoxelArray data (Game Thread safe)
 		const TArray<float>& VoxelBirthTimes = Volume->GetVoxelBirthTimes();
-		Result.PackedVoxelBirthTimes.Append(VoxelBirthTimes);
-
 		const TArray<float>& VoxelDeathTimes = Volume->GetVoxelDeathTimes();
+
+		// Defensive check: ShouldRender() guarantees bIsInitialized, so buffer sizes should match
+		// Using ensure() to catch bugs in debug builds without skipping in release
+		if (!ensure(VoxelBirthTimes.Num() == ExpectedVoxelCount && VoxelDeathTimes.Num() == ExpectedVoxelCount))
+		{
+			UE_LOG(LogIVSmoke, Error, TEXT("[PrepareRenderData] %s: Buffer size mismatch - this should never happen if ShouldRender() is correct"), *Volume->GetName());
+			continue;
+		}
+
+		Result.PackedVoxelBirthTimes.Append(VoxelBirthTimes);
 		Result.PackedVoxelDeathTimes.Append(VoxelDeathTimes);
 
-		if (i < VolumesToProcess.Num() - 1)
+		// Add interval padding between volumes (not after the last valid volume)
+		if (ValidVolumeIndex < Result.VolumeCount - 1)
 		{
 			Result.PackedVoxelBirthTimes.Append(VoxelIntervalData);
 			Result.PackedVoxelDeathTimes.Append(VoxelIntervalData);
@@ -620,15 +655,33 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(UWorld* World, cons
 		FMemory::Memzero(&GPUData, sizeof(GPUData));
 
 		GPUData.VoxelSize = VoxelSz;
+		// Use ValidVolumeIndex for buffer offset (not loop index i) to handle skipped invalid volumes
 		GPUData.VoxelBufferOffset = Result.VoxelResolution.X * Result.VoxelResolution.Y *
-			(Result.VoxelResolution.Z + TexturePackInterval) * i;
+			(Result.VoxelResolution.Z + TexturePackInterval) * ValidVolumeIndex;
 		GPUData.GridResolution = FIntVector3(GridRes.X, GridRes.Y, GridRes.Z);
 		GPUData.VoxelCount = VoxelBirthTimes.Num();
 		GPUData.CenterOffset = FVector3f(CenterOff.X, CenterOff.Y, CenterOff.Z);
 		GPUData.VolumeWorldAABBMin = FVector3f(WorldBox.Min);
 		GPUData.VolumeWorldAABBMax = FVector3f(WorldBox.Max);
-		GPUData.VoxelWorldAABBMin = FVector3f(Volume->GetVoxelWorldAABBMin());
-		GPUData.VoxelWorldAABBMax = FVector3f(Volume->GetVoxelWorldAABBMax());
+
+		// VoxelWorldAABB: Use actual voxel bounds if valid, otherwise fallback to VolumeWorldAABB
+		// Initial state (FLT_MAX/-FLT_MAX) indicates no voxels have been created yet
+		FVector VoxelAABBMin = Volume->GetVoxelWorldAABBMin();
+		FVector VoxelAABBMax = Volume->GetVoxelWorldAABBMax();
+		const bool bVoxelAABBValid = (VoxelAABBMin.X < VoxelAABBMax.X) &&
+									 (VoxelAABBMin.Y < VoxelAABBMax.Y) &&
+									 (VoxelAABBMin.Z < VoxelAABBMax.Z);
+		if (bVoxelAABBValid)
+		{
+			GPUData.VoxelWorldAABBMin = FVector3f(VoxelAABBMin);
+			GPUData.VoxelWorldAABBMax = FVector3f(VoxelAABBMax);
+		}
+		else
+		{
+			// Fallback to volume bounds to prevent NaN in shader
+			GPUData.VoxelWorldAABBMin = GPUData.VolumeWorldAABBMin;
+			GPUData.VoxelWorldAABBMax = GPUData.VolumeWorldAABBMax;
+		}
 		GPUData.FadeInDuration = Volume->FadeInDuration;
 		GPUData.FadeOutDuration = Volume->FadeOutDuration;
 
@@ -646,7 +699,11 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(UWorld* World, cons
 		}
 
 		Result.VolumeDataArray.Add(GPUData);
+		ValidVolumeIndex++;
 	}
+
+	// Verify: ValidVolumeIndex should match pre-counted VolumeCount
+	check(ValidVolumeIndex == Result.VolumeCount);
 
 	//~==========================================================================
 	// Copy global settings parameters
@@ -1176,8 +1233,6 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 	// Get global settings
 	const UIVSmokeSettings* Settings = UIVSmokeSettings::Get();
 
-	// Log volume data for debugging
-
 	//~==========================================================================
 	// Phase 0: Setup common resources (same as standard ray march)
 
@@ -1234,6 +1289,10 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 		TexCreate_ShaderResource | TexCreate_UAV
 	);
 	FRDGTextureRef PackedVoxelAtlasFXAA = GraphBuilder.CreateTexture(VoxelAtlasFXAAResDesc, TEXT("IVSmoke_PackedVoxelAtlasFXAA"));
+
+	// Clear Voxel Atlas textures - RDG may reuse textures from pool with stale data
+	AddClearUAVPass(GraphBuilder, GraphBuilder.CreateUAV(PackedVoxelAtlas), 0.0f);
+	AddClearUAVPass(GraphBuilder, GraphBuilder.CreateUAV(PackedVoxelAtlasFXAA), 0.0f);
 
 	FRDGTextureDesc HoleAtlasDesc = FRDGTextureDesc::Create3D(
 		HoleAtlasResolution,

@@ -566,6 +566,10 @@ void AIVSmokeVoxelVolume::ClearSimulationData()
 	SimTime = 0.0f;
 	DirtyLevel = EIVSmokeDirtyLevel::Dirty;
 
+	// Reset AABB to invalid state so new simulation starts fresh
+	VoxelWorldAABBMin = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+	VoxelWorldAABBMax = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
 	if (CollisionComponent)
 	{
 		CollisionComponent->ResetCollision();
@@ -1155,6 +1159,12 @@ void AIVSmokeVoxelVolume::TryUpdateCollision(bool bForce)
 
 bool AIVSmokeVoxelVolume::ShouldRender() const
 {
+	// Must be initialized with valid voxel buffers
+	if (!bIsInitialized)
+	{
+		return false;
+	}
+
 	// Respect Actor visibility
 #if WITH_EDITOR
 	// Editor: check both editor visibility (Outliner eye icon) and game visibility

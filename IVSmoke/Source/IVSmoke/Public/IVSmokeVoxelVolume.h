@@ -407,7 +407,7 @@ public:
 	bool bEnableSimulationCollision = true;
 
 	/** The collision channel used for obstacle detection during expansion. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IVSmoke | Simulation", meta = (EditCondition = "bEnableSimulationCollision", AdvancedDisplay))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IVSmoke | Simulation", meta = (EditCondition = "bEnableSimulationCollision"))
 	TEnumAsByte<ECollisionChannel> VoxelCollisionChannel = ECC_WorldStatic;
 
 private:
@@ -758,11 +758,11 @@ public:
 	FIVSmokeDebugSettings DebugSettings;
 
 	/** Optional static mesh to use for voxel visualization when `bShowVoxelMesh` is enabled in settings. */
-	UPROPERTY(EditDefaultsOnly, Category = "IVSmoke | Debug", meta = (AdvancedDisplay))
+	UPROPERTY(EditDefaultsOnly, Category = "IVSmoke | Debug", AdvancedDisplay)
 	TObjectPtr<UStaticMesh> DebugVoxelMesh;
 
 	/** Optional material to apply to the debug voxel mesh. */
-	UPROPERTY(EditDefaultsOnly, Category = "IVSmoke | Debug", meta = (AdvancedDisplay))
+	UPROPERTY(EditDefaultsOnly, Category = "IVSmoke | Debug", AdvancedDisplay)
 	TObjectPtr<UMaterialInterface> DebugVoxelMaterial;
 
 private:
