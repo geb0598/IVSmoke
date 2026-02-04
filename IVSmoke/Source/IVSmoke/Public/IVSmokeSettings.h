@@ -118,11 +118,15 @@ public:
 	virtual FName GetSectionName() const override { return TEXT("IVSmoke"); }
 
 	UIVSmokeVisualMaterialPreset* GetVisualMaterialPreset() const;
+	virtual void PostInitProperties() override;
+
+	/** Change visual material preset data asset. */
+	UFUNCTION(BlueprintCallable, Category = "IVSmoke | VisualMaterial")
+	void SetVisualMaterialPreset(FSoftObjectPath VisualMaterialPresetPath);
 
 #if WITH_EDITOR
 	virtual FText GetSectionText() const override { return NSLOCTEXT("IVSmoke", "SettingsSection", "IVSmoke"); }
 	virtual FText GetSectionDescription() const override { return NSLOCTEXT("IVSmoke", "SettingsDescription", "Configure IVSmoke volumetric smoke settings"); }
-	virtual void PostInitProperties() override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
@@ -239,11 +243,6 @@ public:
 	/** Wind direction and speed for smoke animation. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "IVSmoke | Appearance")
 	FVector WindDirection = FVector(0.00f, 0.00f, 0.1f);
-
-	/** Sharpening/blurring of the smoke composite.
-	 *  Positive = sharpen, Zero = no filter, Negative = blur. */
-	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "IVSmoke | Appearance", meta = (ClampMin = "-1.0", ClampMax = "1.0"))
-	float Sharpness = 0.4f;
 
 	/** Volume edge range offset for density falloff. */
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "IVSmoke | Appearance", meta = (ClampMin = "0.0", ClampMax = "1.0", EditCondition = "bShowAdvancedOptions", EditConditionHides))

@@ -1,4 +1,5 @@
-// SmokeSharpenComposite.usf
+// Copyright (c) 2026, Team SDB. All rights reserved.
+
 #include "/Engine/Public/Platform.ush"
 
 Texture2D MainTex;

@@ -244,9 +244,13 @@ public:
 		/** Smoke opacity mask from ray marching. */
 		SHADER_PARAMETER_RDG_TEXTURE(Texture2D, SmokeLocalPosAlphaTex)
 		/** Linear sampler with repeat addressing. */
-		SHADER_PARAMETER_SAMPLER(SamplerState, LinearClamp_Sampler)
-		/** Sharpen/blur amount (-1 to 1, 0 = no filter). */
-		SHADER_PARAMETER(float, Sharpness)
+		SHADER_PARAMETER_SAMPLER(SamplerState, LinearClamp_Sampler)	
+		/** UpSample Filter Type. (0 = None, 1 = Sharpen, 2 = Blur, 3 = Median) */
+		SHADER_PARAMETER(int, UpSampleFilterType)
+		/** Sharpeness filter strength. */
+		SHADER_PARAMETER(float, SharpenStrength)
+		/** 3x3 gaussian blur strength. */
+		SHADER_PARAMETER(float, BlurStrength)
 		/** Viewport size for UV calculation. */
 		SHADER_PARAMETER(FVector2f, ViewportSize)
 		/** View rect offset for multi-view support. */

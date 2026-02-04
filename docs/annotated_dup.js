@@ -36,15 +36,16 @@ var annotated_dup =
     [ "FIVSmokeVoxelFXAACS", "class_f_i_v_smoke_voxel_f_x_a_a_c_s.html", null ],
     [ "FIVSmokeVSMBlurCS", "class_f_i_v_smoke_v_s_m_blur_c_s.html", null ],
     [ "FIVSmokeVSMProcessor", "class_f_i_v_smoke_v_s_m_processor.html", "class_f_i_v_smoke_v_s_m_processor" ],
+    [ "FPerWorldData", "struct_f_per_world_data.html", "struct_f_per_world_data" ],
     [ "IVSmoke", "class_i_v_smoke.html", null ],
     [ "TStructOpsTypeTraits&lt; FIVSmokeHoleArray &gt;", "struct_t_struct_ops_type_traits_3_01_f_i_v_smoke_hole_array_01_4.html", null ],
     [ "UIVSmokeCollisionComponent", "class_u_i_v_smoke_collision_component.html", "class_u_i_v_smoke_collision_component" ],
     [ "UIVSmokeGridLibrary", "class_u_i_v_smoke_grid_library.html", null ],
     [ "UIVSmokeHoleGeneratorComponent", "class_u_i_v_smoke_hole_generator_component.html", "class_u_i_v_smoke_hole_generator_component" ],
     [ "UIVSmokeHolePreset", "class_u_i_v_smoke_hole_preset.html", "class_u_i_v_smoke_hole_preset" ],
-    [ "UIVSmokeHoleRequestComponent", "class_u_i_v_smoke_hole_request_component.html", "class_u_i_v_smoke_hole_request_component" ],
+    [ "UIVSmokeHoleRequestComponent", "class_u_i_v_smoke_hole_request_component.html", null ],
     [ "UIVSmokeSettings", "class_u_i_v_smoke_settings.html", "class_u_i_v_smoke_settings" ],
     [ "UIVSmokeSmokePreset", "class_u_i_v_smoke_smoke_preset.html", "class_u_i_v_smoke_smoke_preset" ],
     [ "UIVSmokeVisualMaterialPreset", "class_u_i_v_smoke_visual_material_preset.html", "class_u_i_v_smoke_visual_material_preset" ],
-    [ "UMaterialExpressionIVSmoke_TextureSample", "class_u_material_expression_i_v_smoke___texture_sample.html", null ]
+    [ "UMaterialExpressionIVSmoke_TextureSample", "class_u_material_expression_i_v_smoke___texture_sample.html", "class_u_material_expression_i_v_smoke___texture_sample" ]
 ];

@@ -101,9 +101,9 @@ Inheritance diagram for UIVSmokeHoleRequestComponent:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_u_i_v_smoke_hole_request_component__inherit__graph.png" border="0" usemap="#a_u_i_v_smoke_hole_request_component_inherit__map" loading="lazy" alt="Inheritance graph"/></div>
 <map name="a_u_i_v_smoke_hole_request_component_inherit__map" id="a_u_i_v_smoke_hole_request_component_inherit__map">
-<area shape="rect" title="Handles network routing for hole requests. This component enables clients to request holes on VoxelVo..." alt="" coords="5,123,244,277"/>
+<area shape="rect" title="Handles network routing for hole requests. This component enables clients to request holes on VoxelVo..." alt="" coords="5,123,244,256"/>
 <area shape="rect" title=" " alt="" coords="66,5,184,75"/>
-<area shape="poly" title=" " alt="" coords="126,87,127,124,122,122,124,92"/>
+<area shape="poly" title=" " alt="" coords="126,88,127,124,122,122,124,92"/>
 </map>
 </div>
 <div class="dynheader">
@@ -111,21 +111,17 @@ Collaboration diagram for UIVSmokeHoleRequestComponent:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_u_i_v_smoke_hole_request_component__coll__graph.png" border="0" usemap="#a_u_i_v_smoke_hole_request_component_coll__map" loading="lazy" alt="Collaboration graph"/></div>
 <map name="a_u_i_v_smoke_hole_request_component_coll__map" id="a_u_i_v_smoke_hole_request_component_coll__map">
-<area shape="rect" title="Handles network routing for hole requests. This component enables clients to request holes on VoxelVo..." alt="" coords="5,123,244,277"/>
+<area shape="rect" title="Handles network routing for hole requests. This component enables clients to request holes on VoxelVo..." alt="" coords="5,123,244,256"/>
 <area shape="rect" title=" " alt="" coords="66,5,184,75"/>
-<area shape="poly" title=" " alt="" coords="126,87,127,124,122,122,124,92"/>
+<area shape="poly" title=" " alt="" coords="126,88,127,124,122,122,124,92"/>
 </map>
 </div>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
-Public Member Functions</h2></td></tr>
-<tr class="memitem:a3643bde4b6504b2207221c6a32f7eecf" id="r_a3643bde4b6504b2207221c6a32f7eecf"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a3643bde4b6504b2207221c6a32f7eecf">RequestPenetrationHole</a> (<a class="el" href="class_u_i_v_smoke_hole_generator_component.html">UIVSmokeHoleGeneratorComponent</a> *IVSmokeHoleGeneratorComponent, const FVector3f &amp;Origin, const FVector3f &amp;Direction, <a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *Preset)</td></tr>
-<tr class="memitem:a3a06d10f3810575bb70e19b040ad9212" id="r_a3a06d10f3810575bb70e19b040ad9212"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a3a06d10f3810575bb70e19b040ad9212">RequestExplosionHole</a> (<a class="el" href="class_u_i_v_smoke_hole_generator_component.html">UIVSmokeHoleGeneratorComponent</a> *IVSmokeHoleGeneratorComponent, const FVector3f &amp;Origin, <a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *Preset)</td></tr>
-<tr class="memitem:a77d3e0f1e905cd2fe23811336609526e" id="r_a77d3e0f1e905cd2fe23811336609526e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a77d3e0f1e905cd2fe23811336609526e">RequestDynamicHole</a> (<a class="el" href="class_u_i_v_smoke_hole_generator_component.html">UIVSmokeHoleGeneratorComponent</a> *IVSmokeHoleGeneratorComponent, AActor *TargetActor, <a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *Preset)</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a380213944ad5a0b830b990dceb5d10b5" id="r_a380213944ad5a0b830b990dceb5d10b5"><td class="memItemLeft">static <a class="el" href="class_u_i_v_smoke_hole_request_component.html">UIVSmokeHoleRequestComponent</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a380213944ad5a0b830b990dceb5d10b5">GetHoleRequester</a> (const APawn *Instigator)</td></tr>
+<tr class="memitem:a6d31a400c1e2ecdc83afa835358ddef6" id="r_a6d31a400c1e2ecdc83afa835358ddef6"><td class="memItemLeft">static void&#160;</td><td class="memItemRight"><a class="el" href="#a6d31a400c1e2ecdc83afa835358ddef6">RequestPenetrationHole</a> (AActor *Caller, AActor *IVSmokeVoxelVolume, const FVector3f &amp;BulletOrigin, const FVector3f &amp;BulletDirection, <a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *BulletPreset)</td></tr>
+<tr class="memitem:a22995291f3c844e10f2413a16dec50d5" id="r_a22995291f3c844e10f2413a16dec50d5"><td class="memItemLeft">static void&#160;</td><td class="memItemRight"><a class="el" href="#a22995291f3c844e10f2413a16dec50d5">RequestExplosionHole</a> (AActor *Caller, AActor *IVSmokeVoxelVolume, const FVector3f &amp;ExplosionOrigin, <a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *ExplosionPreset)</td></tr>
+<tr class="memitem:ad53b6a097732896a73411db384316ba1" id="r_ad53b6a097732896a73411db384316ba1"><td class="memItemLeft">static void&#160;</td><td class="memItemRight"><a class="el" href="#ad53b6a097732896a73411db384316ba1">RequestDynamicHole</a> (AActor *Caller, AActor *IVSmokeVoxelVolume, <a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *DynamicPreset)</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Handles network routing for hole requests. This component enables clients to request holes on VoxelVolumes by routing Server RPCs through the PlayerController's connection. </p>
@@ -152,8 +148,8 @@ Static Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="a380213944ad5a0b830b990dceb5d10b5" name="a380213944ad5a0b830b990dceb5d10b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a380213944ad5a0b830b990dceb5d10b5">&#9670;&#160;</a></span>GetHoleRequester()</h2>
+<a id="ad53b6a097732896a73411db384316ba1" name="ad53b6a097732896a73411db384316ba1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad53b6a097732896a73411db384316ba1">&#9670;&#160;</a></span>RequestDynamicHole()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -162,10 +158,19 @@ Static Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="class_u_i_v_smoke_hole_request_component.html">UIVSmokeHoleRequestComponent</a> * UIVSmokeHoleRequestComponent::GetHoleRequester </td>
+          <td class="memname">void UIVSmokeHoleRequestComponent::RequestDynamicHole </td>
           <td>(</td>
-          <td class="paramtype">const APawn *</td>          <td class="paramname"><span class="paramname"><em>Instigator</em></span></td><td>)</td>
+          <td class="paramtype">AActor *</td>          <td class="paramname"><span class="paramname"><em>Caller</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">AActor *</td>          <td class="paramname"><span class="paramname"><em>IVSmokeVoxelVolume</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *</td>          <td class="paramname"><span class="paramname"><em>DynamicPreset</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -174,95 +179,95 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Find RequestComponent on Instigator's Pawn or PlayerController. </p>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_hole_request_component_8cpp_source.html#l00016">16</a> of file <a class="el" href="_i_v_smoke_hole_request_component_8cpp_source.html">IVSmokeHoleRequestComponent.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_hole_request_component_8cpp_source.html#l00148">148</a> of file <a class="el" href="_i_v_smoke_hole_request_component_8cpp_source.html">IVSmokeHoleRequestComponent.cpp</a>.</p>
 
 </div>
 </div>
-<a id="a77d3e0f1e905cd2fe23811336609526e" name="a77d3e0f1e905cd2fe23811336609526e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a77d3e0f1e905cd2fe23811336609526e">&#9670;&#160;</a></span>RequestDynamicHole()</h2>
+<a id="a22995291f3c844e10f2413a16dec50d5" name="a22995291f3c844e10f2413a16dec50d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22995291f3c844e10f2413a16dec50d5">&#9670;&#160;</a></span>RequestExplosionHole()</h2>
 
 <div class="memitem">
 <div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void UIVSmokeHoleRequestComponent::RequestDynamicHole </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="class_u_i_v_smoke_hole_generator_component.html">UIVSmokeHoleGeneratorComponent</a> *</td>          <td class="paramname"><span class="paramname"><em>IVSmokeHoleGeneratorComponent</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">AActor *</td>          <td class="paramname"><span class="paramname"><em>TargetActor</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *</td>          <td class="paramname"><span class="paramname"><em>Preset</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Request a dynamic hole. Always executed on server. </p>
-
-</div>
-</div>
-<a id="a3a06d10f3810575bb70e19b040ad9212" name="a3a06d10f3810575bb70e19b040ad9212"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3a06d10f3810575bb70e19b040ad9212">&#9670;&#160;</a></span>RequestExplosionHole()</h2>
-
-<div class="memitem">
-<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void UIVSmokeHoleRequestComponent::RequestExplosionHole </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="class_u_i_v_smoke_hole_generator_component.html">UIVSmokeHoleGeneratorComponent</a> *</td>          <td class="paramname"><span class="paramname"><em>IVSmokeHoleGeneratorComponent</em></span>, </td>
+          <td class="paramtype">AActor *</td>          <td class="paramname"><span class="paramname"><em>Caller</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const FVector3f &amp;</td>          <td class="paramname"><span class="paramname"><em>Origin</em></span>, </td>
+          <td class="paramtype">AActor *</td>          <td class="paramname"><span class="paramname"><em>IVSmokeVoxelVolume</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *</td>          <td class="paramname"><span class="paramname"><em>Preset</em></span>&#160;)</td>
+          <td class="paramtype">const FVector3f &amp;</td>          <td class="paramname"><span class="paramname"><em>ExplosionOrigin</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *</td>          <td class="paramname"><span class="paramname"><em>ExplosionPreset</em></span>&#160;)</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
-<p>Request an explosion hole. Always executed on server. </p>
+
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_hole_request_component_8cpp_source.html#l00084">84</a> of file <a class="el" href="_i_v_smoke_hole_request_component_8cpp_source.html">IVSmokeHoleRequestComponent.cpp</a>.</p>
 
 </div>
 </div>
-<a id="a3643bde4b6504b2207221c6a32f7eecf" name="a3643bde4b6504b2207221c6a32f7eecf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3643bde4b6504b2207221c6a32f7eecf">&#9670;&#160;</a></span>RequestPenetrationHole()</h2>
+<a id="a6d31a400c1e2ecdc83afa835358ddef6" name="a6d31a400c1e2ecdc83afa835358ddef6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d31a400c1e2ecdc83afa835358ddef6">&#9670;&#160;</a></span>RequestPenetrationHole()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void UIVSmokeHoleRequestComponent::RequestPenetrationHole </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="class_u_i_v_smoke_hole_generator_component.html">UIVSmokeHoleGeneratorComponent</a> *</td>          <td class="paramname"><span class="paramname"><em>IVSmokeHoleGeneratorComponent</em></span>, </td>
+          <td class="paramtype">AActor *</td>          <td class="paramname"><span class="paramname"><em>Caller</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const FVector3f &amp;</td>          <td class="paramname"><span class="paramname"><em>Origin</em></span>, </td>
+          <td class="paramtype">AActor *</td>          <td class="paramname"><span class="paramname"><em>IVSmokeVoxelVolume</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const FVector3f &amp;</td>          <td class="paramname"><span class="paramname"><em>Direction</em></span>, </td>
+          <td class="paramtype">const FVector3f &amp;</td>          <td class="paramname"><span class="paramname"><em>BulletOrigin</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *</td>          <td class="paramname"><span class="paramname"><em>Preset</em></span>&#160;)</td>
+          <td class="paramtype">const FVector3f &amp;</td>          <td class="paramname"><span class="paramname"><em>BulletDirection</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_u_i_v_smoke_hole_preset.html">UIVSmokeHolePreset</a> *</td>          <td class="paramname"><span class="paramname"><em>BulletPreset</em></span>&#160;)</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
-<p>Request a penetration hole. Always executed on server. </p>
+
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_hole_request_component_8cpp_source.html#l00020">20</a> of file <a class="el" href="_i_v_smoke_hole_request_component_8cpp_source.html">IVSmokeHoleRequestComponent.cpp</a>.</p>
 
 </div>
 </div>

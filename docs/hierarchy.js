@@ -42,6 +42,7 @@ var hierarchy =
     [ "FIVSmokeTileData", "struct_f_i_v_smoke_tile_data.html", null ],
     [ "FIVSmokeVolumeGPUData", "struct_f_i_v_smoke_volume_g_p_u_data.html", null ],
     [ "FIVSmokeVSMProcessor", "class_f_i_v_smoke_v_s_m_processor.html", null ],
+    [ "FPerWorldData", "struct_f_per_world_data.html", null ],
     [ "FSceneViewExtensionBase", null, [
       [ "FIVSmokeSceneViewExtension", "class_f_i_v_smoke_scene_view_extension.html", null ]
     ] ],

@@ -402,7 +402,15 @@ bool RayAABBIntersection(
 	out float OutTNear,
 	out float OutTFar)
 {
-	float3 InvDir = 1.0 / RayDir;
+	// Prevent NaN from division by zero when ray direction is nearly axis-aligned
+	// If RayDir component is ~0, replace with small epsilon preserving sign
+	const float EPSILON = 1e-8;
+	float3 SafeDir = float3(
+		abs(RayDir.x) > EPSILON ? RayDir.x : (RayDir.x >= 0.0 ? EPSILON : -EPSILON),
+		abs(RayDir.y) > EPSILON ? RayDir.y : (RayDir.y >= 0.0 ? EPSILON : -EPSILON),
+		abs(RayDir.z) > EPSILON ? RayDir.z : (RayDir.z >= 0.0 ? EPSILON : -EPSILON)
+	);
+	float3 InvDir = 1.0 / SafeDir;
 
 	float3 T0 = (BoxMin - RayOrigin) * InvDir;
 	float3 T1 = (BoxMax - RayOrigin) * InvDir;

@@ -98,7 +98,7 @@ Collaboration diagram for FIVSmokeRenderer:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_f_i_v_smoke_renderer__coll__graph.png" border="0" usemap="#a_f_i_v_smoke_renderer_coll__map" loading="lazy" alt="Collaboration graph"/></div>
 <map name="a_f_i_v_smoke_renderer_coll__map" id="a_f_i_v_smoke_renderer_coll__map">
-<area shape="rect" title=" " alt="" coords="5,5,179,288"/>
+<area shape="rect" title=" " alt="" coords="5,5,212,352"/>
 </map>
 </div>
 <table class="memberdecls">
@@ -107,13 +107,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a32ceb1e4b56594a7c68a99e32ddf9f3c" id="r_a32ceb1e4b56594a7c68a99e32ddf9f3c"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a32ceb1e4b56594a7c68a99e32ddf9f3c">Initialize</a> ()</td></tr>
 <tr class="memitem:ab1678805f0a5f66e9e739dad3e5a03f9" id="r_ab1678805f0a5f66e9e739dad3e5a03f9"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab1678805f0a5f66e9e739dad3e5a03f9">Shutdown</a> ()</td></tr>
 <tr class="memitem:ad3e4ca785257d273ac9f43d00347d902" id="r_ad3e4ca785257d273ac9f43d00347d902"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ad3e4ca785257d273ac9f43d00347d902">IsInitialized</a> () const</td></tr>
-<tr class="memitem:a3eadda520ef7993be400be4653319ab0" id="r_a3eadda520ef7993be400be4653319ab0"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a3eadda520ef7993be400be4653319ab0">bIsServerTimeSynced</a> () const</td></tr>
-<tr class="memitem:a1a57c5c612636b9fa5f663ca6a9a1253" id="r_a1a57c5c612636b9fa5f663ca6a9a1253"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a1a57c5c612636b9fa5f663ca6a9a1253">SetServerTimeOffset</a> (const float InServerTimeOffset)</td></tr>
-<tr class="memitem:a8af929a40d0d86ce763189f0931a8642" id="r_a8af929a40d0d86ce763189f0931a8642"><td class="memItemLeft"><a class="el" href="struct_f_i_v_smoke_packed_render_data.html">FIVSmokePackedRenderData</a>&#160;</td><td class="memItemRight"><a class="el" href="#a8af929a40d0d86ce763189f0931a8642">PrepareRenderData</a> (const TArray&lt; <a class="el" href="class_a_i_v_smoke_voxel_volume.html">AIVSmokeVoxelVolume</a> * &gt; &amp;InVolumes, const FVector &amp;CameraPosition)</td></tr>
-<tr class="memitem:a07ee517d53c93cd4daceb9c5f977bb74" id="r_a07ee517d53c93cd4daceb9c5f977bb74"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a07ee517d53c93cd4daceb9c5f977bb74">SetCachedRenderData</a> (<a class="el" href="struct_f_i_v_smoke_packed_render_data.html">FIVSmokePackedRenderData</a> &amp;&amp;InRenderData)</td></tr>
+<tr class="memitem:a70c64fb3bf10c0f420a56e828f4e4a16" id="r_a70c64fb3bf10c0f420a56e828f4e4a16"><td class="memItemLeft">TSharedPtr&lt; <a class="el" href="struct_f_per_world_data.html">FPerWorldData</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a70c64fb3bf10c0f420a56e828f4e4a16">GetOrCreateWorldData</a> (UWorld *World)</td></tr>
+<tr class="memitem:a2e888c69cabba16c91a8b171f0024161" id="r_a2e888c69cabba16c91a8b171f0024161"><td class="memItemLeft">TSharedPtr&lt; <a class="el" href="struct_f_per_world_data.html">FPerWorldData</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2e888c69cabba16c91a8b171f0024161">GetWorldData</a> (UWorld *World)</td></tr>
+<tr class="memitem:adc1ac325edfae7ef07143232584e829d" id="r_adc1ac325edfae7ef07143232584e829d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#adc1ac325edfae7ef07143232584e829d">CleanupWorldData</a> (UWorld *World)</td></tr>
+<tr class="memitem:adbacd22ef5b28accff67c908ceac621a" id="r_adbacd22ef5b28accff67c908ceac621a"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#adbacd22ef5b28accff67c908ceac621a">bIsServerTimeSynced</a> (UWorld *World)</td></tr>
+<tr class="memitem:a281deaa21fcf82804074827da15f637d" id="r_a281deaa21fcf82804074827da15f637d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a281deaa21fcf82804074827da15f637d">SetServerTimeOffset</a> (UWorld *World, float InServerTimeOffset)</td></tr>
+<tr class="memitem:ad40780425ca80df0c5b04d86bf7897c3" id="r_ad40780425ca80df0c5b04d86bf7897c3"><td class="memItemLeft"><a class="el" href="struct_f_i_v_smoke_packed_render_data.html">FIVSmokePackedRenderData</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad40780425ca80df0c5b04d86bf7897c3">PrepareRenderData</a> (UWorld *World, const TArray&lt; <a class="el" href="class_a_i_v_smoke_voxel_volume.html">AIVSmokeVoxelVolume</a> * &gt; &amp;InVolumes, const FVector &amp;CameraPosition)</td></tr>
+<tr class="memitem:abc9c2a35fd3672f601a5c8050db86bfd" id="r_abc9c2a35fd3672f601a5c8050db86bfd"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#abc9c2a35fd3672f601a5c8050db86bfd">SetCachedRenderData</a> (UWorld *World, <a class="el" href="struct_f_i_v_smoke_packed_render_data.html">FIVSmokePackedRenderData</a> &amp;&amp;InRenderData)</td></tr>
 <tr class="memitem:a434b16865d2b3c9b26adf6843218b476" id="r_a434b16865d2b3c9b26adf6843218b476"><td class="memItemLeft">FScreenPassTexture&#160;</td><td class="memItemRight"><a class="el" href="#a434b16865d2b3c9b26adf6843218b476">Render</a> (FRDGBuilder &amp;GraphBuilder, const FSceneView &amp;View, const FPostProcessMaterialInputs &amp;Inputs)</td></tr>
 <tr class="memitem:a7d68bc8169845458aaafe58eab8d906d" id="r_a7d68bc8169845458aaafe58eab8d906d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a7d68bc8169845458aaafe58eab8d906d">RunPrePassPipeline</a> (FRDGBuilder &amp;GraphBuilder, const FSceneView &amp;View, const struct FRenderTargetBindingSlots &amp;RenderTargets, TRDGUniformBufferRef&lt; FSceneTextureUniformParameters &gt; SceneTextures)</td></tr>
-<tr class="memitem:a3695c0f263355fb32ff0d5c8ed5cd448" id="r_a3695c0f263355fb32ff0d5c8ed5cd448"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a3695c0f263355fb32ff0d5c8ed5cd448">ClearFrameViewCaches</a> ()</td></tr>
+<tr class="memitem:afa35d6b253b1cf4dea15a86edf914c1e" id="r_afa35d6b253b1cf4dea15a86edf914c1e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#afa35d6b253b1cf4dea15a86edf914c1e">ClearViewDataForViewFamily</a> (const FSceneViewFamily &amp;ViewFamily)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -124,40 +127,64 @@ Static Public Attributes</h2></td></tr>
 <tr class="memitem:a3f9e82060864d43e474007eac4f94583" id="r_a3f9e82060864d43e474007eac4f94583"><td class="memItemLeft">static constexpr int32&#160;</td><td class="memItemRight"><a class="el" href="#a3f9e82060864d43e474007eac4f94583">MaxSupportedVolumes</a> = 128</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Manages registered smoke volumes and handles rendering. Owns shared rendering resources (noise volume) and reads settings from <a class="el" href="class_u_i_v_smoke_settings.html">UIVSmokeSettings</a>. </p>
+<div class="textblock"><p>Manages registered smoke volumes and handles rendering. Owns shared rendering resources (noise volume) and reads settings from <a class="el" href="class_u_i_v_smoke_settings.html">UIVSmokeSettings</a>.</p>
+<p>ARCHITECTURE: Per-World Data</p><ul>
+<li>Each UWorld has its own <a class="el" href="struct_f_per_world_data.html">FPerWorldData</a> instance stored in WorldDataMap</li>
+<li>Enables simultaneous rendering of Editor and PIE worlds</li>
+<li>World lifecycle managed via OnWorldBeginTearDown delegate</li>
+</ul>
+<p>See Docs/IVSmoke_RendererArchitecture.md for detailed documentation. </p>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8h_source.html#l00156">156</a> of file <a class="el" href="_i_v_smoke_renderer_8h_source.html">IVSmokeRenderer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8h_source.html#l00264">264</a> of file <a class="el" href="_i_v_smoke_renderer_8h_source.html">IVSmokeRenderer.h</a>.</p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="a3eadda520ef7993be400be4653319ab0" name="a3eadda520ef7993be400be4653319ab0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3eadda520ef7993be400be4653319ab0">&#9670;&#160;</a></span>bIsServerTimeSynced()</h2>
+<a id="adbacd22ef5b28accff67c908ceac621a" name="adbacd22ef5b28accff67c908ceac621a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adbacd22ef5b28accff67c908ceac621a">&#9670;&#160;</a></span>bIsServerTimeSynced()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool FIVSmokeRenderer::bIsServerTimeSynced </td>
           <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const</td>
+          <td class="paramtype">UWorld *</td>          <td class="paramname"><span class="paramname"><em>World</em></span></td><td>)</td>
+          <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-<p>Check if server time offset was set. </p>
+<p>Check if server time offset was set for a World. </p>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8h_source.html#l00174">174</a> of file <a class="el" href="_i_v_smoke_renderer_8h_source.html">IVSmokeRenderer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l00209">209</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
 
 </div>
 </div>
-<a id="a3695c0f263355fb32ff0d5c8ed5cd448" name="a3695c0f263355fb32ff0d5c8ed5cd448"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3695c0f263355fb32ff0d5c8ed5cd448">&#9670;&#160;</a></span>ClearFrameViewCaches()</h2>
+<a id="adc1ac325edfae7ef07143232584e829d" name="adc1ac325edfae7ef07143232584e829d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc1ac325edfae7ef07143232584e829d">&#9670;&#160;</a></span>CleanupWorldData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FIVSmokeRenderer::CleanupWorldData </td>
+          <td>(</td>
+          <td class="paramtype">UWorld *</td>          <td class="paramname"><span class="paramname"><em>World</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Cleanup and remove per-world data. Called automatically when World is destroyed (via delegate). IMPORTANT: Calls FlushRenderingCommands() to ensure GPU safety.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">World</td><td>The world to cleanup </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l00174">174</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
+
+</div>
+</div>
+<a id="afa35d6b253b1cf4dea15a86edf914c1e" name="afa35d6b253b1cf4dea15a86edf914c1e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa35d6b253b1cf4dea15a86edf914c1e">&#9670;&#160;</a></span>ClearViewDataForViewFamily()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -166,9 +193,9 @@ Static Public Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void FIVSmokeRenderer::ClearFrameViewCaches </td>
+          <td class="memname">void FIVSmokeRenderer::ClearViewDataForViewFamily </td>
           <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td class="paramtype">const FSceneViewFamily &amp;</td>          <td class="paramname"><span class="paramname"><em>ViewFamily</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -178,9 +205,9 @@ Static Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Clear frame view caches. Called at end of frame from SceneViewExtension. </p>
+<p>Clear per-view data for a specific ViewFamily. Called at end of ViewFamily rendering. </p>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8h_source.html#l00450">450</a> of file <a class="el" href="_i_v_smoke_renderer_8h_source.html">IVSmokeRenderer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8h_source.html#l00597">597</a> of file <a class="el" href="_i_v_smoke_renderer_8h_source.html">IVSmokeRenderer.h</a>.</p>
 
 </div>
 </div>
@@ -208,6 +235,60 @@ Static Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l00033">33</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a70c64fb3bf10c0f420a56e828f4e4a16" name="a70c64fb3bf10c0f420a56e828f4e4a16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a70c64fb3bf10c0f420a56e828f4e4a16">&#9670;&#160;</a></span>GetOrCreateWorldData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TSharedPtr&lt; <a class="el" href="struct_f_per_world_data.html">FPerWorldData</a> &gt; FIVSmokeRenderer::GetOrCreateWorldData </td>
+          <td>(</td>
+          <td class="paramtype">UWorld *</td>          <td class="paramname"><span class="paramname"><em>World</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get or create per-world data for a specific World. Creates new <a class="el" href="struct_f_per_world_data.html">FPerWorldData</a> if not exists and registers cleanup delegate. Must be called on Game Thread.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">World</td><td>The world to get data for </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Shared pointer to world data (never null for valid World) </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l00120">120</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a2e888c69cabba16c91a8b171f0024161" name="a2e888c69cabba16c91a8b171f0024161"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e888c69cabba16c91a8b171f0024161">&#9670;&#160;</a></span>GetWorldData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TSharedPtr&lt; <a class="el" href="struct_f_per_world_data.html">FPerWorldData</a> &gt; FIVSmokeRenderer::GetWorldData </td>
+          <td>(</td>
+          <td class="paramtype">UWorld *</td>          <td class="paramname"><span class="paramname"><em>World</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get per-world data for a specific World (read-only). Returns nullptr if World is not registered. Thread-safe (uses mutex internally).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">World</td><td>The world to get data for </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Shared pointer to world data, or nullptr if not found </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l00159">159</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
 
 </div>
 </div>
@@ -255,12 +336,12 @@ Static Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Check if renderer is initialized with valid resources. </p>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8h_source.html#l00171">171</a> of file <a class="el" href="_i_v_smoke_renderer_8h_source.html">IVSmokeRenderer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8h_source.html#l00279">279</a> of file <a class="el" href="_i_v_smoke_renderer_8h_source.html">IVSmokeRenderer.h</a>.</p>
 
 </div>
 </div>
-<a id="a8af929a40d0d86ce763189f0931a8642" name="a8af929a40d0d86ce763189f0931a8642"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8af929a40d0d86ce763189f0931a8642">&#9670;&#160;</a></span>PrepareRenderData()</h2>
+<a id="ad40780425ca80df0c5b04d86bf7897c3" name="ad40780425ca80df0c5b04d86bf7897c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad40780425ca80df0c5b04d86bf7897c3">&#9670;&#160;</a></span>PrepareRenderData()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -268,6 +349,11 @@ Static Public Attributes</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="struct_f_i_v_smoke_packed_render_data.html">FIVSmokePackedRenderData</a> FIVSmokeRenderer::PrepareRenderData </td>
           <td>(</td>
+          <td class="paramtype">UWorld *</td>          <td class="paramname"><span class="paramname"><em>World</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">const TArray&lt; <a class="el" href="class_a_i_v_smoke_voxel_volume.html">AIVSmokeVoxelVolume</a> * &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>InVolumes</em></span>, </td>
         </tr>
         <tr>
@@ -277,9 +363,10 @@ Static Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Prepare render data from all registered volumes. Must be called on Game Thread. Copies and packs all volume data for safe Render Thread access. If volume count exceeds MaxSupportedVolumes (128), filters by distance from camera.</p>
+<p>Prepare render data from all registered volumes for a specific World. Must be called on Game Thread. Copies and packs all volume data for safe Render Thread access. If volume count exceeds MaxSupportedVolumes (128), filters by distance from camera. Skips processing if already called this frame (uses LastPreparedFrameNumber).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramname">World</td><td>The world these volumes belong to </td></tr>
     <tr><td class="paramname">InVolumes</td><td>Array of volumes to process </td></tr>
     <tr><td class="paramname">CameraPosition</td><td>Camera world position for distance-based filtering </td></tr>
   </table>
@@ -287,7 +374,7 @@ Static Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Packed render data ready for Render Thread </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l00303">303</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l00453">453</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
 
 </div>
 </div>
@@ -325,7 +412,7 @@ Static Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Output texture after smoke rendering </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l00681">681</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l00840">840</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
 
 </div>
 </div>
@@ -369,63 +456,62 @@ Static Public Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l01601">1601</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l01877">1877</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
 
 </div>
 </div>
-<a id="a07ee517d53c93cd4daceb9c5f977bb74" name="a07ee517d53c93cd4daceb9c5f977bb74"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a07ee517d53c93cd4daceb9c5f977bb74">&#9670;&#160;</a></span>SetCachedRenderData()</h2>
+<a id="abc9c2a35fd3672f601a5c8050db86bfd" name="abc9c2a35fd3672f601a5c8050db86bfd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc9c2a35fd3672f601a5c8050db86bfd">&#9670;&#160;</a></span>SetCachedRenderData()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void FIVSmokeRenderer::SetCachedRenderData </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct_f_i_v_smoke_packed_render_data.html">FIVSmokePackedRenderData</a> &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>InRenderData</em></span></td><td>)</td>
+          <td class="paramtype">UWorld *</td>          <td class="paramname"><span class="paramname"><em>World</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="struct_f_i_v_smoke_packed_render_data.html">FIVSmokePackedRenderData</a> &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>InRenderData</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-<p>Set cached render data for next frame. Called from Render Thread via ENQUEUE_RENDER_COMMAND. </p>
+<p>Set cached render data for a specific World. Called from Render Thread via ENQUEUE_RENDER_COMMAND.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">World</td><td>The world to set data for </td></tr>
+    <tr><td class="paramname">InRenderData</td><td>The render data to cache </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8h_source.html#l00201">201</a> of file <a class="el" href="_i_v_smoke_renderer_8h_source.html">IVSmokeRenderer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l00225">225</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
 
 </div>
 </div>
-<a id="a1a57c5c612636b9fa5f663ca6a9a1253" name="a1a57c5c612636b9fa5f663ca6a9a1253"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1a57c5c612636b9fa5f663ca6a9a1253">&#9670;&#160;</a></span>SetServerTimeOffset()</h2>
+<a id="a281deaa21fcf82804074827da15f637d" name="a281deaa21fcf82804074827da15f637d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a281deaa21fcf82804074827da15f637d">&#9670;&#160;</a></span>SetServerTimeOffset()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void FIVSmokeRenderer::SetServerTimeOffset </td>
           <td>(</td>
-          <td class="paramtype">const float</td>          <td class="paramname"><span class="paramname"><em>InServerTimeOffset</em></span></td><td>)</td>
+          <td class="paramtype">UWorld *</td>          <td class="paramname"><span class="paramname"><em>World</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>InServerTimeOffset</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-<p>SetServerTimeOffset for smoke wind animation. </p>
+<p>Set server time offset for smoke wind animation for a specific World. </p>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8h_source.html#l00177">177</a> of file <a class="el" href="_i_v_smoke_renderer_8h_source.html">IVSmokeRenderer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8cpp_source.html#l00215">215</a> of file <a class="el" href="_i_v_smoke_renderer_8cpp_source.html">IVSmokeRenderer.cpp</a>.</p>
 
 </div>
 </div>
@@ -471,7 +557,7 @@ Static Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Maximum number of volumes supported for rendering. </p>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8h_source.html#l00183">183</a> of file <a class="el" href="_i_v_smoke_renderer_8h_source.html">IVSmokeRenderer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_renderer_8h_source.html#l00323">323</a> of file <a class="el" href="_i_v_smoke_renderer_8h_source.html">IVSmokeRenderer.h</a>.</p>
 
 </div>
 </div>

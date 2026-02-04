@@ -11,6 +11,10 @@
 #include "EngineUtils.h"
 #include "GameFramework/GameStateBase.h"
 #include "PixelShaderUtils.h"
+
+#if WITH_EDITOR
+#include "Editor.h"
+#endif
 #include "SceneTexturesConfig.h"
 #include "SceneRenderTargetParameters.h"
 
@@ -36,8 +40,9 @@ void FIVSmokeSceneViewExtension::Shutdown()
 
 void FIVSmokeSceneViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewFamily)
 {
-	// Called ONCE per frame on Game Thread (not per-view!)
-	// This ensures render data is prepared exactly once per frame
+	// Called ONCE per ViewFamily on Game Thread
+	// Per-World architecture: Each World is processed independently
+	// Multiple ViewFamilies (Editor, PIE) can coexist without conflict
 	FIVSmokeRenderer& Renderer = FIVSmokeRenderer::Get();
 
 	// Get world from ViewFamily
@@ -52,14 +57,16 @@ void FIVSmokeSceneViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewF
 		return;
 	}
 
-	// Sync server time if needed
-	if (!Renderer.bIsServerTimeSynced())
+	// Note: No Editor/PIE skip logic needed - Per-World architecture handles both simultaneously
+
+	// Sync server time if needed (per-world)
+	if (!Renderer.bIsServerTimeSynced(World))
 	{
 		if (AGameStateBase* GS = World->GetGameState())
 		{
 			float LocalTime = World->GetTimeSeconds();
 			float ServerTime = GS->GetServerWorldTimeSeconds();
-			Renderer.SetServerTimeOffset(ServerTime - LocalTime);
+			Renderer.SetServerTimeOffset(World, ServerTime - LocalTime);
 		}
 	}
 
@@ -67,7 +74,7 @@ void FIVSmokeSceneViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewF
 	TArray<AIVSmokeVoxelVolume*> ValidVolumes;
 	for (TActorIterator<AIVSmokeVoxelVolume> It(World); It; ++It)
 	{
-		if (It->ShouldRender())
+		if (IsValid(*It) && It->ShouldRender())
 		{
 			ValidVolumes.Add(*It);
 		}
@@ -75,11 +82,11 @@ void FIVSmokeSceneViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewF
 
 	if (ValidVolumes.Num() == 0)
 	{
-		// Clear cached render data to stop rendering
+		// Clear cached render data for this World to stop rendering
 		ENQUEUE_RENDER_COMMAND(IVSmokeClearRenderData)(
-			[&Renderer](FRHICommandListImmediate& RHICmdList)
+			[&Renderer, World](FRHICommandListImmediate& RHICmdList)
 			{
-				Renderer.SetCachedRenderData(FIVSmokePackedRenderData());
+				Renderer.SetCachedRenderData(World, FIVSmokePackedRenderData());
 			}
 		);
 		return;
@@ -92,22 +99,22 @@ void FIVSmokeSceneViewExtension::BeginRenderViewFamily(FSceneViewFamily& InViewF
 		CameraPosition = InViewFamily.Views[0]->ViewLocation;
 	}
 
-	// Prepare render data on Game Thread (all Volume data access happens here)
-	FIVSmokePackedRenderData RenderData = Renderer.PrepareRenderData(ValidVolumes, CameraPosition);
-	
+	// Prepare render data on Game Thread for this World
+	// PrepareRenderData includes frame deduplication (skips if already processed this frame)
+	FIVSmokePackedRenderData RenderData = Renderer.PrepareRenderData(World, ValidVolumes, CameraPosition);
+
 	// Transfer to Render Thread via command queue
 	ENQUEUE_RENDER_COMMAND(IVSmokeSetRenderData)(
-		[&Renderer, RenderData = MoveTemp(RenderData)](FRHICommandListImmediate& RHICmdList) mutable
+		[&Renderer, World, RenderData = MoveTemp(RenderData)](FRHICommandListImmediate& RHICmdList) mutable
 		{
-			Renderer.SetCachedRenderData(MoveTemp(RenderData));
+			Renderer.SetCachedRenderData(World, MoveTemp(RenderData));
 		}
 	);
 }
 
 bool FIVSmokeSceneViewExtension::IsActiveThisFrame_Internal(const FSceneViewExtensionContext& Context) const
 {
-	// Always active - actual filtering happens in BeginRenderViewFamily via TActorIterator
-	// This is intentional: the cost of iterating 128 volumes per frame is negligible (~1μs)
+	// Actual filtering happens in SubscribeToPostProcessingPass where we have access to FSceneView
 	return true;
 }
 
@@ -117,6 +124,13 @@ void FIVSmokeSceneViewExtension::SubscribeToPostProcessingPass(
 	FPostProcessingPassDelegateArray& InOutPassCallbacks,
 	bool bIsPassEnabled)
 {
+	// Skip non-primary views (Scene Capture, Reflection Capture, Planar Reflection, etc.)
+	// These views may have invalid projection matrices or extreme FOV values that cause GPU hangs
+	if (InView.bIsSceneCapture || InView.bIsReflectionCapture || InView.bIsPlanarReflection)
+	{
+		return;
+	}
+
 	// Always use AfterDOF pass - DOF applied to smoke, best balance of quality and compatibility
 	if (Pass == EPostProcessingPass::AfterDOF)
 	{
@@ -143,6 +157,13 @@ void FIVSmokeSceneViewExtension::PostRenderBasePassDeferred_RenderThread(
 	const FRenderTargetBindingSlots& RenderTargets,
 	TRDGUniformBufferRef<FSceneTextureUniformParameters> SceneTextures)
 {
+	// Skip non-primary views (Scene Capture, Reflection Capture, Planar Reflection, etc.)
+	// These views may have invalid projection matrices or extreme FOV values that cause GPU hangs
+	if (InView.bIsSceneCapture || InView.bIsReflectionCapture || InView.bIsPlanarReflection)
+	{
+		return;
+	}
+
 	const UIVSmokeSettings* Settings = UIVSmokeSettings::Get();
 	if (!Settings)
 	{
@@ -162,7 +183,8 @@ void FIVSmokeSceneViewExtension::PostRenderViewFamily_RenderThread(
 	FRDGBuilder& GraphBuilder,
 	FSceneViewFamily& InViewFamily)
 {
-	// Clear View-based RDG caches at end of frame
-	// RDG textures are only valid within the same GraphBuilder, so clear the map for next frame
-	FIVSmokeRenderer::Get().ClearFrameViewCaches();
+	// Clear per-view data for this specific ViewFamily only
+	// Each ViewFamily has its own GraphBuilder, so only clear data belonging to this ViewFamily
+	// This prevents race conditions when multiple ViewFamilies render simultaneously (e.g., Editor split viewports)
+	FIVSmokeRenderer::Get().ClearViewDataForViewFamily(InViewFamily);
 }

@@ -1,5 +1,5 @@
 <map id="UIVSmokeHoleRequestComponent" name="UIVSmokeHoleRequestComponent">
-<area shape="rect" id="Node000001" title="Handles network routing for hole requests. This component enables clients to request holes on VoxelVo..." alt="" coords="5,123,244,277"/>
+<area shape="rect" id="Node000001" title="Handles network routing for hole requests. This component enables clients to request holes on VoxelVo..." alt="" coords="5,123,244,256"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="66,5,184,75"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,87,127,124,122,122,124,92"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,88,127,124,122,122,124,92"/>
 </map>

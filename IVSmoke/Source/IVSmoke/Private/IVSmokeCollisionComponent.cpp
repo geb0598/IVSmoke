@@ -6,6 +6,10 @@
 #include "IVSmokeGridLibrary.h"
 #include "PhysicsEngine/BodySetup.h"
 
+#if WITH_EDITOR
+#include "Editor.h"
+#endif
+
 DECLARE_CYCLE_STAT(TEXT("Update Collision"), STAT_IVSmoke_UpdateCollision, STATGROUP_IVSmoke)
 DECLARE_CYCLE_STAT(TEXT("Update Collision With Octree"), STAT_IVSmoke_UpdateCollisionWithOctree, STATGROUP_IVSmoke)
 DECLARE_CYCLE_STAT(TEXT("Rebuild Physics Geometry"), STAT_IVSmoke_RebuildPhysicsGeometry, STATGROUP_IVSmoke)
@@ -35,6 +39,18 @@ UIVSmokeCollisionComponent::UIVSmokeCollisionComponent()
 
 UBodySetup* UIVSmokeCollisionComponent::GetBodySetup()
 {
+#if WITH_EDITOR
+	// Prevent BodyInstanceCustomization crash when editor-world actor is selected during PIE
+	if (GEditor && GEditor->IsPlaySessionInProgress())
+	{
+		const UWorld* World = GetWorld();
+		if (World && World->WorldType == EWorldType::Editor)
+		{
+			return nullptr;
+		}
+	}
+#endif
+
 	if (!VoxelBodySetup)
 	{
 		VoxelBodySetup = NewObject<UBodySetup>(this, NAME_None, RF_Transient);

@@ -1,23 +1,5 @@
 var searchData=
 [
-  ['viewoccupancy_0',['ViewOccupancy',['../struct_f_i_v_smoke_occupancy_resources.html#aed5fac0f3db2e59f8ea9889581c6e5eb',1,'FIVSmokeOccupancyResources']]],
-  ['viewprojectionmatrix_1',['ViewProjectionMatrix',['../struct_f_i_v_smoke_cascade_data.html#a3fc7dad7979c35706f2254a958946631',1,'FIVSmokeCascadeData::ViewProjectionMatrix'],['../struct_f_i_v_smoke_c_s_m_g_p_u_data.html#a929bf3a286741f904bc6e75b235d6b35',1,'FIVSmokeCSMGPUData::ViewProjectionMatrix']]],
-  ['volumeboundcomponent_2',['VolumeBoundComponent',['../class_a_i_v_smoke_voxel_volume.html#a62d1473bf3b7c0ab89b77090914fdade',1,'AIVSmokeVoxelVolume']]],
-  ['volumedataarray_3',['VolumeDataArray',['../struct_f_i_v_smoke_packed_render_data.html#a1da45d51d370d65bca0045104871a4aa',1,'FIVSmokePackedRenderData']]],
-  ['volumedensity_4',['VolumeDensity',['../class_u_i_v_smoke_smoke_preset.html#ad2be1e161f2e972b9b4fc19e1cc05b78',1,'UIVSmokeSmokePreset']]],
-  ['volumeedgefadesharpness_5',['VolumeEdgeFadeSharpness',['../class_u_i_v_smoke_settings.html#a9e83ba796d27bf30f64aa356a1df549a',1,'UIVSmokeSettings']]],
-  ['volumeedgenoisefadeoffset_6',['VolumeEdgeNoiseFadeOffset',['../class_u_i_v_smoke_settings.html#afbbe47e34402d9ae806bfbb20fefc3d6',1,'UIVSmokeSettings']]],
-  ['volumeextent_7',['VolumeExtent',['../class_a_i_v_smoke_voxel_volume.html#a9ac65f3432cebe1270ec362166de076f',1,'AIVSmokeVoxelVolume']]],
-  ['volumemask128_8',['VolumeMask128',['../struct_f_i_v_smoke_tile_data.html#a561d8865a847ce8a52f6899c70878872',1,'FIVSmokeTileData']]],
-  ['volumerangeoffset_9',['VolumeRangeOffset',['../class_u_i_v_smoke_settings.html#a8f4cbf58987d9caa0a2f215fd7ea0961',1,'UIVSmokeSettings']]],
-  ['volumeworldaabbmax_10',['VolumeWorldAABBMax',['../struct_f_i_v_smoke_volume_g_p_u_data.html#ae86657b574f5f952f47c71a28c91c039',1,'FIVSmokeVolumeGPUData']]],
-  ['volumeworldaabbmin_11',['VolumeWorldAABBMin',['../struct_f_i_v_smoke_volume_g_p_u_data.html#a90c81eba4f798dd2f6d54c34f49b2f13',1,'FIVSmokeVolumeGPUData']]],
-  ['voxelcollisionchannel_12',['VoxelCollisionChannel',['../class_a_i_v_smoke_voxel_volume.html#a54d6c8a4e1a1d151a337cf63aa36e4c8',1,'AIVSmokeVoxelVolume']]],
-  ['voxelcount_13',['VoxelCount',['../struct_f_i_v_smoke_volume_g_p_u_data.html#abcaaa586b72b4d4ceaebe13421b7a0c5',1,'FIVSmokeVolumeGPUData']]],
-  ['voxelresolution_14',['VoxelResolution',['../class_u_i_v_smoke_hole_generator_component.html#aa2b0ae7af26b7556056531c5f1082dcb',1,'UIVSmokeHoleGeneratorComponent::VoxelResolution'],['../struct_f_i_v_smoke_packed_render_data.html#acf78e820c465ce2bc1835dcbbe33487e',1,'FIVSmokePackedRenderData::VoxelResolution']]],
-  ['voxelsize_15',['VoxelSize',['../class_a_i_v_smoke_voxel_volume.html#a6b4caab4220e38ea5ef49f8fa67bf767',1,'AIVSmokeVoxelVolume']]],
-  ['vsmblurradius_16',['VSMBlurRadius',['../class_u_i_v_smoke_settings.html#affcee0751fc3f7c9d57ec426d9109d87',1,'UIVSmokeSettings']]],
-  ['vsmlightbleedingreduction_17',['VSMLightBleedingReduction',['../class_u_i_v_smoke_settings.html#a259b8b2a43d5036a9551355c4340fdcc',1,'UIVSmokeSettings']]],
-  ['vsmminvariance_18',['VSMMinVariance',['../class_u_i_v_smoke_settings.html#afdb88a9bdd20f42cabf31e991d7a8b8f',1,'UIVSmokeSettings']]],
-  ['vsmrt_19',['VSMRT',['../struct_f_i_v_smoke_cascade_data.html#a0f61eb1aebdf3d6cdc5614bd593825db',1,'FIVSmokeCascadeData']]]
+  ['upsamplefiltertype_0',['UpSampleFilterType',['../struct_f_i_v_smoke_packed_render_data.html#a627c9a4b8fa914cdfbad718f3efbac01',1,'FIVSmokePackedRenderData::UpSampleFilterType'],['../class_u_i_v_smoke_visual_material_preset.html#afca27e7c3d5626876fd256e4d6e26ad8',1,'UIVSmokeVisualMaterialPreset::UpSampleFilterType']]],
+  ['uvs_1',['UVs',['../class_u_material_expression_i_v_smoke___texture_sample.html#a1898e1d36494010886a7466aa6ccd938',1,'UMaterialExpressionIVSmoke_TextureSample']]]
 ];

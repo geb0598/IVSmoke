@@ -478,6 +478,12 @@ void UIVSmokeHoleGeneratorComponent::Local_RebuildHoleTexture()
 		return;
 	}
 
+	const float SyncedTime = GetSyncedTime();
+	if (SyncedTime == 0.0f)
+	{
+		return;
+	}
+
 	if (HoleTexture->SizeX != VoxelResolution.X ||
 		HoleTexture->SizeY != VoxelResolution.Y ||
 		HoleTexture->SizeZ != VoxelResolution.Z)
@@ -492,7 +498,7 @@ void UIVSmokeHoleGeneratorComponent::Local_RebuildHoleTexture()
 		return;
 	}
 
-	TArray<FIVSmokeHoleGPU> GPUHoles = ActiveHoles.GetHoleGPUData(GetSyncedTime());
+	TArray<FIVSmokeHoleGPU> GPUHoles = ActiveHoles.GetHoleGPUData(SyncedTime);
 
 	const TObjectPtr<AIVSmokeVoxelVolume> VoxelVolume = Cast<AIVSmokeVoxelVolume>(GetOwner());
 	if (VoxelVolume == nullptr)
@@ -640,15 +646,21 @@ void UIVSmokeHoleGeneratorComponent::Local_RebuildHoleTexture()
 #pragma region Common
 float UIVSmokeHoleGeneratorComponent::GetSyncedTime() const
 {
-	if (const TObjectPtr<UWorld> World = GetWorld())
+	const UWorld* World = GetWorld();
+	if (!World)
 	{
-		if (const TObjectPtr<AGameStateBase> GameState = World->GetGameState())
+		return 0.0f;
+	}
+
+	if (World->GetNetMode() == NM_Client) // Only Client
+	{
+		if (const AGameStateBase* GameState = World->GetGameState())
 		{
 			return GameState->GetServerWorldTimeSeconds();
 		}
-		return World->GetTimeSeconds();
 	}
-	return 0.0f;
+
+	return World->GetTimeSeconds(); // Server & StandAlone
 }
 
 #if !UE_SERVER

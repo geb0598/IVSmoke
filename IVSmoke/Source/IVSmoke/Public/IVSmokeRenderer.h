@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "ScreenPass.h"
 #include "SceneTexturesConfig.h"
+#include "IVSmoke.h"
 #include "IVSmokeShaders.h"
 #include "SceneView.h"
 #include "IVSmokeSettings.h"
@@ -48,9 +49,22 @@ struct FIVSmokeNoiseConfig
  * Packed render data for all smoke volumes.
  * Created on Game Thread, consumed on Render Thread.
  * Contains all data needed for rendering without accessing Volume actors.
+ *
+ * THREAD SAFETY:
+ * - Created on Game Thread in PrepareRenderData()
+ * - Transferred to Render Thread via ENQUEUE_RENDER_COMMAND
+ * - Consumed on Render Thread in Render() and RunPrePassPipeline()
+ *
+ * DATA SAFETY WARNING:
+ * Some fields are REFERENCE-BASED and tied to UObject lifetime.
+ * See comments below for dangerous vs safe fields.
  */
 struct IVSMOKE_API FIVSmokePackedRenderData
 {
+	//~==========================================================================
+	// Safe Fields (Value-Copied)
+	// These are independent of source UObject lifetime.
+
 	/** Packed voxel birth times for all volumes (flattened by VoxelBufferOffset). */
 	TArray<float> PackedVoxelBirthTimes;
 
@@ -60,17 +74,12 @@ struct IVSMOKE_API FIVSmokePackedRenderData
 	/** Per-volume GPU metadata */
 	TArray<FIVSmokeVolumeGPUData> VolumeDataArray;
 
-	/** Hole Texture references (RHI resources are thread-safe) */
-	TArray<FTextureRHIRef> HoleTextures;
-	TArray<FIntVector> HoleTextureSizes;
-
 	/** Common resolution info */
 	FIntVector VoxelResolution = FIntVector::ZeroValue;
 	FIntVector HoleResolution = FIntVector::ZeroValue;
 	int32 VolumeCount = 0;
 
 	/** Preset parameters (copied from default preset) */
-	float Sharpness = 0.0f;
 	int32 MaxSteps = 128;
 	float GlobalAbsorption = 0.1f;
 	float SmokeSize = 128.0f;
@@ -98,8 +107,6 @@ struct IVSMOKE_API FIVSmokePackedRenderData
 	/** External shadowing parameters (CSM - Cascaded Shadow Maps) */
 	/** Note: CSM is always used when external shadowing is enabled */
 	int32 NumCascades = 0;
-	TArray<FTextureRHIRef> CSMDepthTextures;
-	TArray<FTextureRHIRef> CSMVSMTextures;
 	TArray<FMatrix> CSMViewProjectionMatrices;
 	TArray<float> CSMSplitDistances;
 	TArray<FVector> CSMLightCameraPositions;
@@ -122,8 +129,29 @@ struct IVSMOKE_API FIVSmokePackedRenderData
 	/** Game World Time */
 	float GameTime = 0.0f;
 
-	/** Rendering Info */
+	/** Rendering Info (safe - copied values) */
+	int UpSampleFilterType = 2;
+	float SharpenStrength = 0.0f;
+	float BlurStrength = 0.4f;
+
+	//~==========================================================================
+	// DANGEROUS: Reference-Based Fields
+	// WARNING: These fields hold references to resources owned by UObjects.
+	// They become INVALID when the owning UObject is destroyed.
+	// ALWAYS call FlushRenderingCommands() before destroying source UObjects.
+
+	/** Hole Texture references - owned by UIVSmokeHoleGeneratorComponent */
+	TArray<FTextureRHIRef> HoleTextures;
+	TArray<FIntVector> HoleTextureSizes;
+
+	/** CSM Texture references - owned by FIVSmokeCSMRenderer (per-world) */
+	TArray<FTextureRHIRef> CSMDepthTextures;
+	TArray<FTextureRHIRef> CSMVSMTextures;
+
+	/** Material reference - owned by UIVSmokeVisualMaterialPreset asset */
 	UMaterialInterface* SmokeVisualMaterial = nullptr;
+
+	//~==========================================================================
 
 	/** Reset to invalid state */
 	void Reset()
@@ -149,9 +177,89 @@ struct IVSMOKE_API FIVSmokePackedRenderData
 	}
 };
 
+//~==============================================================================
+// Per-World Data Structure
+
+/**
+ * Per-World rendering data and resources.
+ * Each UWorld (Editor, PIE, Standalone) has its own instance.
+ *
+ * This enables simultaneous rendering of multiple worlds without data conflicts.
+ * Owned by FIVSmokeRenderer::WorldDataMap.
+ *
+ * LIFECYCLE:
+ * - Created on first render request for a World (lazy initialization)
+ * - Destroyed when World ends (via OnWorldBeginTearDown delegate)
+ *
+ * THREAD SAFETY:
+ * - Access must be protected by FIVSmokeRenderer::WorldDataMutex
+ */
+struct IVSMOKE_API FPerWorldData
+{
+	FPerWorldData();
+	~FPerWorldData();  // Defined in cpp - required for TUniquePtr with forward-declared types
+
+	// Non-copyable, non-movable (managed via TSharedPtr)
+	FPerWorldData(const FPerWorldData&) = delete;
+	FPerWorldData& operator=(const FPerWorldData&) = delete;
+	FPerWorldData(FPerWorldData&&) = delete;
+	FPerWorldData& operator=(FPerWorldData&&) = delete;
+
+	/** Cached render data for Render Thread. Set via SetCachedRenderData from ENQUEUE_RENDER_COMMAND. */
+	FIVSmokePackedRenderData CachedRenderData;
+
+	/** Cached render data for Game Thread. Used for frame deduplication when multiple ViewFamilies exist. */
+	FIVSmokePackedRenderData GameThreadCachedRenderData;
+
+	/** CSM renderer for external shadowing (per-world). */
+	TUniquePtr<FIVSmokeCSMRenderer> CSMRenderer;
+
+	/** VSM processor for variance shadow mapping (per-world). */
+	TUniquePtr<FIVSmokeVSMProcessor> VSMProcessor;
+
+	/** Frame number when CSM was last updated (prevents multiple updates per frame). */
+	uint32 LastCSMUpdateFrameNumber = 0;
+
+	/** Frame number when VSM was last processed (prevents duplicate processing per view). */
+	uint32 LastVSMProcessFrameNumber = 0;
+
+	/** True if server time offset has been initialized for this World. */
+	bool bServerTimeSynced = false;
+
+	/** Server time offset for animation sync. (ServerTime = LocalTime + Offset) */
+	float ServerTimeOffset = 0.f;
+
+	/** Frame number when PrepareRenderData was last called (prevents duplicate calls per frame). */
+	uint32 LastPreparedFrameNumber = 0;
+
+	/** Reset all data to initial state. Does NOT cleanup CSM (call CleanupCSM separately). */
+	void Reset()
+	{
+		CachedRenderData.Reset();
+		LastCSMUpdateFrameNumber = 0;
+		LastVSMProcessFrameNumber = 0;
+		bServerTimeSynced = false;
+		ServerTimeOffset = 0.f;
+		LastPreparedFrameNumber = 0;
+	}
+
+	/** Cleanup CSM resources. Must be called before destruction. Defined in cpp file. */
+	void CleanupCSM();
+};
+
+//~==============================================================================
+// Renderer
+
 /**
  * Manages registered smoke volumes and handles rendering.
  * Owns shared rendering resources (noise volume) and reads settings from UIVSmokeSettings.
+ *
+ * ARCHITECTURE: Per-World Data
+ * - Each UWorld has its own FPerWorldData instance stored in WorldDataMap
+ * - Enables simultaneous rendering of Editor and PIE worlds
+ * - World lifecycle managed via OnWorldBeginTearDown delegate
+ *
+ * See Docs/IVSmoke_RendererArchitecture.md for detailed documentation.
  */
 class IVSMOKE_API FIVSmokeRenderer
 {
@@ -170,39 +278,72 @@ public:
 	/** Check if renderer is initialized with valid resources. */
 	bool IsInitialized() const { return NoiseVolume != nullptr; }
 
-	/** Check if server time offset was set. */
-	bool bIsServerTimeSynced() const { return bServerTimeSynced; }
+	//~==============================================================================
+	// Per-World Data Management
 
-	/** SetServerTimeOffset for smoke wind animation. */
-	void SetServerTimeOffset(const float InServerTimeOffset) { bServerTimeSynced = true;  ServerTimeOffset = InServerTimeOffset; }
+	/**
+	 * Get or create per-world data for a specific World.
+	 * Creates new FPerWorldData if not exists and registers cleanup delegate.
+	 * Must be called on Game Thread.
+	 *
+	 * @param World The world to get data for
+	 * @return Shared pointer to world data (never null for valid World)
+	 */
+	TSharedPtr<FPerWorldData> GetOrCreateWorldData(UWorld* World);
+
+	/**
+	 * Get per-world data for a specific World (read-only).
+	 * Returns nullptr if World is not registered.
+	 * Thread-safe (uses mutex internally).
+	 *
+	 * @param World The world to get data for
+	 * @return Shared pointer to world data, or nullptr if not found
+	 */
+	TSharedPtr<FPerWorldData> GetWorldData(UWorld* World);
+
+	/**
+	 * Cleanup and remove per-world data.
+	 * Called automatically when World is destroyed (via delegate).
+	 * IMPORTANT: Calls FlushRenderingCommands() to ensure GPU safety.
+	 *
+	 * @param World The world to cleanup
+	 */
+	void CleanupWorldData(UWorld* World);
+
+	/** Check if server time offset was set for a World. */
+	bool bIsServerTimeSynced(UWorld* World);
+
+	/** Set server time offset for smoke wind animation for a specific World. */
+	void SetServerTimeOffset(UWorld* World, float InServerTimeOffset);
 
 	//~==============================================================================
-	// Thread-Safe Render Data (Game Thread Render Thread)
+	// Thread-Safe Render Data (Game Thread <-> Render Thread)
 
 	/** Maximum number of volumes supported for rendering. */
 	static constexpr int32 MaxSupportedVolumes = 128;
 
 	/**
-	 * Prepare render data from all registered volumes.
+	 * Prepare render data from all registered volumes for a specific World.
 	 * Must be called on Game Thread.
 	 * Copies and packs all volume data for safe Render Thread access.
 	 * If volume count exceeds MaxSupportedVolumes (128), filters by distance from camera.
+	 * Skips processing if already called this frame (uses LastPreparedFrameNumber).
 	 *
+	 * @param World The world these volumes belong to
 	 * @param InVolumes Array of volumes to process
 	 * @param CameraPosition Camera world position for distance-based filtering
 	 * @return Packed render data ready for Render Thread
 	 */
-	FIVSmokePackedRenderData PrepareRenderData(const TArray<AIVSmokeVoxelVolume*>& InVolumes, const FVector& CameraPosition);
+	FIVSmokePackedRenderData PrepareRenderData(UWorld* World, const TArray<AIVSmokeVoxelVolume*>& InVolumes, const FVector& CameraPosition);
 
 	/**
-	 * Set cached render data for next frame.
+	 * Set cached render data for a specific World.
 	 * Called from Render Thread via ENQUEUE_RENDER_COMMAND.
+	 *
+	 * @param World The world to set data for
+	 * @param InRenderData The render data to cache
 	 */
-	void SetCachedRenderData(FIVSmokePackedRenderData&& InRenderData)
-	{
-		FScopeLock Lock(&RenderDataMutex);
-		CachedRenderData = MoveTemp(InRenderData);
-	}
+	void SetCachedRenderData(UWorld* World, FIVSmokePackedRenderData&& InRenderData);
 
 	//~==============================================================================
 	// Rendering
@@ -426,13 +567,16 @@ private:
 	);
 
 	//~==============================================================================
-	// View-based RDG Cache (Pre-pass → Post-process data transfer)
+	// Per-View Data (Camera-dependent, valid within single GraphBuilder)
 
 	/**
-	 * RDG-based per-view cache for Pre-pass → Post-process data transfer.
-	 * Valid only within the same RDG builder (same frame).
+	 * Per-View rendering data for Pre-pass → Post-process data transfer.
+	 * Contains ray marching results that are camera-dependent.
+	 * Valid only within the same RDG builder (same ViewFamily's frame).
+	 *
+	 * Cleanup: Cleared when the owning ViewFamily finishes rendering.
 	 */
-	struct FViewRDGCache
+	struct FPerViewData
 	{
 		FRDGTextureRef SmokeTex = nullptr;           // After UpsampleFilter
 		FRDGTextureRef LocalPosAlphaTex = nullptr;   // Full resolution
@@ -442,53 +586,62 @@ private:
 		bool bIsValid = false;
 	};
 
-	/** View → Cache map (valid only within same frame's RDG builder). */
-	TMap<const FSceneViewStateInterface*, FViewRDGCache> FrameViewCaches;
+	/** View → Per-View data map. Each View has independent camera-dependent render results. */
+	TMap<const FSceneViewStateInterface*, FPerViewData> ViewDataMap;
+
+	/** Mutex for thread-safe access to ViewDataMap (protects against viewport switching races). */
+	mutable FCriticalSection ViewDataMutex;
 
 public:
-	/** Clear frame view caches. Called at end of frame from SceneViewExtension. */
-	void ClearFrameViewCaches() { FrameViewCaches.Empty(); }
+	/** Clear per-view data for a specific ViewFamily. Called at end of ViewFamily rendering. */
+	void ClearViewDataForViewFamily(const FSceneViewFamily& ViewFamily)
+	{
+		FScopeLock Lock(&ViewDataMutex);
+
+		for (const FSceneView* View : ViewFamily.Views)
+		{
+			if (View && View->State)
+			{
+				ViewDataMap.Remove(View->State);
+			}
+		}
+	}
 
 private:
 
 	//~==============================================================================
-	// State
+	// State (Global - Shared across all Worlds)
 
 	/** Shared noise volume texture for all smoke rendering. Prevent GC via AddToRoot. */
 	UTextureRenderTargetVolume* NoiseVolume = nullptr;
 
-	/** True if server time offset has been initialized (one-time sync completed). */
-	bool bServerTimeSynced = false;
-
-	/** ServerTime offset for animation. (ServerTime = LocalTime + Offset) */
-	float ServerTimeOffset = 0.0f;
-
-	//~==============================================================================
-	// External Shadowing (CSM - Cascaded Shadow Maps)
-
-	/** Last world used for rendering. Used to detect world changes (Editor ↔ PIE). */
-	TWeakObjectPtr<UWorld> LastRenderedWorld;
-
-	/** CSM renderer (manages all cascade captures). */
-	TUniquePtr<FIVSmokeCSMRenderer> CSMRenderer;
-
-	/** VSM processor (depth to variance conversion and blur). */
-	TUniquePtr<FIVSmokeVSMProcessor> VSMProcessor;
-
-	/** Last frame number when CSM was updated (prevents multiple updates per frame). */
-	uint32 LastCSMUpdateFrameNumber = 0;
-
-	/** Last frame number when VSM was processed (prevents duplicate processing per view). */
-	uint32 LastVSMProcessFrameNumber = 0;
-
 	/** Re-entry guard to prevent infinite recursion during shadow capture. */
 	bool bIsCapturingShadow = false;
 
-	/** Initialize CSM renderer if needed. */
-	void InitializeCSM(UWorld* World);
+	//~==============================================================================
+	// Per-World Data Management
 
-	/** Clean up CSM resources. */
-	void CleanupCSM();
+	/**
+	 * Map of World -> Per-World Data.
+	 * Each World (Editor, PIE, Standalone) has its own rendering state.
+	 * TObjectKey<UWorld> is used for safe UObject pointer comparison.
+	 * TSharedPtr ensures data survives across thread boundaries.
+	 *
+	 * THREAD SAFETY: All access must be protected by WorldDataMutex.
+	 */
+	TMap<TObjectKey<UWorld>, TSharedPtr<FPerWorldData>> WorldDataMap;
+
+	/** Mutex for thread-safe access to WorldDataMap. */
+	mutable FCriticalSection WorldDataMutex;
+
+	/** Delegate handles for World destruction callbacks. */
+	TMap<TObjectKey<UWorld>, FDelegateHandle> WorldEndPlayHandles;
+
+	//~==============================================================================
+	// CSM Helpers (Per-World)
+
+	/** Initialize CSM renderer for a specific World if needed. */
+	void InitializeCSM(TSharedPtr<FPerWorldData> WorldData, UWorld* World);
 
 	/**
 	 * Find the main directional light (Atmosphere Sun Light) in the world.
@@ -501,15 +654,6 @@ private:
 	 * @return true if a directional light was found
 	 */
 	bool GetMainDirectionalLight(UWorld* World, FVector& OutDirection, FLinearColor& OutColor, float& OutIntensity);
-
-	//~==============================================================================
-	// Thread-Safe Render Data Cache
-
-	/** Cached render data prepared on Game Thread, consumed on Render Thread. */
-	FIVSmokePackedRenderData CachedRenderData;
-
-	/** Mutex for thread-safe access to CachedRenderData. */
-	mutable FCriticalSection RenderDataMutex;
 
 	//~==============================================================================
 	// Stats Tracking

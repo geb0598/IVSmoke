@@ -116,12 +116,17 @@ $(function(){initNavTree('_i_v_smoke_visual_material_preset_8cpp_source.html',''
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>                    UE_LOG(LogIVSmoke, Warning, TEXT(<span class="stringliteral">&quot;SmokeVisualMaterial must be PostProcess domain&quot;</span>));</div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>                    <a class="code hl_variable" href="class_u_i_v_smoke_visual_material_preset.html#acebffca0a30d558128d3377a4859c358">SmokeVisualMaterial</a> = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>                }</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>            }</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>        }</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    }</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>}</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclass_u_i_v_smoke_visual_material_preset_html_acebffca0a30d558128d3377a4859c358"><div class="ttname"><a href="class_u_i_v_smoke_visual_material_preset.html#acebffca0a30d558128d3377a4859c358">UIVSmokeVisualMaterialPreset::SmokeVisualMaterial</a></div><div class="ttdeci">TObjectPtr&lt; UMaterialInterface &gt; SmokeVisualMaterial</div><div class="ttdef"><b>Definition</b> <a href="_i_v_smoke_visual_material_preset_8h_source.html#l00025">IVSmokeVisualMaterialPreset.h:25</a></div></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>                <span class="keywordflow">else</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>                {</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>                    <span class="comment">// Ensure shader compilation is complete before rendering</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>                    <a class="code hl_variable" href="class_u_i_v_smoke_visual_material_preset.html#acebffca0a30d558128d3377a4859c358">SmokeVisualMaterial</a>-&gt;EnsureIsComplete();</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>                }</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>            }</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>        }</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    }</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>}</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclass_u_i_v_smoke_visual_material_preset_html_acebffca0a30d558128d3377a4859c358"><div class="ttname"><a href="class_u_i_v_smoke_visual_material_preset.html#acebffca0a30d558128d3377a4859c358">UIVSmokeVisualMaterialPreset::SmokeVisualMaterial</a></div><div class="ttdeci">TObjectPtr&lt; UMaterialInterface &gt; SmokeVisualMaterial</div><div class="ttdef"><b>Definition</b> <a href="_i_v_smoke_visual_material_preset_8h_source.html#l00041">IVSmokeVisualMaterialPreset.h:41</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

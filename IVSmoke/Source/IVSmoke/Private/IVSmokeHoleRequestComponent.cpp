@@ -13,35 +13,211 @@ UIVSmokeHoleRequestComponent::UIVSmokeHoleRequestComponent()
 	SetIsReplicatedByDefault(true);
 }
 
-UIVSmokeHoleRequestComponent* UIVSmokeHoleRequestComponent::GetHoleRequester(const APawn* Instigator)
+//~============================================================================
+// Public API
+#pragma region API
+
+void UIVSmokeHoleRequestComponent::RequestPenetrationHole(AActor* Caller, AActor* IVSmokeVoxelVolume, const FVector3f& BulletOrigin, const FVector3f& BulletDirection, UIVSmokeHolePreset* BulletPreset)
 {
-	if (!Instigator)
+	if (!Caller)
 	{
-		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::GetHoleRequester] Instigator is null"));
-		return nullptr;
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestPenetrationHole] Caller is null"));
+		return;
 	}
 
-	UIVSmokeHoleRequestComponent* Comp = Instigator->FindComponentByClass<UIVSmokeHoleRequestComponent>();
-	if (Comp)
+	if (!IVSmokeVoxelVolume)
 	{
-		return Comp;
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestPenetrationHole] IVSmokeVoxelVolume is null"));
+		return;
 	}
 
-	APlayerController* PC = Cast<APlayerController>(Instigator->GetController());
-	if (PC)
+	if (!BulletPreset)
 	{
-		Comp = PC->FindComponentByClass<UIVSmokeHoleRequestComponent>();
-		if (Comp)
-		{
-			return Comp;
-		}
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestPenetrationHole] BulletPreset is null"));
+		return;
 	}
 
-	UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::GetHoleRequester] No RequestComponent found on Pawn or PlayerController"));
-	return nullptr;
+	UIVSmokeHoleGeneratorComponent* Generator = IVSmokeVoxelVolume->FindComponentByClass<UIVSmokeHoleGeneratorComponent>();
+	if (!Generator)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestPenetrationHole] Generator not found on IVSmokeVoxelVolume"));
+		return;
+	}
+
+	// Server/AI → Direct call
+	if (Generator->GetOwner() && Generator->GetOwner()->HasAuthority())
+	{
+		Generator->CreatePenetrationHole(BulletOrigin, BulletDirection, BulletPreset->GetPresetID());
+		return;
+	}
+
+	// Client → RPC via Caller's Instigator chain
+	APawn* InstigatorPawn = Caller->GetInstigator();
+	if (!InstigatorPawn)
+	{
+		InstigatorPawn = Cast<APawn>(Caller);
+	}
+
+	if (!InstigatorPawn)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestPenetrationHole] InstigatorPawn not found"));
+		return;
+	}
+
+	APlayerController* PC = Cast<APlayerController>(InstigatorPawn->GetController());
+	if (!PC)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestPenetrationHole] PlayerController not found"));
+		return;
+	}
+
+	UIVSmokeHoleRequestComponent* Requester = PC->FindComponentByClass<UIVSmokeHoleRequestComponent>();
+	if (!Requester)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestPenetrationHole] RequestComponent not found on PlayerController"));
+		return;
+	}
+
+	Requester->Internal_RequestPenetrationHole(Generator, BulletOrigin, BulletDirection, BulletPreset);
 }
 
-void UIVSmokeHoleRequestComponent::RequestPenetrationHole_Implementation(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, const FVector3f& Origin, const FVector3f& Direction, UIVSmokeHolePreset* Preset)
+void UIVSmokeHoleRequestComponent::RequestExplosionHole(AActor* Caller, AActor* IVSmokeVoxelVolume, const FVector3f& ExplosionOrigin, UIVSmokeHolePreset* ExplosionPreset)
+{
+	if (!Caller)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestExplosionHole] Caller is null"));
+		return;
+	}
+
+	if (!IVSmokeVoxelVolume)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestExplosionHole] IVSmokeVoxelVolume is null"));
+		return;
+	}
+
+	if (!ExplosionPreset)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestExplosionHole] ExplosionPreset is null"));
+		return;
+	}
+
+	UIVSmokeHoleGeneratorComponent* Generator = IVSmokeVoxelVolume->FindComponentByClass<UIVSmokeHoleGeneratorComponent>();
+	if (!Generator)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestExplosionHole] Generator not found on IVSmokeVoxelVolume"));
+		return;
+	}
+
+	// Server/AI → Direct call
+	if (Generator->GetOwner() && Generator->GetOwner()->HasAuthority())
+	{
+		Generator->CreateExplosionHole(ExplosionOrigin, ExplosionPreset->GetPresetID());
+		return;
+	}
+
+	// Client → RPC via Caller's Instigator chain
+	APawn* InstigatorPawn = Caller->GetInstigator();
+	if (!InstigatorPawn)
+	{
+		InstigatorPawn = Cast<APawn>(Caller);
+	}
+
+	if (!InstigatorPawn)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestExplosionHole] InstigatorPawn not found"));
+		return;
+	}
+
+	APlayerController* PC = Cast<APlayerController>(InstigatorPawn->GetController());
+	if (!PC)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestExplosionHole] PlayerController not found"));
+		return;
+	}
+
+	UIVSmokeHoleRequestComponent* Requester = PC->FindComponentByClass<UIVSmokeHoleRequestComponent>();
+	if (!Requester)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestExplosionHole] RequestComponent not found on PlayerController"));
+		return;
+	}
+
+	Requester->Internal_RequestExplosionHole(Generator, ExplosionOrigin, ExplosionPreset);
+}
+
+void UIVSmokeHoleRequestComponent::RequestDynamicHole(
+	AActor* Caller,
+	AActor* IVSmokeVoxelVolume,
+	UIVSmokeHolePreset* DynamicPreset
+)
+{
+	if (!Caller)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestDynamicHole] Caller is null"));
+		return;
+	}
+
+	if (!IVSmokeVoxelVolume)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestDynamicHole] IVSmokeVoxelVolume is null"));
+		return;
+	}
+
+	if (!DynamicPreset)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestDynamicHole] DynamicPreset is null"));
+		return;
+	}
+
+	UIVSmokeHoleGeneratorComponent* Generator = IVSmokeVoxelVolume->FindComponentByClass<UIVSmokeHoleGeneratorComponent>();
+	if (!Generator)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestDynamicHole] Generator not found on IVSmokeVoxelVolume"));
+		return;
+	}
+
+	// Server/AI → Direct call (Caller = TargetActor)
+	if (Generator->GetOwner() && Generator->GetOwner()->HasAuthority())
+	{
+		Generator->RegisterTrackDynamicHole(Caller, DynamicPreset->GetPresetID());
+		return;
+	}
+
+	// Client → RPC via Caller's Instigator chain (Caller = TargetActor = Pawn)
+	APawn* InstigatorPawn = Cast<APawn>(Caller);
+	if (!InstigatorPawn)
+	{
+		InstigatorPawn = Caller->GetInstigator();
+	}
+
+	if (!InstigatorPawn)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestDynamicHole] InstigatorPawn not found"));
+		return;
+	}
+
+	APlayerController* PC = Cast<APlayerController>(InstigatorPawn->GetController());
+	if (!PC)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestDynamicHole] PlayerController not found"));
+		return;
+	}
+
+	UIVSmokeHoleRequestComponent* Requester = PC->FindComponentByClass<UIVSmokeHoleRequestComponent>();
+	if (!Requester)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[UIVSmokeHoleRequestComponent::RequestDynamicHole] RequestComponent not found on PlayerController"));
+		return;
+	}
+
+	Requester->Internal_RequestDynamicHole(Generator, Caller, DynamicPreset);
+}
+#pragma endregion
+
+//~============================================================================
+// Server RPC
+#pragma region RPC
+void UIVSmokeHoleRequestComponent::Internal_RequestPenetrationHole_Implementation(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, const FVector3f& Origin, const FVector3f& Direction, UIVSmokeHolePreset* Preset)
 {
 	if (!IVSmokeHoleGeneratorComponent)
 	{
@@ -64,7 +240,7 @@ void UIVSmokeHoleRequestComponent::RequestPenetrationHole_Implementation(UIVSmok
 	IVSmokeHoleGeneratorComponent->CreatePenetrationHole(Origin, Direction, Preset->GetPresetID());
 }
 
-void UIVSmokeHoleRequestComponent::RequestExplosionHole_Implementation(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, const FVector3f& Origin, UIVSmokeHolePreset* Preset)
+void UIVSmokeHoleRequestComponent::Internal_RequestExplosionHole_Implementation(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, const FVector3f& Origin, UIVSmokeHolePreset* Preset)
 {
 	if (!IVSmokeHoleGeneratorComponent)
 	{
@@ -87,7 +263,7 @@ void UIVSmokeHoleRequestComponent::RequestExplosionHole_Implementation(UIVSmokeH
 	IVSmokeHoleGeneratorComponent->CreateExplosionHole(Origin, Preset->GetPresetID());
 }
 
-void UIVSmokeHoleRequestComponent::RequestDynamicHole_Implementation(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, AActor* TargetActor, UIVSmokeHolePreset* Preset)
+void UIVSmokeHoleRequestComponent::Internal_RequestDynamicHole_Implementation(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, AActor* TargetActor, UIVSmokeHolePreset* Preset)
 {
 	if (!IVSmokeHoleGeneratorComponent)
 	{
@@ -109,3 +285,4 @@ void UIVSmokeHoleRequestComponent::RequestDynamicHole_Implementation(UIVSmokeHol
 
 	IVSmokeHoleGeneratorComponent->RegisterTrackDynamicHole(TargetActor, Preset->GetPresetID());
 }
+#pragma endregion

@@ -30,6 +30,7 @@ var class_a_i_v_smoke_voxel_volume =
     [ "bAutoStart", "class_a_i_v_smoke_voxel_volume.html#ab014262f2b3853d39b11917ba3e2e1e6", null ],
     [ "bDestroyOnFinish", "class_a_i_v_smoke_voxel_volume.html#aed2685aa0c10a3bed0799f8e1e5893fa", null ],
     [ "bEnableSimulationCollision", "class_a_i_v_smoke_voxel_volume.html#aee5112a26e67409d062bf6cfbd6788cd", null ],
+    [ "BillboardComponent", "class_a_i_v_smoke_voxel_volume.html#a052e703dc6019acc241690a81773aa73", null ],
     [ "bIsInfinite", "class_a_i_v_smoke_voxel_volume.html#ad23cc54d625c40b54a59745289d334ca", null ],
     [ "DebugSettings", "class_a_i_v_smoke_voxel_volume.html#a41da9ee7f907f7494752e9fb3fe10314", null ],
     [ "DebugVoxelMaterial", "class_a_i_v_smoke_voxel_volume.html#a4d15ba929200aba896ef14157b549624", null ],
@@ -46,7 +47,6 @@ var class_a_i_v_smoke_voxel_volume =
     [ "Radii", "class_a_i_v_smoke_voxel_volume.html#a7ac94e6fa1b5e405f86344e1758f1575", null ],
     [ "SmokePresetOverride", "class_a_i_v_smoke_voxel_volume.html#af180602d8f27cf16f1eb3070d98da4fc", null ],
     [ "SustainDuration", "class_a_i_v_smoke_voxel_volume.html#a5837d33af8adc2b43930f5c19b1b8d4d", null ],
-    [ "VolumeBoundComponent", "class_a_i_v_smoke_voxel_volume.html#a62d1473bf3b7c0ab89b77090914fdade", null ],
     [ "VolumeExtent", "class_a_i_v_smoke_voxel_volume.html#a9ac65f3432cebe1270ec362166de076f", null ],
     [ "VoxelCollisionChannel", "class_a_i_v_smoke_voxel_volume.html#a54d6c8a4e1a1d151a337cf63aa36e4c8", null ],
     [ "VoxelSize", "class_a_i_v_smoke_voxel_volume.html#a6b4caab4220e38ea5ef49f8fa67bf767", null ]

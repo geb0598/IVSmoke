@@ -431,11 +431,11 @@ void MainCS(uint3 DispatchThreadId : SV_DispatchThreadID)
 	float TMin = Tile.Near / max(ViewDirDot, 0.001);
 	float TMax = min(Tile.Far / max(ViewDirDot, 0.001), SceneRayDistance);
 
-	if (TMax <= TMin)
+	if (TMax <= TMin || !isfinite(TMin) || !isfinite(TMax))
 	{
 		SmokeAlbedoTex[PixelCoord] = float4(0.0, 0.0, 0.0, 0.0);
 		SmokeLocalPosAlphaTex[PixelCoord] = float4(0.0, 0.0, 0.0, 0.0);
-		SmokeWorldPosDepthTex[PixelCoord] = float4(0, 0, 0, 0);
+		SmokeWorldPosDepthTex[PixelCoord] = float4(0.0, 0.0, 0.0, 0.0);
 		return;
 	}
 
@@ -461,6 +461,17 @@ void MainCS(uint3 DispatchThreadId : SV_DispatchThreadID)
 	float SliceDepthSize = max(Tile.StepSize * float(StepDivisor), 0.001);
 	float ViewDirDotCached = dot(RayDir, CameraForward);
 
+	// Early-out for rays with very shallow angle to camera forward (prevents Slice stuck at 0 -> infinite loop)
+	// This occurs in multi-viewport scenarios where edge pixels have RayDir nearly perpendicular to CameraForward
+	// Threshold 0.1 = ~84° angle from forward vector
+	if (ViewDirDotCached <= 0.1)
+	{
+		SmokeAlbedoTex[PixelCoord] = float4(0.0, 0.0, 0.0, 0.0);
+		SmokeLocalPosAlphaTex[PixelCoord] = float4(0.0, 0.0, 0.0, 0.0);
+		SmokeWorldPosDepthTex[PixelCoord] = float4(0.0, 0.0, 0.0, 0.0);
+		return;
+	}
+
 	// Cache for slice-based occupancy (avoid sampling every step)
 	uint CachedSlice = 0xFFFFFFFF;  // Invalid initial value
 	uint4 CachedViewMask = uint4(0, 0, 0, 0);
@@ -470,12 +481,13 @@ void MainCS(uint3 DispatchThreadId : SV_DispatchThreadID)
 	// This ensures MaxSteps are used for actual volume content, not wasted on empty space.
 	// Warp divergence: Pixels in same tile share occupancy data, so slice skips are coherent.
 	int Step = 0;
+	int FallbackStep = 0;
 
 	float3 NearWorldPos;
 	float3 NearLocalPos;
 	bool bNearSet = false;
 	[loop]
-	while (Step < MaxSteps && Transmittance > 0.05 && T <= TMax)
+	while (Step < MaxSteps && FallbackStep < MaxSteps * 4 && Transmittance > 0.05 && T <= TMax)
 	{
 		//~==================================================================
 		// Compute current slice for occupancy lookup (with caching)
@@ -491,7 +503,7 @@ void MainCS(uint3 DispatchThreadId : SV_DispatchThreadID)
 			CachedViewMask = SampleViewOccupancy(ViewOccupancy, TileCoord, Slice);
 		}
 
-		// If this slice is empty, skip to next slice boundary (no Step increment)
+		// If this slice is empty, skip to next slice boundary
 		if (!AnyVolumePresent(CachedViewMask))
 		{
 			// Safety: Check if we've exhausted all slices
@@ -507,6 +519,7 @@ void MainCS(uint3 DispatchThreadId : SV_DispatchThreadID)
 			// Apply jitter after slice skip to prevent banding artifacts
 			// Without jitter, all pixels in same tile start at exact slice boundary
 			T = max(T + 0.01, NextSliceT + Jitter * StepSize);
+			FallbackStep++;  // Safety counter to prevent infinite loop on edge cases
 			continue;
 		}
 
@@ -629,6 +642,7 @@ void MainCS(uint3 DispatchThreadId : SV_DispatchThreadID)
 		// Advance ray position and step counter
 		T += StepSize;
 		Step++;
+		FallbackStep++;
 	}
 
 	//~======================================================================

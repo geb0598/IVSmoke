@@ -61,18 +61,183 @@ void FIVSmokeRenderer::Initialize()
 
 void FIVSmokeRenderer::Shutdown()
 {
-	if (NoiseVolume)
+	// Flush GPU commands before cleaning up any resources
+	FlushRenderingCommands();
+
+	if (IsValid(NoiseVolume))
 	{
 		NoiseVolume->RemoveFromRoot();
 		NoiseVolume = nullptr;
 	}
-	ServerTimeOffset = 0;
-	bServerTimeSynced = false;
 
-	// Clear View caches (RDG textures are only valid within frame, so just clear the map)
-	FrameViewCaches.Empty();
+	// Clear per-view data (RDG textures are only valid within frame, so just clear the map)
+	ViewDataMap.Empty();
 
+	// Cleanup all World data
+	{
+		FScopeLock Lock(&WorldDataMutex);
+
+		for (auto& Pair : WorldDataMap)
+		{
+			if (Pair.Value.IsValid())
+			{
+				Pair.Value->CleanupCSM();
+			}
+		}
+		WorldDataMap.Empty();
+
+		// Note: Delegate handles are now invalid (Worlds are destroyed), no need to remove them
+		WorldEndPlayHandles.Empty();
+	}
+}
+
+//~==============================================================================
+// FPerWorldData Implementation
+
+FPerWorldData::FPerWorldData() = default;
+
+FPerWorldData::~FPerWorldData()
+{
+	// TUniquePtr destructor requires complete type - defined here where types are complete
 	CleanupCSM();
+}
+
+void FPerWorldData::CleanupCSM()
+{
+	if (CSMRenderer)
+	{
+		CSMRenderer->Shutdown();
+		CSMRenderer.Reset();
+	}
+	VSMProcessor.Reset();
+	LastCSMUpdateFrameNumber = 0;
+	LastVSMProcessFrameNumber = 0;
+}
+
+//~==============================================================================
+// Per-World Data Management
+
+TSharedPtr<FPerWorldData> FIVSmokeRenderer::GetOrCreateWorldData(UWorld* World)
+{
+	if (!World)
+	{
+		return nullptr;
+	}
+
+	FScopeLock Lock(&WorldDataMutex);
+
+	TObjectKey<UWorld> WorldKey(World);
+
+	// Return existing data if found
+	if (TSharedPtr<FPerWorldData>* Found = WorldDataMap.Find(WorldKey))
+	{
+		return *Found;
+	}
+
+	// Create new per-world data
+	TSharedPtr<FPerWorldData> NewData = MakeShared<FPerWorldData>();
+	WorldDataMap.Add(WorldKey, NewData);
+
+	// Register World destruction delegate for automatic cleanup
+	// Use FWorldDelegates::OnWorldCleanup (called when world is being cleaned up)
+	FDelegateHandle Handle = FWorldDelegates::OnWorldCleanup.AddLambda(
+		[this, WorldKey](UWorld* CleaningWorld, bool bSessionEnded, bool bCleanupResources)
+		{
+			if (TObjectKey<UWorld>(CleaningWorld) == WorldKey)
+			{
+				CleanupWorldData(CleaningWorld);
+			}
+		}
+	);
+	WorldEndPlayHandles.Add(WorldKey, Handle);
+
+	UE_LOG(LogIVSmoke, Log, TEXT("[FIVSmokeRenderer::GetOrCreateWorldData] New world registered: %s"), *World->GetName());
+
+	return NewData;
+}
+
+TSharedPtr<FPerWorldData> FIVSmokeRenderer::GetWorldData(UWorld* World)
+{
+	if (!World)
+	{
+		return nullptr;
+	}
+
+	FScopeLock Lock(&WorldDataMutex);
+
+	TObjectKey<UWorld> WorldKey(World);
+	TSharedPtr<FPerWorldData>* Found = WorldDataMap.Find(WorldKey);
+
+	return Found ? *Found : nullptr;
+}
+
+void FIVSmokeRenderer::CleanupWorldData(UWorld* World)
+{
+	if (!World)
+	{
+		return;
+	}
+
+	UE_LOG(LogIVSmoke, Log, TEXT("[FIVSmokeRenderer::CleanupWorldData] Cleaning up world: %s"), *World->GetName());
+
+	// CRITICAL: Wait for GPU to finish using any resources from this World
+	// This prevents DXGI_ERROR_DEVICE_HUNG when textures are destroyed while in use
+	FlushRenderingCommands();
+
+	FScopeLock Lock(&WorldDataMutex);
+
+	TObjectKey<UWorld> WorldKey(World);
+
+	// Remove delegate handle
+	if (FDelegateHandle* Handle = WorldEndPlayHandles.Find(WorldKey))
+	{
+		FWorldDelegates::OnWorldCleanup.Remove(*Handle);
+		WorldEndPlayHandles.Remove(WorldKey);
+	}
+
+	// Cleanup CSM and remove world data
+	if (TSharedPtr<FPerWorldData>* Found = WorldDataMap.Find(WorldKey))
+	{
+		if (Found->IsValid())
+		{
+			(*Found)->CleanupCSM();
+		}
+	}
+	WorldDataMap.Remove(WorldKey);
+}
+
+bool FIVSmokeRenderer::bIsServerTimeSynced(UWorld* World)
+{
+	TSharedPtr<FPerWorldData> WorldData = GetWorldData(World);
+	return WorldData.IsValid() ? WorldData->bServerTimeSynced : false;
+}
+
+void FIVSmokeRenderer::SetServerTimeOffset(UWorld* World, float InServerTimeOffset)
+{
+	TSharedPtr<FPerWorldData> WorldData = GetOrCreateWorldData(World);
+	if (WorldData.IsValid())
+	{
+		WorldData->bServerTimeSynced = true;
+		WorldData->ServerTimeOffset = InServerTimeOffset;
+	}
+}
+
+void FIVSmokeRenderer::SetCachedRenderData(UWorld* World, FIVSmokePackedRenderData&& InRenderData)
+{
+	if (!World)
+	{
+		return;
+	}
+
+	FScopeLock Lock(&WorldDataMutex);
+
+	TObjectKey<UWorld> WorldKey(World);
+	TSharedPtr<FPerWorldData>* Found = WorldDataMap.Find(WorldKey);
+
+	if (Found && Found->IsValid())
+	{
+		(*Found)->CachedRenderData = MoveTemp(InRenderData);
+	}
 }
 FIntVector FIVSmokeRenderer::GetAtlasTexCount(const FIntVector& TexSize, const int32 TexCount, const int32 TexturePackInterval, const int32 TexturePackMaxSize) const
 {
@@ -113,9 +278,9 @@ FIntVector FIVSmokeRenderer::GetAtlasTexCount(const FIntVector& TexSize, const i
 	return AtlasTexCount;
 }
 
-void FIVSmokeRenderer::InitializeCSM(UWorld* World)
+void FIVSmokeRenderer::InitializeCSM(TSharedPtr<FPerWorldData> WorldData, UWorld* World)
 {
-	if (!World)
+	if (!World || !WorldData.IsValid())
 	{
 		return;
 	}
@@ -127,15 +292,15 @@ void FIVSmokeRenderer::InitializeCSM(UWorld* World)
 	}
 
 	// Create CSM renderer if not exists
-	if (!CSMRenderer)
+	if (!WorldData->CSMRenderer)
 	{
-		CSMRenderer = MakeUnique<FIVSmokeCSMRenderer>();
+		WorldData->CSMRenderer = MakeUnique<FIVSmokeCSMRenderer>();
 	}
 
 	// Initialize with settings
-	if (!CSMRenderer->IsInitialized())
+	if (!WorldData->CSMRenderer->IsInitialized())
 	{
-		CSMRenderer->Initialize(
+		WorldData->CSMRenderer->Initialize(
 			World,
 			Settings->GetEffectiveNumCascades(),
 			Settings->GetEffectiveCascadeResolution(),
@@ -144,25 +309,10 @@ void FIVSmokeRenderer::InitializeCSM(UWorld* World)
 	}
 
 	// Create VSM processor if VSM is enabled
-	if (Settings->bEnableVSM && !VSMProcessor)
+	if (Settings->bEnableVSM && !WorldData->VSMProcessor)
 	{
-		VSMProcessor = MakeUnique<FIVSmokeVSMProcessor>();
+		WorldData->VSMProcessor = MakeUnique<FIVSmokeVSMProcessor>();
 	}
-}
-
-void FIVSmokeRenderer::CleanupCSM()
-{
-	if (CSMRenderer)
-	{
-		CSMRenderer->Shutdown();
-		CSMRenderer.Reset();
-	}
-
-	VSMProcessor.Reset();
-	LastCSMUpdateFrameNumber = 0;
-	LastVSMProcessFrameNumber = 0;
-
-	UE_LOG(LogIVSmoke, Log, TEXT("[FIVSmokeRenderer::CleanupCSM] CSM cleaned up"));
 }
 
 bool FIVSmokeRenderer::GetMainDirectionalLight(UWorld* World, FVector& OutDirection, FLinearColor& OutColor, float& OutIntensity)
@@ -300,14 +450,14 @@ const UIVSmokeSmokePreset* FIVSmokeRenderer::GetEffectivePreset(const AIVSmokeVo
 //~==============================================================================
 // Thread-Safe Render Data Preparation
 
-FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmokeVoxelVolume*>& InVolumes, const FVector& CameraPosition)
+FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(UWorld* World, const TArray<AIVSmokeVoxelVolume*>& InVolumes, const FVector& CameraPosition)
 {
 	// Must be called on Game Thread
 	check(IsInGameThread());
 
 	FIVSmokePackedRenderData Result;
 
-	if (InVolumes.Num() == 0)
+	if (!World || InVolumes.Num() == 0)
 	{
 		return Result;
 	}
@@ -318,17 +468,23 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmo
 		Initialize();
 	}
 
-	// Detect world change (Editor ↔ PIE transition)
-	// CSM captures are bound to a specific world, so we must cleanup when world changes
-	UWorld* CurrentWorld = InVolumes[0] ? InVolumes[0]->GetWorld() : nullptr;
-	if (CurrentWorld && LastRenderedWorld.Get() != CurrentWorld)
+	// Get or create per-world data
+	TSharedPtr<FPerWorldData> WorldData = GetOrCreateWorldData(World);
+	if (!WorldData.IsValid())
 	{
-		UE_LOG(LogIVSmoke, Log, TEXT("[FIVSmokeRenderer::PrepareRenderData] World changed. Cleaning up CSM and cached data."));
-		CleanupCSM();
-		CachedRenderData.Reset();
-		bServerTimeSynced = false;
-		LastRenderedWorld = CurrentWorld;
+		return Result;
 	}
+
+	// Frame deduplication: Skip if already prepared this frame
+	// This prevents redundant processing when multiple ViewFamilies render the same World
+	const uint32 CurrentFrameNumber = GFrameNumber;
+	if (WorldData->LastPreparedFrameNumber == CurrentFrameNumber)
+	{
+		// Already prepared this frame - return Game Thread cached data
+		// Note: Use GameThreadCachedRenderData, not CachedRenderData (which is for Render Thread)
+		return WorldData->GameThreadCachedRenderData;
+	}
+	WorldData->LastPreparedFrameNumber = CurrentFrameNumber;
 
 	// Filter volumes if exceeding maximum supported count
 	TArray<AIVSmokeVoxelVolume*> FilteredVolumes;
@@ -363,7 +519,7 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmo
 	// Get resolution info from first valid volume
 	for (AIVSmokeVoxelVolume* Volume : VolumesToProcess)
 	{
-		if (Volume)
+		if (IsValid(Volume))
 		{
 			Result.VoxelResolution = Volume->GetGridResolution();
 			if (UIVSmokeHoleGeneratorComponent* HoleComp = Volume->GetHoleGeneratorComponent())
@@ -401,7 +557,7 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmo
 	for (int32 i = 0; i < VolumesToProcess.Num(); ++i)
 	{
 		AIVSmokeVoxelVolume* Volume = VolumesToProcess[i];
-		if (!Volume)
+		if (!IsValid(Volume))
 		{
 			continue;
 		}
@@ -422,7 +578,8 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmo
 
 		//~==========================================================================
 		// Hole Texture reference (RHI resources are thread-safe)
-		if (UIVSmokeHoleGeneratorComponent* HoleComp = Volume->GetHoleGeneratorComponent())
+		UIVSmokeHoleGeneratorComponent* HoleComp = Volume->GetHoleGeneratorComponent();
+		if (IsValid(HoleComp))
 		{
 			FTextureRHIRef HoleTex = HoleComp->GetHoleTextureRHI();
 			Result.HoleTextures.Add(HoleTex);
@@ -497,9 +654,6 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmo
 
 	if (Settings)
 	{
-		// Post processing
-		Result.Sharpness = Settings->Sharpness;
-
 		// Ray marching
 		Result.MaxSteps = Settings->GetEffectiveMaxSteps();
 
@@ -518,13 +672,16 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmo
 		Result.ScatteringAnisotropy = Settings->ScatteringAnisotropy;
 
 		//Rendering
-		if (Settings->GetVisualMaterialPreset())
+		UIVSmokeVisualMaterialPreset* VisualMaterialPreset = Settings->GetVisualMaterialPreset();
+		if (VisualMaterialPreset)
 		{
-			Result.SmokeVisualMaterial = Settings->GetVisualMaterialPreset()->SmokeVisualMaterial.Get();
+			Result.SmokeVisualMaterial = VisualMaterialPreset->SmokeVisualMaterial.Get();
+			Result.UpSampleFilterType = (int)VisualMaterialPreset->UpSampleFilterType;
+			Result.SharpenStrength = VisualMaterialPreset->SharpenStrength;
+			Result.BlurStrength = VisualMaterialPreset->BlurStrength;
 		}
 
-		// Get world from first volume (single lookup, reused for light detection and shadow capture)
-		UWorld* World = (VolumesToProcess.Num() > 0 && VolumesToProcess[0]) ? VolumesToProcess[0]->GetWorld() : nullptr;
+		// Note: World is passed as parameter, used for light detection and shadow capture
 
 		// Light Direction and Color
 		// Priority: Settings Override > World DirectionalLight > Default
@@ -587,17 +744,16 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmo
 		{
 			// Per-frame guard: Only update once per actual engine frame
 			// PrepareRenderData can be called multiple times per frame (multiple views)
-			const uint32 CurrentFrameNumber = GFrameNumber;
-			const bool bAlreadyUpdatedThisFrame = (LastCSMUpdateFrameNumber == CurrentFrameNumber);
+			const bool bAlreadyUpdatedThisFrame = (WorldData->LastCSMUpdateFrameNumber == CurrentFrameNumber);
 
-			if (!bAlreadyUpdatedThisFrame && World)
+			if (!bAlreadyUpdatedThisFrame)
 			{
-				LastCSMUpdateFrameNumber = CurrentFrameNumber;
+				WorldData->LastCSMUpdateFrameNumber = CurrentFrameNumber;
 
 				// Initialize CSM if needed
-				InitializeCSM(World);
+				InitializeCSM(WorldData, World);
 
-				if (CSMRenderer && CSMRenderer->IsInitialized())
+				if (WorldData->CSMRenderer && WorldData->CSMRenderer->IsInitialized())
 				{
 					// Set re-entry guard (safety measure)
 					bIsCapturingShadow = true;
@@ -617,7 +773,7 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmo
 					}
 
 					// Update CSM with current frame (includes synchronous capture)
-					CSMRenderer->Update(
+					WorldData->CSMRenderer->Update(
 						CSMCameraPosition,
 						CSMCameraForward,
 						Result.LightDirection,
@@ -630,12 +786,12 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmo
 
 			// Populate CSM data for shader (even if not updated this frame)
 			// Synchronous capture: VP matrix and depth texture are from the SAME Update() call
-			if (CSMRenderer && CSMRenderer->IsInitialized() && CSMRenderer->HasValidShadowData())
+			if (WorldData->CSMRenderer && WorldData->CSMRenderer->IsInitialized() && WorldData->CSMRenderer->HasValidShadowData())
 			{
-				Result.NumCascades = CSMRenderer->GetNumCascades();
+				Result.NumCascades = WorldData->CSMRenderer->GetNumCascades();
 
 				// Get split distances
-				Result.CSMSplitDistances = CSMRenderer->GetSplitDistances();
+				Result.CSMSplitDistances = WorldData->CSMRenderer->GetSplitDistances();
 
 				// Get textures, matrices, and light camera data for each cascade
 				Result.CSMDepthTextures.SetNum(Result.NumCascades);
@@ -646,24 +802,24 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmo
 
 				for (int32 i = 0; i < Result.NumCascades; i++)
 				{
-					const FIVSmokeCascadeData& Cascade = CSMRenderer->GetCascade(i);
+					const FIVSmokeCascadeData& Cascade = WorldData->CSMRenderer->GetCascade(i);
 					// Synchronous capture: VP matrix and texture are from the SAME frame
 					Result.CSMViewProjectionMatrices[i] = Cascade.ViewProjectionMatrix;
-					Result.CSMDepthTextures[i] = CSMRenderer->GetDepthTexture(i);
-					Result.CSMVSMTextures[i] = CSMRenderer->GetVSMTexture(i);
+					Result.CSMDepthTextures[i] = WorldData->CSMRenderer->GetDepthTexture(i);
+					Result.CSMVSMTextures[i] = WorldData->CSMRenderer->GetVSMTexture(i);
 					Result.CSMLightCameraPositions[i] = Cascade.LightCameraPosition;
 					Result.CSMLightCameraForwards[i] = Cascade.LightCameraForward;
 				}
 
 				// Store the main camera position for consistent use in shader
-				Result.CSMMainCameraPosition = CSMRenderer->GetMainCameraPosition();
+				Result.CSMMainCameraPosition = WorldData->CSMRenderer->GetMainCameraPosition();
 			}
 		}
 	}
 
 	Result.bIsValid = Result.VolumeDataArray.Num() && Result.PackedVoxelBirthTimes.Num() > 0 && Result.PackedVoxelDeathTimes.Num() > 0;
 
-	if (VolumesToProcess.Num() > 0 && VolumesToProcess[0])
+	if (VolumesToProcess.Num() > 0 && IsValid(VolumesToProcess[0]))
 	{
 		Result.GameTime = VolumesToProcess[0]->GetSyncWorldTimeSeconds();
 	}
@@ -671,6 +827,9 @@ FIVSmokePackedRenderData FIVSmokeRenderer::PrepareRenderData(const TArray<AIVSmo
 	{
 		Result.GameTime = 0.0f;
 	}
+
+	// Cache for Game Thread (used when multiple ViewFamilies query same frame)
+	WorldData->GameThreadCachedRenderData = Result;
 
 	return Result;
 }
@@ -705,12 +864,31 @@ FScreenPassTexture FIVSmokeRenderer::Render(
 		return SceneColor;
 	}
 
-	// Get cached render data (prepared on Game Thread via BeginRenderViewFamily)
+	// Extract World from View
+	UWorld* World = nullptr;
+	if (View.Family && View.Family->Scene)
+	{
+		World = View.Family->Scene->GetWorld();
+	}
+
+	if (!World)
+	{
+		return SceneColor;
+	}
+
+	// Get per-world data
+	TSharedPtr<FPerWorldData> WorldData = GetWorldData(World);
+	if (!WorldData.IsValid())
+	{
+		return SceneColor;
+	}
+
+	// Get cached render data for this World
 	// Use copy instead of MoveTemp - multiple views in same frame share the same data
 	FIVSmokePackedRenderData RenderData;
 	{
-		FScopeLock Lock(&RenderDataMutex);
-		RenderData = CachedRenderData;  // Copy - don't consume, other views may need it
+		FScopeLock Lock(&WorldDataMutex);
+		RenderData = WorldData->CachedRenderData;  // Copy - don't consume, other views may need it
 	}
 
 	// Early out if no valid render data - avoid unnecessary texture allocations
@@ -749,21 +927,33 @@ FScreenPassTexture FIVSmokeRenderer::Render(
 		return SceneColor;
 	}
 
-	FViewRDGCache* Cache = FrameViewCaches.Find(View.State);
-	if (!Cache || !Cache->bIsValid)
+	// Thread-safe ViewData access (protect against viewport switching races)
+	FRDGTextureRef SmokeTex;
+	FRDGTextureRef SmokeLocalPosAlphaFull;
+	FRDGTextureRef SmokeWorldPosDepthFull;
+	FIntPoint EffectiveViewportSize;
 	{
-		// Cache not available for this View - passthrough without smoke rendering
-		// This can happen when: Scene Capture (filtered out), first frame, etc.
-		UE_LOG(LogIVSmoke, Verbose, TEXT("[FIVSmokeRenderer::Render] Cache miss for View, skipping smoke rendering"));
-		return SceneColor;
+		FScopeLock Lock(&ViewDataMutex);
+		FPerViewData* ViewData = ViewDataMap.Find(View.State);
+		if (!ViewData || !ViewData->bIsValid)
+		{
+			// Per-view data not available for this View - passthrough without smoke rendering
+			// This can happen when: Scene Capture (filtered out), first frame, etc.
+			UE_LOG(LogIVSmoke, Warning, TEXT("[FIVSmokeRenderer::Render] ViewData miss: ViewState=%p, ViewFamily=%p, FamilyFrame=%u, ViewDataMapSize=%d"),
+				View.State, View.Family, View.Family ? View.Family->FrameNumber : 0, ViewDataMap.Num());
+			return SceneColor;
+		}
+
+
+		// Copy RDG texture references (safe to use outside mutex - RDG manages lifetime)
+		SmokeTex = ViewData->SmokeTex;
+		SmokeLocalPosAlphaFull = ViewData->LocalPosAlphaTex;
+		SmokeWorldPosDepthFull = ViewData->WorldPosDepthTex;
+		EffectiveViewportSize = ViewData->ViewportSize;
 	}
 
-	// Use cached RDG textures directly (same RDG builder, so they are still valid)
-	FRDGTextureRef SmokeTex = Cache->SmokeTex;
-	FRDGTextureRef SmokeLocalPosAlphaFull = Cache->LocalPosAlphaTex;
-	FRDGTextureRef SmokeWorldPosDepthFull = Cache->WorldPosDepthTex;
-	FIntPoint EffectiveViewportSize = Cache->ViewportSize;
-
+	FIntVector SceneSize = SceneColor.Texture->Desc.GetSize();
+	FInt32Point SceneViewRectSize = SceneColor.ViewRect.Size();
 	RDG_EVENT_SCOPE(GraphBuilder, "IVSmoke_PostProcess_VisualComposite");
 
 	//~==========================================================================
@@ -888,7 +1078,9 @@ FRDGTextureRef FIVSmokeRenderer::AddUpsampleFilterPass(
 	Parameters->SmokeAlbedoTex = SmokeAlbedo;
 	Parameters->SmokeLocalPosAlphaTex = SmokeLocalPosAlpha;
 	Parameters->LinearClamp_Sampler = TStaticSamplerState<SF_Bilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
-	Parameters->Sharpness = RenderData.Sharpness;
+	Parameters->UpSampleFilterType = RenderData.UpSampleFilterType;
+	Parameters->SharpenStrength = RenderData.SharpenStrength;
+	Parameters->BlurStrength = RenderData.BlurStrength;
 	Parameters->ViewportSize = TexSize;
 	Parameters->ViewRectMin = FVector2f(ViewRectMin);
 	Parameters->RenderTargets[0] = FRenderTargetBinding(SmokeTex, ERenderTargetLoadAction::ENoAction);
@@ -973,8 +1165,18 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 		return;
 	}
 
+	// Extract World from View to access per-world data (for VSMProcessor)
+	UWorld* World = nullptr;
+	if (View.Family && View.Family->Scene)
+	{
+		World = View.Family->Scene->GetWorld();
+	}
+	TSharedPtr<FPerWorldData> WorldData = World ? GetWorldData(World) : nullptr;
+
 	// Get global settings
 	const UIVSmokeSettings* Settings = UIVSmokeSettings::Get();
+
+	// Log volume data for debugging
 
 	//~==========================================================================
 	// Phase 0: Setup common resources (same as standard ray march)
@@ -983,8 +1185,23 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 	const int32 TexturePackMaxSize = 2048;
 	const FIntVector VoxelResolution = RenderData.VoxelResolution;
 	const FIntVector HoleResolution = RenderData.HoleResolution;
+
+	if (VoxelResolution.X <= 0 || VoxelResolution.Y <= 0 || VoxelResolution.Z <= 0)
+	{
+		UE_LOG(LogIVSmoke, Error, TEXT("[AddMultiVolumeRayMarchPass] Invalid VoxelResolution, aborting"));
+		return;
+	}
+
 	const FIntVector VoxelAtlasCount = GetAtlasTexCount(VoxelResolution, VolumeCount, TexturePackInterval, TexturePackMaxSize);
 	const FIntVector HoleAtlasCount = GetAtlasTexCount(HoleResolution, VolumeCount, TexturePackInterval, TexturePackMaxSize);
+
+	// Validate atlas count to prevent negative resolution
+	if (VoxelAtlasCount.X <= 0 || VoxelAtlasCount.Y <= 0 || VoxelAtlasCount.Z <= 0)
+	{
+		UE_LOG(LogIVSmoke, Error, TEXT("[AddMultiVolumeRayMarchPass] Invalid VoxelAtlasCount (%d,%d,%d), likely VolumeCount=0, aborting"),
+			VoxelAtlasCount.X, VoxelAtlasCount.Y, VoxelAtlasCount.Z);
+		return;
+	}
 
 	// Voxel Atlas: 3D packing
 	const FIntVector VoxelAtlasResolution = FIntVector(
@@ -1065,6 +1282,14 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 		}
 	}
 
+	// Validate buffer data before creating GPU buffers
+	if (RenderData.PackedVoxelBirthTimes.Num() == 0 || RenderData.VolumeDataArray.Num() == 0)
+	{
+		UE_LOG(LogIVSmoke, Warning, TEXT("[AddMultiVolumeRayMarchPass] Empty render data (BirthTimes=%d, VolumeCount=%d), skipping"),
+			RenderData.PackedVoxelBirthTimes.Num(), RenderData.VolumeDataArray.Num());
+		return;
+	}
+
 	// Create GPU buffers
 	FGlobalShaderMap* ShaderMap = GetGlobalShaderMap(View.FeatureLevel);
 
@@ -1134,23 +1359,50 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 		StepSliceCount
 	);
 
-	// Calculate max ray distance and GlobalAABB based on volumes
-	float MaxRayDistance = 0.0f;
+	// Calculate GlobalAABB from all volumes
 	FVector3f GlobalAABBMin(1e10f, 1e10f, 1e10f);
 	FVector3f GlobalAABBMax(-1e10f, -1e10f, -1e10f);
 	for (const FIVSmokeVolumeGPUData& VolData : RenderData.VolumeDataArray)
 	{
-		FVector3f Extent = VolData.VolumeWorldAABBMax - VolData.VolumeWorldAABBMin;
-		MaxRayDistance = FMath::Max(MaxRayDistance, Extent.Size());
-
-		// Accumulate GlobalAABB
 		GlobalAABBMin = FVector3f::Min(GlobalAABBMin, VolData.VolumeWorldAABBMin);
 		GlobalAABBMax = FVector3f::Max(GlobalAABBMax, VolData.VolumeWorldAABBMax);
 	}
-	MaxRayDistance = FMath::Max(MaxRayDistance, 10000.0f); // Minimum reasonable distance
+
+	// MaxRayDistance: Maximum distance from camera to farthest GlobalAABB corner.
+	// This ensures all volumes are rendered regardless of camera distance.
+	// TODO: Consider adding configurable max render distance with distance-based fade.
+	const FVector3f CameraPos(View.ViewLocation);
+	float MaxRayDistance = 0.0f;
+	for (int32 i = 0; i < 8; i++)
+	{
+		FVector3f Corner(
+			(i & 1) ? GlobalAABBMax.X : GlobalAABBMin.X,
+			(i & 2) ? GlobalAABBMax.Y : GlobalAABBMin.Y,
+			(i & 4) ? GlobalAABBMax.Z : GlobalAABBMin.Z
+		);
+		MaxRayDistance = FMath::Max(MaxRayDistance, FVector3f::Dist(CameraPos, Corner));
+	}
+	MaxRayDistance = FMath::Clamp(MaxRayDistance, 10000.0f, 1000000.0f);
 
 	// MinStepSize from settings (minimum world units per step, TotalVolumeLength computed per-tile in shader)
 	const float MinStepSize = Settings->GetEffectiveMinStepSize();
+
+	// Validate critical values
+	if (TileCount.X <= 0 || TileCount.Y <= 0)
+	{
+		UE_LOG(LogIVSmoke, Error, TEXT("[AddMultiVolumeRayMarchPass] Invalid TileCount: %dx%d, aborting"), TileCount.X, TileCount.Y);
+		return;
+	}
+	if (StepSliceCount == 0)
+	{
+		UE_LOG(LogIVSmoke, Error, TEXT("[AddMultiVolumeRayMarchPass] StepSliceCount is 0, aborting"));
+		return;
+	}
+	if (!FMath::IsFinite(MaxRayDistance) || MaxRayDistance <= 0.0f)
+	{
+		UE_LOG(LogIVSmoke, Error, TEXT("[AddMultiVolumeRayMarchPass] Invalid MaxRayDistance: %.1f, aborting"), MaxRayDistance);
+		return;
+	}
 
 	//~==========================================================================
 	// Phase 2: Pass 0 - Tile Setup
@@ -1221,7 +1473,9 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 
 	// Time
 	//Parameters->ElapsedTime = View.Family->Time.GetRealTimeSeconds();
-	Parameters->ElapsedTime = View.Family->Time.GetRealTimeSeconds() + ServerTimeOffset;
+	// Use per-world ServerTimeOffset for animation sync
+	const float WorldServerTimeOffset = WorldData.IsValid() ? WorldData->ServerTimeOffset : 0.f;
+	Parameters->ElapsedTime = View.Family->Time.GetRealTimeSeconds() + WorldServerTimeOffset;
 
 	// Viewport
 	Parameters->TexSize = FIntPoint(TexSize.X, TexSize.Y);
@@ -1236,7 +1490,16 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 	Parameters->CameraUp = FVector3f(View.GetViewUp());
 
 	const FMatrix& ProjMatrix = ViewMatrices.GetProjectionMatrix();
-	Parameters->TanHalfFOV = 1.0f / ProjMatrix.M[1][1];
+	float ProjM11 = ProjMatrix.M[1][1];
+
+	// Validate projection matrix to prevent inf/NaN
+	if (FMath::IsNearlyZero(ProjM11, 1e-6f) || !FMath::IsFinite(ProjM11))
+	{
+		UE_LOG(LogIVSmoke, Error, TEXT("[RayMarch] Invalid ProjMatrix.M[1][1] = %f (likely orthographic viewport), skipping"), ProjM11);
+		return; // Skip rendering for orthographic/invalid views
+	}
+
+	Parameters->TanHalfFOV = 1.0f / ProjM11;
 	Parameters->AspectRatio = (float)ViewportSize.X / (float)ViewportSize.Y;
 
 	// Ray Marching
@@ -1356,6 +1619,8 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 	}
 
 	// CSM texture arrays
+	// NOTE: RegisterExternalTexture automatically handles duplicate registration within the same GraphBuilder.
+	// Each ViewFamily has its own GraphBuilder, so we simply register textures every time.
 	if (RenderData.NumCascades > 0)
 	{
 		const int32 CascadeCount = RenderData.NumCascades;
@@ -1363,6 +1628,7 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 			? FIntPoint(RenderData.CSMDepthTextures[0]->GetSizeXYZ().X, RenderData.CSMDepthTextures[0]->GetSizeXYZ().Y)
 			: FIntPoint(512, 512);
 
+		// Create array textures for shader binding
 		FRDGTextureDesc DepthArrayDesc = FRDGTextureDesc::Create2DArray(
 			CascadeResolution,
 			PF_R32_FLOAT,
@@ -1384,21 +1650,18 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 		AddClearUAVPass(GraphBuilder, GraphBuilder.CreateUAV(CSMDepthArray), FVector4f(1.0f, 0.0f, 0.0f, 0.0f));
 		AddClearUAVPass(GraphBuilder, GraphBuilder.CreateUAV(CSMVSMArray), FVector4f(1.0f, 1.0f, 0.0f, 0.0f));
 
-		const int32 VSMBlurRadius = Settings ? Settings->VSMBlurRadius : 2;
-
+		// VSM processing: once per frame per World (results stored in persistent RHI textures)
 		const uint32 CurrentRenderFrameNumber = View.Family->FrameNumber;
-		const bool bNeedVSMProcessing = RenderData.bEnableVSM && VSMProcessor &&
-		                                (CurrentRenderFrameNumber != LastVSMProcessFrameNumber);
-
-		if (bNeedVSMProcessing)
-		{
-			LastVSMProcessFrameNumber = CurrentRenderFrameNumber;
-		}
+		const int32 VSMBlurRadius = Settings ? Settings->VSMBlurRadius : 2;
+		FIVSmokeVSMProcessor* VSMProcessorPtr = WorldData.IsValid() ? WorldData->VSMProcessor.Get() : nullptr;
+		const bool bNeedVSMProcessing = RenderData.bEnableVSM && VSMProcessorPtr &&
+		                                WorldData.IsValid() && WorldData->LastVSMProcessFrameNumber != CurrentRenderFrameNumber;
 
 		for (int32 i = 0; i < CascadeCount; i++)
 		{
 			if (i < RenderData.CSMDepthTextures.Num() && RenderData.CSMDepthTextures[i].IsValid())
 			{
+				// Register external texture (RDG handles duplicates within same GraphBuilder)
 				FRDGTextureRef SourceDepth = GraphBuilder.RegisterExternalTexture(
 					CreateRenderTarget(RenderData.CSMDepthTextures[i], TEXT("IVSmokeCSMDepthSource"))
 				);
@@ -1417,9 +1680,10 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 						CreateRenderTarget(RenderData.CSMVSMTextures[i], TEXT("IVSmokeCSMVSMSource"))
 					);
 
-					if (bNeedVSMProcessing && VSMProcessor)
+					// Process VSM only once per frame (results persist in RHI texture)
+					if (bNeedVSMProcessing && VSMProcessorPtr)
 					{
-						VSMProcessor->Process(GraphBuilder, SourceDepth, VSMTexture, VSMBlurRadius);
+						VSMProcessorPtr->Process(GraphBuilder, SourceDepth, VSMTexture, VSMBlurRadius);
 					}
 
 					FRHICopyTextureInfo VSMCopyInfo;
@@ -1431,6 +1695,12 @@ void FIVSmokeRenderer::AddMultiVolumeRayMarchPass(
 					AddCopyTexturePass(GraphBuilder, VSMTexture, CSMVSMArray, VSMCopyInfo);
 				}
 			}
+		}
+
+		// Mark VSM as processed for this frame
+		if (bNeedVSMProcessing && WorldData.IsValid())
+		{
+			WorldData->LastVSMProcessFrameNumber = CurrentRenderFrameNumber;
 		}
 
 		Parameters->CSMDepthTextureArray = CSMDepthArray;
@@ -1497,20 +1767,26 @@ void FIVSmokeRenderer::UpdateStatsIfNeeded(const FIVSmokePackedRenderData& Rende
 		RenderData.HoleResolution
 	);
 
-	// Calculate CSM size using CalcTextureMemorySizeEnum
+	// Calculate CSM size using CalcTextureMemorySizeEnum (sum across all worlds)
 	CachedCSMSize = 0;
-	if (CSMRenderer && CSMRenderer->IsInitialized())
 	{
-		const TArray<FIVSmokeCascadeData>& Cascades = CSMRenderer->GetCascades();
-		for (const FIVSmokeCascadeData& Cascade : Cascades)
+		FScopeLock Lock(&WorldDataMutex);
+		for (const auto& Pair : WorldDataMap)
 		{
-			if (Cascade.DepthRT)
+				if (Pair.Value.IsValid() && Pair.Value->CSMRenderer && Pair.Value->CSMRenderer->IsInitialized())
 			{
-				CachedCSMSize += Cascade.DepthRT->CalcTextureMemorySizeEnum(TMC_ResidentMips);
-			}
-			if (Cascade.VSMRT)
-			{
-				CachedCSMSize += Cascade.VSMRT->CalcTextureMemorySizeEnum(TMC_ResidentMips);
+				const TArray<FIVSmokeCascadeData>& Cascades = Pair.Value->CSMRenderer->GetCascades();
+				for (const FIVSmokeCascadeData& Cascade : Cascades)
+				{
+					if (Cascade.DepthRT)
+					{
+						CachedCSMSize += Cascade.DepthRT->CalcTextureMemorySizeEnum(TMC_ResidentMips);
+					}
+					if (Cascade.VSMRT)
+					{
+						CachedCSMSize += Cascade.VSMRT->CalcTextureMemorySizeEnum(TMC_ResidentMips);
+					}
+				}
 			}
 		}
 	}
@@ -1625,11 +1901,30 @@ void FIVSmokeRenderer::RunPrePassPipeline(
 		return;
 	}
 
-	// Get cached render data (prepared on Game Thread via BeginRenderViewFamily)
+	// Extract World from View
+	UWorld* World = nullptr;
+	if (View.Family && View.Family->Scene)
+	{
+		World = View.Family->Scene->GetWorld();
+	}
+
+	if (!World)
+	{
+		return;
+	}
+
+	// Get per-world data
+	TSharedPtr<FPerWorldData> WorldData = GetWorldData(World);
+	if (!WorldData.IsValid())
+	{
+		return;
+	}
+
+	// Get cached render data for this World
 	FIVSmokePackedRenderData RenderData;
 	{
-		FScopeLock Lock(&RenderDataMutex);
-		RenderData = CachedRenderData;
+		FScopeLock Lock(&WorldDataMutex);
+		RenderData = WorldData->CachedRenderData;
 	}
 
 	// Early out if no valid render data
@@ -1655,10 +1950,22 @@ void FIVSmokeRenderer::RunPrePassPipeline(
 	const FIntPoint ViewportSize = PrePassViewRect.Size();
 	const FIntPoint ViewRectMin = PrePassViewRect.Min;
 
+	// Validate viewport size
+	if (ViewportSize.X <= 0 || ViewportSize.Y <= 0)
+	{
+		UE_LOG(LogIVSmoke, Error, TEXT("[RunPrePassPipeline] Invalid ViewportSize: %dx%d, skipping"), ViewportSize.X, ViewportSize.Y);
+		return;
+	}
+
 	//~==========================================================================
-	// Get or create View-based RDG cache
-	// RDG textures are valid within the same GraphBuilder (same frame)
-	FViewRDGCache& Cache = FrameViewCaches.FindOrAdd(View.State);
+	// Get or create per-view data (thread-safe)
+	// RDG textures are valid within the same GraphBuilder (same ViewFamily's frame)
+	FPerViewData* ViewDataPtr = nullptr;
+	{
+		FScopeLock Lock(&ViewDataMutex);
+		ViewDataPtr = &ViewDataMap.FindOrAdd(View.State);
+	}
+	FPerViewData& ViewData = *ViewDataPtr;
 
 	//~==========================================================================
 	// Resolution Setup
@@ -1674,9 +1981,9 @@ void FIVSmokeRenderer::RunPrePassPipeline(
 		TexCreate_RenderTargetable | TexCreate_ShaderResource | TexCreate_UAV
 	);
 
-	Cache.SmokeTex = GraphBuilder.CreateTexture(FullResDesc, TEXT("IVSmoke_SmokeTex"));
-	Cache.LocalPosAlphaTex = GraphBuilder.CreateTexture(FullResDesc, TEXT("IVSmoke_LocalPosAlphaTex"));
-	Cache.WorldPosDepthTex = GraphBuilder.CreateTexture(FullResDesc, TEXT("IVSmoke_WorldPosDepthTex"));
+	ViewData.SmokeTex = GraphBuilder.CreateTexture(FullResDesc, TEXT("IVSmoke_SmokeTex"));
+	ViewData.LocalPosAlphaTex = GraphBuilder.CreateTexture(FullResDesc, TEXT("IVSmoke_LocalPosAlphaTex"));
+	ViewData.WorldPosDepthTex = GraphBuilder.CreateTexture(FullResDesc, TEXT("IVSmoke_WorldPosDepthTex"));
 
 	//~==========================================================================
 	// Create temporary textures at 1/2 resolution
@@ -1705,20 +2012,20 @@ void FIVSmokeRenderer::RunPrePassPipeline(
 	FRDGTextureRef SmokeAlbedoFull = AddCopyPass(
 		GraphBuilder, View, SmokeAlbedoHalf, ViewportSize, TEXT("IVSmokeAlbedoTex_Full_PrePass")
 	);
-	AddCopyPass(GraphBuilder, View, SmokeLocalPosAlphaHalf, Cache.LocalPosAlphaTex);
-	AddCopyPass(GraphBuilder, View, SmokeWorldPosDepthHalf, Cache.WorldPosDepthTex);
+	AddCopyPass(GraphBuilder, View, SmokeLocalPosAlphaHalf, ViewData.LocalPosAlphaTex);
+	AddCopyPass(GraphBuilder, View, SmokeWorldPosDepthHalf, ViewData.WorldPosDepthTex);
 
 	//~==========================================================================
 	// Upsample Filter Pass
 	FRDGTextureRef FilteredSmokeTex = AddUpsampleFilterPass(
 		GraphBuilder, RenderData, View,
 		SmokeAlbedoFull,  // Dummy for SceneTex (not used in output)
-		SmokeAlbedoFull, Cache.LocalPosAlphaTex,
+		SmokeAlbedoFull, ViewData.LocalPosAlphaTex,
 		ViewportSize, ViewRectMin
 	);
 
 	// Copy filtered result to cached SmokeTex
-	AddCopyPass(GraphBuilder, View, FilteredSmokeTex, Cache.SmokeTex);
+	AddCopyPass(GraphBuilder, View, FilteredSmokeTex, ViewData.SmokeTex);
 
 	//~==========================================================================
 	// Depth Write Pass (optional)
@@ -1726,16 +2033,16 @@ void FIVSmokeRenderer::RunPrePassPipeline(
 	{
 		ExecuteDepthWrite(
 			GraphBuilder, View, RenderTargets,
-			Cache.WorldPosDepthTex, Cache.LocalPosAlphaTex,
+			ViewData.WorldPosDepthTex, ViewData.LocalPosAlphaTex,
 			ViewportSize, ViewRectMin
 		);
 	}
 
 	//~==========================================================================
-	// Mark Cache as Valid
-	Cache.ViewportSize = ViewportSize;
-	Cache.ViewRectMin = ViewRectMin;
-	Cache.bIsValid = true;
+	// Mark ViewData as Valid
+	ViewData.ViewportSize = ViewportSize;
+	ViewData.ViewRectMin = ViewRectMin;
+	ViewData.bIsValid = true;
 }
 
 void FIVSmokeRenderer::ExecuteDepthWrite(

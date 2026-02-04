@@ -13,6 +13,7 @@
 #include "IVSmokeVoxelVolume.generated.h"
 
 class UBoxComponent;
+class UBillboardComponent;
 class UIVSmokeCollisionComponent;
 class UIVSmokeSmokePreset;
 class UIVSmokeHoleGeneratorComponent;
@@ -181,6 +182,11 @@ public:
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditMove(bool bFinished) override;
+	virtual bool CanEditChange(const FProperty* InProperty) const override;
+	virtual void EditorApplyRotation(const FRotator& DeltaRotation, bool bAltDown, bool bShiftDown, bool bCtrlDown) override;
+	virtual void EditorApplyScale(const FVector& DeltaScale, const FVector* PivotLocation, bool bAltDown, bool bShiftDown, bool bCtrlDown) override;
+	virtual void EditorApplyTranslation(const FVector& DeltaTranslation, bool bAltDown, bool bShiftDown, bool bCtrlDown) override;
+	virtual bool IsSelectable() const override;
 #endif
 
 protected:
@@ -205,9 +211,9 @@ public:
 	 */
 	TObjectPtr<UIVSmokeCollisionComponent> GetCollisionComponent();
 
-	/** Defines the overall bounding volume of the smoke actor and is used as the root component. */
+	/** Editor visualization sprite. Used as the RootComponent. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "IVSmoke")
-	TObjectPtr<UBoxComponent> VolumeBoundComponent;
+	TObjectPtr<UBillboardComponent> BillboardComponent;
 
 private:
 	/**
@@ -539,6 +545,17 @@ private:
 	 */
 	void SetVoxelDeathTime(int32 Index, float DeathTime);
 
+	/**
+	 * Calculates the weighted Euclidean distance between two voxels based on Radii.
+	 * Used for Theta* cost estimation to approximate the actual distance.
+	 *
+	 * @param IndexA	Index of the first voxel.
+	 * @param IndexB	Index of the second voxel.
+	 * @param InvRadii	Inverse of the radii vector for weighting the distance per axis.
+	 * @return			The weighted distance between the two voxels.
+	 */
+	float CalculateWeightedDistance(int32 IndexA, int32 IndexB, const FVector& InvRadii) const;
+
 	/** Replicated state synchronized from the server. */
 	UPROPERTY(ReplicatedUsing = OnRep_ServerState)
 	FIVSmokeServerState ServerState;
@@ -597,6 +614,9 @@ private:
 
 	/** List of indices of all currently active voxels. */
 	TArray<int32> GeneratedVoxelIndices;
+
+	TBitArray<> VoxelPenetrationFlags;
+
 #pragma endregion
 
 	//~==============================================================================
@@ -748,6 +768,9 @@ public:
 private:
 	/** Main entry point for drawing all enabled debug visualizations per frame. */
 	void DrawDebugVisualization() const;
+
+	/** Draws voxel volume bounds. */
+	void DrawDebugVolumeBounds() const;
 
 	/** Draws lightweight wireframe cubes for active voxels. */
 	void DrawDebugVoxelWireframes() const;

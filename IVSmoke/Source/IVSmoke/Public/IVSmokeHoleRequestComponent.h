@@ -21,19 +21,33 @@ class IVSMOKE_API UIVSmokeHoleRequestComponent : public UActorComponent
 public:
 	UIVSmokeHoleRequestComponent();
 
-	/** Find RequestComponent on Instigator's Pawn or PlayerController. */
-	UFUNCTION(BlueprintCallable, Category = "IVSmoke | Hole | API")
-	static UIVSmokeHoleRequestComponent* GetHoleRequester(const APawn* Instigator);
+	//~============================================================================
+	// Public API
+#pragma region API
+	UFUNCTION(BlueprintCallable, Category = "IVSmoke | Hole | API", meta = (DefaultToSelf = "Caller", HidePin = "Caller"))
+	static void RequestPenetrationHole(AActor* Caller, AActor* IVSmokeVoxelVolume, const FVector3f& BulletOrigin, const FVector3f& BulletDirection, UIVSmokeHolePreset* BulletPreset);
 
+	UFUNCTION(BlueprintCallable, Category = "IVSmoke | Hole | API", meta = (DefaultToSelf = "Caller", HidePin = "Caller"))
+	static void RequestExplosionHole(AActor* Caller, AActor* IVSmokeVoxelVolume, const FVector3f& ExplosionOrigin, UIVSmokeHolePreset* ExplosionPreset);
+
+	UFUNCTION(BlueprintCallable, Category = "IVSmoke | Hole | API", meta = (DefaultToSelf = "Caller", HidePin = "Caller"))
+	static void RequestDynamicHole(AActor* Caller, AActor* IVSmokeVoxelVolume, UIVSmokeHolePreset* DynamicPreset);
+#pragma endregion
+
+	//~============================================================================
+	// Server RPC
+#pragma region RPC
+private:
 	/** Request a penetration hole. Always executed on server. */
-	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "IVSmoke | Hole | API")
-	void RequestPenetrationHole(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, const FVector3f& Origin, const FVector3f& Direction, UIVSmokeHolePreset* Preset);
+	UFUNCTION(Server, Reliable, Category = "IVSmoke | Hole | RPC")
+	void Internal_RequestPenetrationHole(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, const FVector3f& Origin, const FVector3f& Direction, UIVSmokeHolePreset* Preset);
 
 	/** Request an explosion hole. Always executed on server. */
-	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "IVSmoke | Hole | API")
-	void RequestExplosionHole(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, const FVector3f& Origin, UIVSmokeHolePreset* Preset);
+	UFUNCTION(Server, Reliable, Category = "IVSmoke | Hole | RPC")
+	void Internal_RequestExplosionHole(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, const FVector3f& Origin, UIVSmokeHolePreset* Preset);
 
 	/** Request a dynamic hole. Always executed on server. */
-	UFUNCTION(BlueprintCallable, Server, Reliable, Category = "IVSmoke | Hole | API")
-	void RequestDynamicHole(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, AActor* TargetActor, UIVSmokeHolePreset* Preset);
+	UFUNCTION(Server, Reliable, Category = "IVSmoke | Hole | RPC")
+	void Internal_RequestDynamicHole(UIVSmokeHoleGeneratorComponent* IVSmokeHoleGeneratorComponent, AActor* TargetActor, UIVSmokeHolePreset* Preset);
+#pragma endregion
 };

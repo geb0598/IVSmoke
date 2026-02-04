@@ -98,7 +98,7 @@ $(function(){initNavTree('md_pages_2_voxel_volume_2_voxel_volume_guide.html','',
 Core Concepts</h1>
 <h2 class="doxsection"><a class="anchor" id="autotoc_md135"></a>
 Volumetric Flood-Fill</h2>
-<p>The volume generates a 3D grid of voxels. Starting from the center, the smoke performs a Dijkstra-based pathfinding expansion.</p>
+<p>The volume generates a 3D grid of voxels. Starting from the center, the smoke performs a Lazy Theta*-based pathfinding expansion.</p>
 <ul>
 <li><b>Obstacle Awareness:</b> Before a voxel is spawned, the simulation performs collision checks (<span class="tt">VoxelCollisionChannel</span>) against the world geometry.</li>
 <li><b>Volumetric Flow:</b> If a direct path is blocked by a wall, the smoke will "flow" around the obstacle to fill the space behind it, provided there is an open path.</li>
@@ -161,9 +161,14 @@ Performance &amp; Resolution</h2>
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone"><b>Property</b>  </th><th class="markdownTableHeadNone"><b>Description</b>  </th><th class="markdownTableHeadNone"><b>Impact</b>  </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><b>Voxel Size</b>  </td><td class="markdownTableBodyNone">The physical scale of a single voxel (in cm).  </td><td class="markdownTableBodyNone"><b>Visual Resolution.</b> Changing this <em>does not</em> affect performance (CPU/GPU) directly. It simply scales the resulting mesh.  </td></tr>
+<td class="markdownTableBodyNone"><b>Voxel Size</b>  </td><td class="markdownTableBodyNone">The physical scale of a single voxel (in cm).  </td><td class="markdownTableBodyNone"><b>Visual Resolution.</b> Changing this <em>does not</em> affect performance (CPU/GPU) directly. It simply scales the resulting mesh. <br  />
+  </td></tr>
 </table>
-<p>• <b>Large Value:</b> Covers a large area cheaply, but looks "blocky." • <b>Small Value:</b> Finer detail. To cover a large area with small voxels, you must increase <span class="tt">MaxVoxelNum</span>. | | <b>Max Voxel Num</b> | The hard limit on the number of active voxels. | <b>Performance Budget.</b> This is the primary factor for CPU simulation cost. | | <b>Volume Extent</b> | The grid index radius. | <b>Memory Usage.</b> Defines the maximum memory buffer size. Keep this optimized (e.g., 8-16) to minimize memory footprint. |</p>
+<p><br  />
+• <b>Large Value:</b> Covers a large area cheaply, but looks "blocky."<br  />
+</p>
+<p><br  />
+• <b>Small Value:</b> Finer detail. To cover a large area with small voxels, you must increase <span class="tt">MaxVoxelNum</span>. | | <b>Max Voxel Num</b> | The hard limit on the number of active voxels. | <b>Performance Budget.</b> This is the primary factor for CPU simulation cost. | | <b>Volume Extent</b> | The grid index radius. | <b>Memory Usage.</b> Defines the maximum memory buffer size. Keep this optimized (e.g., 8-16) to minimize memory footprint. |</p>
 <h2 class="doxsection"><a class="anchor" id="autotoc_md146"></a>
 Shape Control</h2>
 <p>The overall shape of the smoke cloud is defined by the <b>Radii</b> and <b>Noise</b> settings.</p>
@@ -171,13 +176,11 @@ Shape Control</h2>
 Radii (Aspect Ratio)</h2>
 <p><span class="tt">Radii</span> defines the <b>relative shape ratio</b> of the expansion per axis. These are not absolute units; they function as weights for the flood-fill propagation.</p>
 <ul>
-<li><b>Examples:</b><ul>
+<li><b>Examples:</b></li>
 <li><span class="tt">(1.0, 1.0, 1.0)</span> : Creates a <b>Sphere</b>.</li>
 <li><span class="tt">(2.0, 2.0, 2.0)</span> : Also creates a <b>Sphere</b> (since the ratios are identical).</li>
 <li><span class="tt">(2.0, 1.0, 1.0)</span> : Creates an <b>Ellipsoid</b> that stretches twice as far along the X-axis compared to Y and Z.</li>
 <li><span class="tt">(1.0, 1.0, 0.5)</span> : Creates a flattened "pancake" shape.</li>
-</ul>
-</li>
 </ul>
 <h2 class="doxsection"><a class="anchor" id="autotoc_md148"></a>
 Expansion Noise</h2>
@@ -206,17 +209,19 @@ Time Synchronization</h2>
 Interaction Components</h1>
 <p>This actor coordinates with helper components to handle gameplay interactions:</p>
 <ol type="1">
-<li><b>Hole Generator (<span class="tt"><a class="el" href="class_u_i_v_smoke_hole_generator_component.html" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e...">UIVSmokeHoleGeneratorComponent</a></span>):</b><ul>
+<li><b>Hole Generator (<span class="tt"><a class="el" href="class_u_i_v_smoke_hole_generator_component.html" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e...">UIVSmokeHoleGeneratorComponent</a></span>):</b></li>
+</ol>
+<ul>
 <li>Handles dynamic modifications to the smoke texture (e.g., when a grenade explodes inside the smoke or a projectile passes through).</li>
 <li>This is purely visual and does not alter the voxel grid topology.</li>
 </ul>
-</li>
-<li><b>Collision Component (<span class="tt"><a class="el" href="class_u_i_v_smoke_collision_component.html">UIVSmokeCollisionComponent</a></span>):</b><ul>
+<ol type="1">
+<li><b>Collision Component (<span class="tt"><a class="el" href="class_u_i_v_smoke_collision_component.html">UIVSmokeCollisionComponent</a></span>):</b></li>
+</ol>
+<ul>
 <li>Generates physics collision bodies based on the active voxels.</li>
 <li><b>Usage:</b> Primarily used for <b>AI Perception blocking</b>. It allows AI to understand that they cannot see through the smoke volume.</li>
 </ul>
-</li>
-</ol>
 <blockquote class="doxtable">
 <p><b>Interaction vs. Simulation</b> Do not confuse <span class="tt">VoxelCollisionChannel</span> (Settings) with <span class="tt"><a class="el" href="class_u_i_v_smoke_collision_component.html">UIVSmokeCollisionComponent</a></span> (Component). </p>
 </blockquote>
@@ -227,19 +232,13 @@ Interaction Components</h1>
 <hr  />
 <h1 class="doxsection"><a class="anchor" id="autotoc_md156"></a>
 Debugging</h1>
-<div class="image">
-<img src="VoxelVolume_image.png" alt=""/>
-<div class="caption">
-VoxelVolume_image.png</div></div>
-    <p>The class includes robust editor and runtime debugging tools located under <span class="tt">Debug Settings</span>.</p>
+<p>The class includes robust editor and runtime debugging tools located under <span class="tt">Debug Settings</span>.</p>
 <ul>
 <li><b>Preview Simulation:</b> In the Editor Details panel, use <span class="tt">StartPreviewSimulation</span> to visualize the smoke expansion without entering Play Mode.</li>
-<li><b>Visualizers:</b><ul>
+<li><b>Visualizers:</b></li>
 <li><b>Wireframe:</b> Draws the bounds of active voxels.</li>
 <li><b>Heatmap:</b> Colors voxels based on their generation order (useful for debugging expansion logic).</li>
 <li><b>Status Text:</b> Displays the current State, Active Voxel Count, and the deterministic Checksum.</li>
-</ul>
-</li>
 </ul>
 <blockquote class="doxtable">
 <p>Note on Checksums: The debug text displays a CRC32 Checksum. If you suspect a desync issue, compare this number between the Server and Client. They must match exactly. </p>

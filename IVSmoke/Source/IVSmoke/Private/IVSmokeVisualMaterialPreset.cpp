@@ -23,6 +23,11 @@ void UIVSmokeVisualMaterialPreset::PostEditChangeProperty(FPropertyChangedEvent&
 					UE_LOG(LogIVSmoke, Warning, TEXT("SmokeVisualMaterial must be PostProcess domain"));
 					SmokeVisualMaterial = nullptr;
 				}
+				else
+				{
+					// Ensure shader compilation is complete before rendering
+					SmokeVisualMaterial->EnsureIsComplete();
+				}
 			}
 		}
 	}

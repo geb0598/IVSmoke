@@ -156,7 +156,7 @@ var NAVTREE =
       [ "Class Members", "functions.html", [
         [ "All", "functions.html", "functions_dup" ],
         [ "Functions", "functions_func.html", null ],
-        [ "Variables", "functions_vars.html", null ]
+        [ "Variables", "functions_vars.html", "functions_vars" ]
       ] ]
     ] ],
     [ "Files", "files.html", [
@@ -168,8 +168,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_i_v_smoke_8_build_8cs_source.html",
-"files.html",
-"struct_f_i_v_smoke_volume_g_p_u_data.html#abcaaa586b72b4d4ceaebe13421b7a0c5"
+"class_u_material_expression_i_v_smoke___texture_sample.html#a59ab54a020246bd3467a93ee5712803b",
+"struct_f_i_v_smoke_packed_render_data.html#a229b87682dc9d713e99f5284cc6c0ee9"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

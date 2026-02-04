@@ -48,7 +48,6 @@ int32 UMaterialExpressionIVSmoke_TextureSample::Compile(class FMaterialCompiler*
 
 	int32 UVsInput = INDEX_NONE;
 
-	// UE 5.7에서 변경된 API 사용
 	if (UVs.Expression)
 	{
 		UVsInput = UVs.Compile(Compiler);
@@ -56,8 +55,15 @@ int32 UMaterialExpressionIVSmoke_TextureSample::Compile(class FMaterialCompiler*
 	else
 	{
 		UVsInput = Compiler->GetViewportUV();
-	}
 
+		if (TextureType == EIVSmokeTextureType::SceneColor)
+		{
+			int32 SceneTexSize = Compiler->GetSceneTextureViewSize(PPI_PostProcessInput3, false); // InvProperty = false
+			int32 ViewportSize = Compiler->ViewProperty(MEVP_ViewSize, false);
+			int32 NormalizedUV = Compiler->Div(UVsInput, SceneTexSize);
+			UVsInput = Compiler->Mul(NormalizedUV, ViewportSize);
+		}
+	}
 	if (UVsInput == INDEX_NONE)
 	{
 		return Compiler->Errorf(TEXT("Failed to compile UV input"));

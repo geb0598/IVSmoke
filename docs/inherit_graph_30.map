@@ -1,9 +1,5 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" title=" " alt="" coords="5,56,144,83"/>
-<area shape="rect" id="Node000001" href="$class_u_i_v_smoke_hole_preset.html" title=" " alt="" coords="219,5,370,32"/>
-<area shape="poly" id="edge27_Node000000_Node000001" title=" " alt="" coords="150,49,236,31,231,34,151,54"/>
-<area shape="rect" id="Node000002" href="$class_u_i_v_smoke_smoke_preset.html" title=" " alt="" coords="212,56,376,83"/>
-<area shape="poly" id="edge28_Node000000_Node000002" title=" " alt="" coords="159,67,214,69,209,70,159,72"/>
-<area shape="rect" id="Node000003" href="$class_u_i_v_smoke_visual_material_preset.html" title=" " alt="" coords="192,107,397,133"/>
-<area shape="poly" id="edge29_Node000000_Node000003" title=" " alt="" coords="151,84,236,105,231,107,150,89"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,13,148,40"/>
+<area shape="rect" id="Node000001" href="$class_u_material_expression_i_v_smoke___texture_sample.html" title=" " alt="" coords="196,5,392,48"/>
+<area shape="poly" id="edge26_Node000000_Node000001" title=" " alt="" coords="163,24,198,26,193,27,163,29"/>
 </map>

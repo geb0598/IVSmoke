@@ -45,7 +45,8 @@ var searchData=
   ['flood_20fill_42',['Volumetric Flood-Fill',['../md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md135',1,'']]],
   ['for_20every_20single_20voxel_20instead_20it_20utilizes_20a_20binary_20greedy_20meshing_20algorithm_43',['How It Works: Greedy Meshing To maintain high performance, the component &lt;b&gt;does not&lt;/b&gt; create a collision box for every single voxel. Instead, it utilizes a &lt;b&gt;Binary Greedy Meshing&lt;/b&gt; algorithm.',['../md_pages_2_collision_component_2_collision_component_guide.html#autotoc_md26',1,'']]],
   ['forwarding_44',['Late-Join Handling (Fast Forwarding)',['../md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md151',1,'']]],
-  ['fxaarange_45',['FXAARange',['../class_u_i_v_smoke_settings.html#ad83d4660e489ed0bedafbca1e7a152b8',1,'UIVSmokeSettings']]],
-  ['fxaasharpness_46',['FXAASharpness',['../class_u_i_v_smoke_settings.html#a8ec5ec913cabe49abb1a573dc48d7b8b',1,'UIVSmokeSettings']]],
-  ['fxaaspanmax_47',['FXAASpanMax',['../class_u_i_v_smoke_settings.html#a25fb61b630accaa759bc818ac714c089',1,'UIVSmokeSettings']]]
+  ['fperworlddata_45',['FPerWorldData',['../struct_f_per_world_data.html',1,'']]],
+  ['fxaarange_46',['FXAARange',['../class_u_i_v_smoke_settings.html#ad83d4660e489ed0bedafbca1e7a152b8',1,'UIVSmokeSettings']]],
+  ['fxaasharpness_47',['FXAASharpness',['../class_u_i_v_smoke_settings.html#a8ec5ec913cabe49abb1a573dc48d7b8b',1,'UIVSmokeSettings']]],
+  ['fxaaspanmax_48',['FXAASpanMax',['../class_u_i_v_smoke_settings.html#a25fb61b630accaa759bc818ac714c089',1,'UIVSmokeSettings']]]
 ];

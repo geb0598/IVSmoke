@@ -88,7 +88,16 @@ namespace IVSmokeOccupancy
 		Parameters->CameraUp = FVector3f(View.GetViewUp());
 
 		const FMatrix& ProjMatrix = ViewMatrices.GetProjectionMatrix();
-		Parameters->TanHalfFOV = 1.0f / ProjMatrix.M[1][1];
+		float ProjM11 = ProjMatrix.M[1][1];
+
+		// Validate projection matrix to prevent inf/NaN
+		if (FMath::IsNearlyZero(ProjM11, 1e-6f) || !FMath::IsFinite(ProjM11))
+		{
+			UE_LOG(LogIVSmoke, Error, TEXT("[TileSetup] Invalid ProjMatrix.M[1][1] = %f (likely orthographic viewport), skipping"), ProjM11);
+			return; // Skip rendering for orthographic/invalid views
+		}
+
+		Parameters->TanHalfFOV = 1.0f / ProjM11;
 		Parameters->AspectRatio = (float)ViewportSize.X / (float)ViewportSize.Y;
 
 		// Depth conversion
@@ -151,7 +160,16 @@ namespace IVSmokeOccupancy
 		Parameters->CameraUp = FVector3f(View.GetViewUp());
 
 		const FMatrix& ProjMatrix = ViewMatrices.GetProjectionMatrix();
-		Parameters->TanHalfFOV = 1.0f / ProjMatrix.M[1][1];
+		float ProjM11 = ProjMatrix.M[1][1];
+
+		// Validate projection matrix to prevent inf/NaN
+		if (FMath::IsNearlyZero(ProjM11, 1e-6f) || !FMath::IsFinite(ProjM11))
+		{
+			UE_LOG(LogIVSmoke, Error, TEXT("[OccupancyBuild] Invalid ProjMatrix.M[1][1] = %f (likely orthographic viewport), skipping"), ProjM11);
+			return; // Skip rendering for orthographic/invalid views
+		}
+
+		Parameters->TanHalfFOV = 1.0f / ProjM11;
 		Parameters->AspectRatio = (float)ViewportSize.X / (float)ViewportSize.Y;
 
 		// Light
