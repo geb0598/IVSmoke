@@ -383,6 +383,8 @@ public:
 		SHADER_PARAMETER(FVector2f, ViewRectMin)
 		/** Depth bias in centimeters. */
 		SHADER_PARAMETER(float, DepthBias)
+		/** Alpha threshold for depth write. */
+		SHADER_PARAMETER(float, AlphaThreshold)
 		/** Projection matrix element [2][2] for depth conversion. */
 		SHADER_PARAMETER(float, ViewToClip_22)
 		/** Projection matrix element [3][2] for depth conversion. */

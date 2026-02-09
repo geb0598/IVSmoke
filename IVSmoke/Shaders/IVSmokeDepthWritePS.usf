@@ -4,7 +4,7 @@
 	IVSmokeDepthWritePS.usf: Pre-Pass Depth Write Shader
 
 	Writes smoke depth to scene depth buffer for correct translucent sorting.
-	Only writes depth for nearly opaque pixels (Alpha >= 0.99).
+	Only writes depth for pixels with alpha >= configurable threshold.
 	Uses ray march results from earlier in the same Pre-pass pipeline.
 =============================================================================*/
 
@@ -24,6 +24,7 @@ float2 ViewRectMin;
 
 // Configuration
 float DepthBias;
+float AlphaThreshold;
 
 // Projection parameters for manual depth conversion (avoids View uniform buffer dependency)
 float ViewToClip_22;
@@ -47,10 +48,10 @@ void MainPS(
 	float4 WorldPosDepth = SmokeWorldPosDepthTex.SampleLevel(LinearClampSampler, UV, 0);
 	float Alpha = SmokeLocalPosAlphaTex.SampleLevel(LinearClampSampler, UV, 0).w;
 
-	// Only write depth for nearly opaque pixels (Alpha >= 0.99)
-	// Threshold accounts for bilinear interpolation artifacts during upscaling.
+	// Only write depth for pixels with alpha >= threshold
+	// User-configurable threshold via Project Settings > Plugins > IVSmoke.
 	// Depth position can be adjusted via DepthBias setting.
-	if (Alpha < 0.99 || WorldPosDepth.w <= 0.0)
+	if (Alpha < AlphaThreshold || WorldPosDepth.w <= 0.0)
 	{
 		discard;
 	}

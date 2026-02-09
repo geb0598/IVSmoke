@@ -600,10 +600,23 @@ bool AIVSmokeVoxelVolume::IsConnectionBlocked(const UWorld* World, const FVector
 	CollisionParams.AddIgnoredActor(this);
 
 	FHitResult HitResult;
-	return World->LineTraceSingleByChannel(
+	bool bIsBlocked = World->LineTraceSingleByChannel(
 		HitResult,
 		BeginPos,
 		EndPos,
+		VoxelCollisionChannel,
+		CollisionParams
+	);
+
+	if (bIsBlocked)
+	{
+		return true;
+	}
+
+	return World->LineTraceSingleByChannel(
+		HitResult,
+		EndPos,
+		BeginPos,
 		VoxelCollisionChannel,
 		CollisionParams
 	);

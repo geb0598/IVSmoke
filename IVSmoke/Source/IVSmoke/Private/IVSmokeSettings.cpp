@@ -164,7 +164,8 @@ void UIVSmokeSettings::SetVisualMaterialPreset(FSoftObjectPath VisualMaterialPre
 	Settings->SmokeVisualMaterialPreset = VisualMaterialPresetPath;
 	Settings->CachedVisualMaterialPreset = Cast<UIVSmokeVisualMaterialPreset>(Settings->SmokeVisualMaterialPreset.TryLoad());
 
-	if (CachedVisualMaterialPreset)
+	// EnsureIsComplete() requires RHI - skip during commandlets (cooking/packaging)
+	if (!IsRunningCommandlet() && CachedVisualMaterialPreset)
 	{
 		if (UMaterialInterface* Mat = CachedVisualMaterialPreset->SmokeVisualMaterial.Get())
 		{
@@ -177,9 +178,11 @@ void UIVSmokeSettings::PostInitProperties()
 {
 	Super::PostInitProperties();
 
-	// Load preset and ensure shader compilation is complete before first render
+	// Load preset (safe during cooking)
 	CachedVisualMaterialPreset = Cast<UIVSmokeVisualMaterialPreset>(SmokeVisualMaterialPreset.TryLoad());
-	if (CachedVisualMaterialPreset)
+
+	// EnsureIsComplete() requires RHI - skip during commandlets (cooking/packaging)
+	if (!IsRunningCommandlet() && CachedVisualMaterialPreset)
 	{
 		if (UMaterialInterface* Mat = CachedVisualMaterialPreset->SmokeVisualMaterial.Get())
 		{

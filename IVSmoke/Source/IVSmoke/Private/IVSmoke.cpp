@@ -30,26 +30,30 @@ void FIVSmokeModule::StartupModule()
 
 #if !UE_SERVER
 	// SceneViewExtension requires GEngine, defer until engine is ready
-	UE_LOG(LogIVSmoke, Log, TEXT("[FIVSmokeModule::StartupModule] Registering OnPostEngineInit"));
-	FCoreDelegates::OnPostEngineInit.AddLambda([]()
+	// Skip during commandlets (cooking/packaging) - RHI may not be fully initialized
+	if (!IsRunningCommandlet())
 	{
-		UE_LOG(LogIVSmoke, Log, TEXT("[FIVSmokeModule::StartupModule] OnPostEngineInit fired"));
-
-		// Preload Visual Material Preset and ensure shader compilation
-		if (const UIVSmokeSettings* Settings = UIVSmokeSettings::Get())
+		UE_LOG(LogIVSmoke, Log, TEXT("[FIVSmokeModule::StartupModule] Registering OnPostEngineInit"));
+		FCoreDelegates::OnPostEngineInit.AddLambda([]()
 		{
-			if (UIVSmokeVisualMaterialPreset* Preset = Settings->GetVisualMaterialPreset())
+			UE_LOG(LogIVSmoke, Log, TEXT("[FIVSmokeModule::StartupModule] OnPostEngineInit fired"));
+
+			// Preload Visual Material Preset and ensure shader compilation
+			if (const UIVSmokeSettings* Settings = UIVSmokeSettings::Get())
 			{
-				if (UMaterialInterface* Mat = Preset->SmokeVisualMaterial.Get())
+				if (UIVSmokeVisualMaterialPreset* Preset = Settings->GetVisualMaterialPreset())
 				{
-					Mat->EnsureIsComplete();
-					UE_LOG(LogIVSmoke, Log, TEXT("[FIVSmokeModule::StartupModule] Visual Material preloaded"));
+					if (UMaterialInterface* Mat = Preset->SmokeVisualMaterial.Get())
+					{
+						Mat->EnsureIsComplete();
+						UE_LOG(LogIVSmoke, Log, TEXT("[FIVSmokeModule::StartupModule] Visual Material preloaded"));
+					}
 				}
 			}
-		}
 
-		FIVSmokeSceneViewExtension::Initialize();
-	});
+			FIVSmokeSceneViewExtension::Initialize();
+		});
+	}
 #endif
 
 #if WITH_EDITOR
@@ -91,7 +95,10 @@ void FIVSmokeModule::StartupModule()
 void FIVSmokeModule::ShutdownModule()
 {
 #if !UE_SERVER
-	FIVSmokeSceneViewExtension::Shutdown();
+	if (!IsRunningCommandlet())
+	{
+		FIVSmokeSceneViewExtension::Shutdown();
+	}
 #endif
 }
 

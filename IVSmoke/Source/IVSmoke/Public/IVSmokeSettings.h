@@ -388,6 +388,12 @@ public:
 		meta = (ClampMin = "0.0", ClampMax = "100.0", EditCondition = "bShowAdvancedOptions && bEnableDepthWrite", EditConditionHides))
 	float DepthWriteBias = 50.0f;
 
+	/** Alpha threshold for depth write. Only pixels with alpha >= this value write to depth buffer.
+	 *  Lower values include more semi-transparent areas, higher values only include nearly opaque areas. */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "IVSmoke | Rendering",
+		meta = (ClampMin = "0.01", ClampMax = "0.99", EditCondition = "bShowAdvancedOptions && bEnableDepthWrite", EditConditionHides))
+	float DepthWriteAlphaThreshold = 0.99f;
+
 	//~==============================================================================
 	// Debug
 
