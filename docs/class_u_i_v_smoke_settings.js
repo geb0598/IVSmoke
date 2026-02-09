@@ -26,6 +26,7 @@ var class_u_i_v_smoke_settings =
     [ "CustomMinStepSize", "class_u_i_v_smoke_settings.html#a1411930bb0f6ee7a43d191aafc1f2eed", null ],
     [ "CustomNumCascades", "class_u_i_v_smoke_settings.html#a17cbdbbf8dc76f754f762591b5e7c727", null ],
     [ "CustomShadowMaxDistance", "class_u_i_v_smoke_settings.html#a13e79883f628401bd5a978dbc2dbb1cc", null ],
+    [ "DepthWriteAlphaThreshold", "class_u_i_v_smoke_settings.html#a71ca37cfea91e8fec121866517f0eea3", null ],
     [ "DepthWriteBias", "class_u_i_v_smoke_settings.html#a91fc574c006624528a7586a989eba4d3", null ],
     [ "ExternalShadowAmbient", "class_u_i_v_smoke_settings.html#aecedbdc5087ccf1b4902f58f01d48c5a", null ],
     [ "ExternalShadowQuality", "class_u_i_v_smoke_settings.html#af5e3096d18bf87aa762ebd167f2f167d", null ],

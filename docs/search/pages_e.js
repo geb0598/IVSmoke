@@ -1,4 +1,11 @@
 var searchData=
 [
-  ['join_20handling_20fast_20forwarding_0',['Late-Join Handling (Fast Forwarding)',['../md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md151',1,'']]]
+  ['handling_20fast_20forwarding_0',['Late-Join Handling (Fast Forwarding)',['../md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md153',1,'']]],
+  ['high_20performance_20the_20component_20does_20not_20create_20a_20collision_20box_20for_20every_20single_20voxel_20instead_20it_20utilizes_20a_20binary_20greedy_20meshing_20algorithm_1',['How It Works: Greedy Meshing To maintain high performance, the component &lt;b&gt;does not&lt;/b&gt; create a collision box for every single voxel. Instead, it utilizes a &lt;b&gt;Binary Greedy Meshing&lt;/b&gt; algorithm.',['../md_pages_2_collision_component_2_collision_component_guide.html#autotoc_md28',1,'']]],
+  ['hole_2',['Hole',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md128',1,'Case A. Request Penetration Hole'],['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md130',1,'Case B. Request Explosion Hole'],['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md132',1,'Case C. Request Dynamic Hole']]],
+  ['holegenerator_20component_20guide_3',['HoleGenerator Component Guide',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html',1,'']]],
+  ['holes_20effects_4',['Gameplay Interaction (Holes &amp;amp; Effects)',['../index.html#autotoc_md17',1,'']]],
+  ['how_20it_20works_5',['How It Works',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md91',1,'']]],
+  ['how_20it_20works_3a_20greedy_20meshing_20to_20maintain_20high_20performance_20the_20component_20does_20not_20create_20a_20collision_20box_20for_20every_20single_20voxel_20instead_20it_20utilizes_20a_20binary_20greedy_20meshing_20algorithm_6',['How It Works: Greedy Meshing To maintain high performance, the component &lt;b&gt;does not&lt;/b&gt; create a collision box for every single voxel. Instead, it utilizes a &lt;b&gt;Binary Greedy Meshing&lt;/b&gt; algorithm.',['../md_pages_2_collision_component_2_collision_component_guide.html#autotoc_md28',1,'']]],
+  ['how_20you_20want_20to_20mix_20the_20scene_20and_20smoke_20textures_7',['You must define how you want to mix the Scene and Smoke textures.',['../md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md42',1,'']]]
 ];

@@ -509,21 +509,23 @@ $(function(){initNavTree('_i_v_smoke_shaders_8h_source.html','',''); });
 <div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>        SHADER_PARAMETER(FVector2f, ViewRectMin)<span class="comment"></span></div>
 <div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span><span class="comment">        /** Depth bias in centimeters. */</span></div>
 <div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>        SHADER_PARAMETER(<span class="keywordtype">float</span>, DepthBias)<span class="comment"></span></div>
-<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span><span class="comment">        /** Projection matrix element [2][2] for depth conversion. */</span></div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>        SHADER_PARAMETER(<span class="keywordtype">float</span>, ViewToClip_22)<span class="comment"></span></div>
-<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span><span class="comment">        /** Projection matrix element [3][2] for depth conversion. */</span></div>
-<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>        SHADER_PARAMETER(<span class="keywordtype">float</span>, ViewToClip_32)</div>
-<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>        RENDER_TARGET_BINDING_SLOTS()</div>
-<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>    END_SHADER_PARAMETER_STRUCT()</div>
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span> </div>
-<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span><span class="keyword">public</span>:</div>
-<div class="foldopen" id="foldopen00394" data-start="{" data-end="}">
-<div class="line"><a id="l00394" name="l00394"></a><span class="lineno"><a class="line" href="class_f_i_v_smoke_depth_write_p_s.html#a800992cebc75eb1df81c572ae7419b36">  394</a></span>    <span class="keyword">static</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="class_f_i_v_smoke_depth_write_p_s.html#a800992cebc75eb1df81c572ae7419b36">ShouldCompilePermutation</a>(<span class="keyword">const</span> FGlobalShaderPermutationParameters&amp; Parameters)</div>
-<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>    {</div>
-<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>        <span class="keywordflow">return</span> IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5);</div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>    }</div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span><span class="comment">        /** Alpha threshold for depth write. */</span></div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>        SHADER_PARAMETER(<span class="keywordtype">float</span>, AlphaThreshold)<span class="comment"></span></div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span><span class="comment">        /** Projection matrix element [2][2] for depth conversion. */</span></div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>        SHADER_PARAMETER(<span class="keywordtype">float</span>, ViewToClip_22)<span class="comment"></span></div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span><span class="comment">        /** Projection matrix element [3][2] for depth conversion. */</span></div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>        SHADER_PARAMETER(<span class="keywordtype">float</span>, ViewToClip_32)</div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>        RENDER_TARGET_BINDING_SLOTS()</div>
+<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>    END_SHADER_PARAMETER_STRUCT()</div>
+<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span> </div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span><span class="keyword">public</span>:</div>
+<div class="foldopen" id="foldopen00396" data-start="{" data-end="}">
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno"><a class="line" href="class_f_i_v_smoke_depth_write_p_s.html#a800992cebc75eb1df81c572ae7419b36">  396</a></span>    <span class="keyword">static</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="class_f_i_v_smoke_depth_write_p_s.html#a800992cebc75eb1df81c572ae7419b36">ShouldCompilePermutation</a>(<span class="keyword">const</span> FGlobalShaderPermutationParameters&amp; Parameters)</div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>    {</div>
+<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>        <span class="keywordflow">return</span> IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5);</div>
+<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span>    }</div>
 </div>
-<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>};</div>
+<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>};</div>
 </div>
 <div class="ttc" id="aclass_f_i_v_smoke_composite_p_s_html"><div class="ttname"><a href="class_f_i_v_smoke_composite_p_s.html">FIVSmokeCompositePS</a></div><div class="ttdef"><b>Definition</b> <a href="#l00167">IVSmokeShaders.h:168</a></div></div>
 <div class="ttc" id="aclass_f_i_v_smoke_composite_p_s_html_a74f39fed459363b16a33ea6627dc73c3"><div class="ttname"><a href="class_f_i_v_smoke_composite_p_s.html#a74f39fed459363b16a33ea6627dc73c3">FIVSmokeCompositePS::ShouldCompilePermutation</a></div><div class="ttdeci">static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters &amp;Parameters)</div><div class="ttdef"><b>Definition</b> <a href="#l00193">IVSmokeShaders.h:193</a></div></div>
@@ -532,7 +534,7 @@ $(function(){initNavTree('_i_v_smoke_shaders_8h_source.html','',''); });
 <div class="ttc" id="aclass_f_i_v_smoke_depth_to_variance_c_s_html"><div class="ttname"><a href="class_f_i_v_smoke_depth_to_variance_c_s.html">FIVSmokeDepthToVarianceCS</a></div><div class="ttdef"><b>Definition</b> <a href="#l00276">IVSmokeShaders.h:277</a></div></div>
 <div class="ttc" id="aclass_f_i_v_smoke_depth_to_variance_c_s_html_a7c7d47b086b3c5c8daa7fbc99f9c0c0e"><div class="ttname"><a href="class_f_i_v_smoke_depth_to_variance_c_s.html#a7c7d47b086b3c5c8daa7fbc99f9c0c0e">FIVSmokeDepthToVarianceCS::ShouldCompilePermutation</a></div><div class="ttdeci">static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters &amp;Parameters)</div><div class="ttdef"><b>Definition</b> <a href="#l00296">IVSmokeShaders.h:296</a></div></div>
 <div class="ttc" id="aclass_f_i_v_smoke_depth_write_p_s_html"><div class="ttname"><a href="class_f_i_v_smoke_depth_write_p_s.html">FIVSmokeDepthWritePS</a></div><div class="ttdef"><b>Definition</b> <a href="#l00361">IVSmokeShaders.h:362</a></div></div>
-<div class="ttc" id="aclass_f_i_v_smoke_depth_write_p_s_html_a800992cebc75eb1df81c572ae7419b36"><div class="ttname"><a href="class_f_i_v_smoke_depth_write_p_s.html#a800992cebc75eb1df81c572ae7419b36">FIVSmokeDepthWritePS::ShouldCompilePermutation</a></div><div class="ttdeci">static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters &amp;Parameters)</div><div class="ttdef"><b>Definition</b> <a href="#l00394">IVSmokeShaders.h:394</a></div></div>
+<div class="ttc" id="aclass_f_i_v_smoke_depth_write_p_s_html_a800992cebc75eb1df81c572ae7419b36"><div class="ttname"><a href="class_f_i_v_smoke_depth_write_p_s.html#a800992cebc75eb1df81c572ae7419b36">FIVSmokeDepthWritePS::ShouldCompilePermutation</a></div><div class="ttdeci">static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters &amp;Parameters)</div><div class="ttdef"><b>Definition</b> <a href="#l00396">IVSmokeShaders.h:396</a></div></div>
 <div class="ttc" id="aclass_f_i_v_smoke_noise_generator_global_c_s_html"><div class="ttname"><a href="class_f_i_v_smoke_noise_generator_global_c_s.html">FIVSmokeNoiseGeneratorGlobalCS</a></div><div class="ttdef"><b>Definition</b> <a href="#l00063">IVSmokeShaders.h:64</a></div></div>
 <div class="ttc" id="aclass_f_i_v_smoke_noise_generator_global_c_s_html_ab76a70a0103dfffd10049fa3d790be89"><div class="ttname"><a href="class_f_i_v_smoke_noise_generator_global_c_s.html#ab76a70a0103dfffd10049fa3d790be89">FIVSmokeNoiseGeneratorGlobalCS::ShouldCompilePermutation</a></div><div class="ttdeci">static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters &amp;Parameters)</div><div class="ttdef"><b>Definition</b> <a href="#l00093">IVSmokeShaders.h:93</a></div></div>
 <div class="ttc" id="aclass_f_i_v_smoke_structured_to_texture_c_s_html"><div class="ttname"><a href="class_f_i_v_smoke_structured_to_texture_c_s.html">FIVSmokeStructuredToTextureCS</a></div><div class="ttdef"><b>Definition</b> <a href="#l00098">IVSmokeShaders.h:99</a></div></div>

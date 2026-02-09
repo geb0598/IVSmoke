@@ -182,6 +182,7 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:aebc32bc4ba36f43ea2328f5eb14aa2c0" id="r_aebc32bc4ba36f43ea2328f5eb14aa2c0"><td class="memItemLeft">FSoftObjectPath&#160;</td><td class="memItemRight"><a class="el" href="#aebc32bc4ba36f43ea2328f5eb14aa2c0">SmokeVisualMaterialPreset</a></td></tr>
 <tr class="memitem:a0bdc1fbfd6d7a8581279365c57ea08e1" id="r_a0bdc1fbfd6d7a8581279365c57ea08e1"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a0bdc1fbfd6d7a8581279365c57ea08e1">bEnableDepthWrite</a> = true</td></tr>
 <tr class="memitem:a91fc574c006624528a7586a989eba4d3" id="r_a91fc574c006624528a7586a989eba4d3"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a91fc574c006624528a7586a989eba4d3">DepthWriteBias</a> = 50.0f</td></tr>
+<tr class="memitem:a71ca37cfea91e8fec121866517f0eea3" id="r_a71ca37cfea91e8fec121866517f0eea3"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#a71ca37cfea91e8fec121866517f0eea3">DepthWriteAlphaThreshold</a> = 0.99f</td></tr>
 <tr class="memitem:adf2d312d2c8d36d754e4556e4e2cfe95" id="r_adf2d312d2c8d36d754e4556e4e2cfe95"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#adf2d312d2c8d36d754e4556e4e2cfe95">bShowDebugVolumes</a> = false</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
@@ -494,7 +495,7 @@ Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_settings_8cpp_source.html#l00176">176</a> of file <a class="el" href="_i_v_smoke_settings_8cpp_source.html">IVSmokeSettings.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_settings_8cpp_source.html#l00177">177</a> of file <a class="el" href="_i_v_smoke_settings_8cpp_source.html">IVSmokeSettings.cpp</a>.</p>
 
 </div>
 </div>
@@ -684,7 +685,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Show debug visualization for smoke volumes. </p>
 
-<p class="definition">Definition at line <a class="el" href="_i_v_smoke_settings_8h_source.html#l00396">396</a> of file <a class="el" href="_i_v_smoke_settings_8h_source.html">IVSmokeSettings.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_settings_8h_source.html#l00402">402</a> of file <a class="el" href="_i_v_smoke_settings_8h_source.html">IVSmokeSettings.h</a>.</p>
 
 </div>
 </div>
@@ -821,6 +822,23 @@ Public Attributes</h2></td></tr>
 <p>Custom: Maximum shadow distance in centimeters (1000-100000). </p>
 
 <p class="definition">Definition at line <a class="el" href="_i_v_smoke_settings_8h_source.html#l00203">203</a> of file <a class="el" href="_i_v_smoke_settings_8h_source.html">IVSmokeSettings.h</a>.</p>
+
+</div>
+</div>
+<a id="a71ca37cfea91e8fec121866517f0eea3" name="a71ca37cfea91e8fec121866517f0eea3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71ca37cfea91e8fec121866517f0eea3">&#9670;&#160;</a></span>DepthWriteAlphaThreshold</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float UIVSmokeSettings::DepthWriteAlphaThreshold = 0.99f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Alpha threshold for depth write. Only pixels with alpha &gt;= this value write to depth buffer. Lower values include more semi-transparent areas, higher values only include nearly opaque areas. </p>
+
+<p class="definition">Definition at line <a class="el" href="_i_v_smoke_settings_8h_source.html#l00395">395</a> of file <a class="el" href="_i_v_smoke_settings_8h_source.html">IVSmokeSettings.h</a>.</p>
 
 </div>
 </div>

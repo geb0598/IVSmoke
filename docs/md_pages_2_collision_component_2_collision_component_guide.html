@@ -91,12 +91,12 @@ $(function(){initNavTree('md_pages_2_collision_component_2_collision_component_g
   <div class="headertitle"><div class="title">Collision Component Guide </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md24"></a></p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md26"></a></p>
 <p><span class="tt"><a class="el" href="class_u_i_v_smoke_collision_component.html">UIVSmokeCollisionComponent</a></span> is a dynamic primitive component attached to the <span class="tt"><a class="el" href="class_a_i_v_smoke_voxel_volume.html">AIVSmokeVoxelVolume</a></span>. It translates the abstract voxel grid data into actual <b>physics geometry</b> that the Unreal Engine physics system (Chaos/PhysX) can interact with.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md25"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md27"></a>
 Overview</h1>
 <p>Unlike standard static meshes, the shape of the smoke changes every frame during expansion and dissipation. This component generates collision bodies dynamically to match the current smoke shape.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md26"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md28"></a>
 How It Works: Greedy Meshing To maintain high performance, the component <b>does not</b> create a collision box for every single voxel. Instead, it utilizes a <b>Binary Greedy Meshing</b> algorithm.</h2>
 <ol type="1">
 <li>It scans the voxel grid.</li>
@@ -105,16 +105,16 @@ How It Works: Greedy Meshing To maintain high performance, the component <b>does
 </ol>
 <p><b>Result:</b> A smoke cloud containing 1,000 active voxels might only require 100-200 large physics boxes to represent its volume, significantly reducing physics simulation overhead.</p>
 <hr  />
-<h1 class="doxsection"><a class="anchor" id="autotoc_md28"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md30"></a>
 Common Use Cases</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md29"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md31"></a>
 1. Blocking AI Line of Sight (Default)</h2>
 <p>By default, the component is configured to <b>Block the Visibility channel</b> while ignoring everything else.</p>
 <ul>
 <li><b>Behavior:</b> AI perception systems using Line of Sight traces will be blocked by the smoke.</li>
 <li><b>Player:</b> Players and projectiles will pass through the smoke freely.</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md30"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md32"></a>
 2. Physical Blockage</h2>
 <p>You can change the Collision Profile to <b>BlockAll</b> or <b>Pawn</b> to make the smoke physically solid.</p>
 <ul>
@@ -122,10 +122,10 @@ Common Use Cases</h1>
 <li><b>Context:</b> Useful for magic spells ("Ice Wall") or sci-fi force fields, rather than traditional gas smoke.</li>
 </ul>
 <hr  />
-<h1 class="doxsection"><a class="anchor" id="autotoc_md32"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md34"></a>
 Configuration</h1>
 <p>The component supports standard Unreal Engine collision settings in the <b>Details Panel</b>, along with specific performance tuning parameters.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md33"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md35"></a>
 Performance Throttling</h2>
 <p>Rebuilding physics geometry is an expensive CPU operation. To prevent framerate drops, the component includes a built-in throttling system that skips updates if the changes are insignificant.</p>
 <table class="markdownTable">
@@ -139,7 +139,7 @@ Performance Throttling</h2>
 <td class="markdownTableBodyNone"><b>Min Update Voxel Num</b>  </td><td class="markdownTableBodyNone">The minimum number of voxels that must spawn/die to trigger a rebuild.  </td><td class="markdownTableBodyNone"><b>50 - 100</b>. Prevents rebuilding when the smoke is barely changing.  </td></tr>
 </table>
 <hr  />
-<h1 class="doxsection"><a class="anchor" id="autotoc_md35"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md37"></a>
 Debugging</h1>
 <p>You can visualize the optimized physics geometry to verify that the Greedy Meshing is working effectively.</p>
 <ol type="1">

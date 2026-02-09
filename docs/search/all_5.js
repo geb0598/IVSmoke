@@ -1,29 +1,4 @@
 var searchData=
 [
-  ['a_0',['A',['../class_u_material_expression_i_v_smoke___texture_sample.html#ac795abbf703f85994ee6d9cbfebb1332',1,'UMaterialExpressionIVSmoke_TextureSample']]],
-  ['a_20binary_20greedy_20meshing_20algorithm_1',['How It Works: Greedy Meshing To maintain high performance, the component &lt;b&gt;does not&lt;/b&gt; create a collision box for every single voxel. Instead, it utilizes a &lt;b&gt;Binary Greedy Meshing&lt;/b&gt; algorithm.',['../md_pages_2_collision_component_2_collision_component_guide.html#autotoc_md26',1,'']]],
-  ['a_20collision_20box_20for_20every_20single_20voxel_20instead_20it_20utilizes_20a_20binary_20greedy_20meshing_20algorithm_2',['How It Works: Greedy Meshing To maintain high performance, the component &lt;b&gt;does not&lt;/b&gt; create a collision box for every single voxel. Instead, it utilizes a &lt;b&gt;Binary Greedy Meshing&lt;/b&gt; algorithm.',['../md_pages_2_collision_component_2_collision_component_guide.html#autotoc_md26',1,'']]],
-  ['a_20preset_3',['Applying a Preset',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md85',1,'']]],
-  ['a_20request_20penetration_20hole_4',['Case A. Request Penetration Hole',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md126',1,'']]],
-  ['a_20smoke_20preset_5',['Creating a Smoke Preset',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md83',1,'']]],
-  ['absorption_6',['Absorption',['../struct_f_i_v_smoke_volume_g_p_u_data.html#aacfb4045e588885a483b5d97062af6b8',1,'FIVSmokeVolumeGPUData']]],
-  ['actor_7',['Placing the Actor',['../index.html#autotoc_md12',1,'']]],
-  ['add_20uivsmokeholerequestcomponent_8',['Before STARTING, Add UIVSmokeHoleRequestComponent!',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md125',1,'']]],
-  ['addcomputeshaderpass_9',['AddComputeShaderPass',['../class_f_i_v_smoke_post_process_pass.html#a12269d31084d63a79ecbabcd15ffa467',1,'FIVSmokePostProcessPass']]],
-  ['addhole_10',['AddHole',['../struct_f_i_v_smoke_hole_array.html#a672cf3fc8492dabcf6ebc8ab4a4be920',1,'FIVSmokeHoleArray']]],
-  ['addpixelshaderpass_11',['AddPixelShaderPass',['../class_f_i_v_smoke_post_process_pass.html#a8f1dbf9ae3c49b3e771217069c879d28',1,'FIVSmokePostProcessPass']]],
-  ['advanced_20options_20show_20advanced_20options_20true_12',['Advanced Options Show Advanced Options true',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md65',1,'Advanced Options (Show Advanced Options = true)'],['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md68',1,'Advanced Options (Show Advanced Options = true)'],['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md77',1,'Advanced Options (Show Advanced Options = true)']]],
-  ['advanced_20options_20true_13',['Advanced Options true',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md65',1,'Advanced Options (Show Advanced Options = true)'],['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md68',1,'Advanced Options (Show Advanced Options = true)'],['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md77',1,'Advanced Options (Show Advanced Options = true)']]],
-  ['ai_20blocking_14',['Collision &amp;amp; AI Blocking',['../index.html#autotoc_md18',1,'']]],
-  ['ai_20line_20of_20sight_20default_15',['1. Blocking AI Line of Sight (Default)',['../md_pages_2_collision_component_2_collision_component_guide.html#autotoc_md29',1,'']]],
-  ['aivsmokevoxelvolume_16',['AIVSmokeVoxelVolume',['../class_a_i_v_smoke_voxel_volume.html',1,'']]],
-  ['algorithm_17',['How It Works: Greedy Meshing To maintain high performance, the component &lt;b&gt;does not&lt;/b&gt; create a collision box for every single voxel. Instead, it utilizes a &lt;b&gt;Binary Greedy Meshing&lt;/b&gt; algorithm.',['../md_pages_2_collision_component_2_collision_component_guide.html#autotoc_md26',1,'']]],
-  ['and_20distribution_18',['Spacing and Distribution',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md111',1,'']]],
-  ['and_20smoke_20textures_19',['You must define how you want to mix the Scene and Smoke textures.',['../md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md40',1,'']]],
-  ['api_20reference_20',['4. API Reference',['../index.html#autotoc_md22',1,'']]],
-  ['appearance_21',['Appearance',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md64',1,'']]],
-  ['applying_20a_20preset_22',['Applying a Preset',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md85',1,'']]],
-  ['aspect_20ratio_23',['Radii (Aspect Ratio)',['../md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md147',1,'']]],
-  ['automatic_20sorting_24',['Automatic Sorting',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md90',1,'']]],
-  ['available_20statistics_25',['Available Statistics',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md103',1,'']]]
+  ['5_20release_20notes_0',['5. Release Notes',['../index.html#autotoc_md24',1,'']]]
 ];

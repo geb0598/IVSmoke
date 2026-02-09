@@ -1,4 +1,14 @@
 var searchData=
 [
-  ['join_20handling_20fast_20forwarding_0',['Late-Join Handling (Fast Forwarding)',['../md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md151',1,'']]]
+  ['handling_20fast_20forwarding_0',['Late-Join Handling (Fast Forwarding)',['../md_pages_2_voxel_volume_2_voxel_volume_guide.html#autotoc_md153',1,'']]],
+  ['hasvalidshadowdata_1',['HasValidShadowData',['../class_f_i_v_smoke_c_s_m_renderer.html#a8211f4270b34361106b22d51b8b8cd85',1,'FIVSmokeCSMRenderer']]],
+  ['high_20performance_20the_20component_20does_20not_20create_20a_20collision_20box_20for_20every_20single_20voxel_20instead_20it_20utilizes_20a_20binary_20greedy_20meshing_20algorithm_2',['How It Works: Greedy Meshing To maintain high performance, the component &lt;b&gt;does not&lt;/b&gt; create a collision box for every single voxel. Instead, it utilizes a &lt;b&gt;Binary Greedy Meshing&lt;/b&gt; algorithm.',['../md_pages_2_collision_component_2_collision_component_guide.html#autotoc_md28',1,'']]],
+  ['hole_3',['Hole',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md128',1,'Case A. Request Penetration Hole'],['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md130',1,'Case B. Request Explosion Hole'],['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html#autotoc_md132',1,'Case C. Request Dynamic Hole']]],
+  ['holegenerator_20component_20guide_4',['HoleGenerator Component Guide',['../md_pages_2_hole_generator_component_2_hole_generator_component_guide.html',1,'']]],
+  ['holes_20effects_5',['Gameplay Interaction (Holes &amp;amp; Effects)',['../index.html#autotoc_md17',1,'']]],
+  ['holetextures_6',['HoleTextures',['../struct_f_i_v_smoke_packed_render_data.html#a229b87682dc9d713e99f5284cc6c0ee9',1,'FIVSmokePackedRenderData']]],
+  ['holetype_7',['HoleType',['../class_u_i_v_smoke_hole_preset.html#acb93f8d44ca74a2b0b313aa4c888274b',1,'UIVSmokeHolePreset::HoleType'],['../struct_f_i_v_smoke_hole_g_p_u.html#a37501f6f97aa97bc608580ebd30d1b78',1,'FIVSmokeHoleGPU::HoleType']]],
+  ['how_20it_20works_8',['How It Works',['../md_pages_2_global_settings_2_global_settings_guide.html#autotoc_md91',1,'']]],
+  ['how_20it_20works_3a_20greedy_20meshing_20to_20maintain_20high_20performance_20the_20component_20does_20not_20create_20a_20collision_20box_20for_20every_20single_20voxel_20instead_20it_20utilizes_20a_20binary_20greedy_20meshing_20algorithm_9',['How It Works: Greedy Meshing To maintain high performance, the component &lt;b&gt;does not&lt;/b&gt; create a collision box for every single voxel. Instead, it utilizes a &lt;b&gt;Binary Greedy Meshing&lt;/b&gt; algorithm.',['../md_pages_2_collision_component_2_collision_component_guide.html#autotoc_md28',1,'']]],
+  ['how_20you_20want_20to_20mix_20the_20scene_20and_20smoke_20textures_10',['You must define how you want to mix the Scene and Smoke textures.',['../md_pages_2_custom_material_2_custom_material_guide.html#autotoc_md42',1,'']]]
 ];

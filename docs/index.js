@@ -12,5 +12,8 @@ var index =
       [ "Visual Customization", "index.html#autotoc_md19", null ],
       [ "Global Settings &amp; Optimization", "index.html#autotoc_md20", null ]
     ] ],
-    [ "4. API Reference", "index.html#autotoc_md22", null ]
+    [ "4. API Reference", "index.html#autotoc_md22", null ],
+    [ "5. Release Notes", "index.html#autotoc_md24", [
+      [ "Version 1.0.1 (Current)", "index.html#autotoc_md25", null ]
+    ] ]
 ];
