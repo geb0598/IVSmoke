@@ -78,4 +78,12 @@ For specific class definitions, function parameters, and variable types, please 
 
 ---
 
+## 5. Release Notes
+
+### Version 1.0.1 (Current)
+
+**Bug Fixes**
+* **Smoke Penetration:** Fixed an issue where smoke particles would clip through walls or static geometry.
+* **Packaging:** Fixed a shader compilation error that caused packaging failures in certain build configurations.
+
 *Copyright (c) 2026, Team SDB. All rights reserved.*
