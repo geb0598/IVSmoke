@@ -1,0 +1,72 @@
+// Copyright (c) 2026, Team SDB. All rights reserved.
+
+/*=============================================================================
+	IVSmokeDepthWritePS.usf: Pre-Pass Depth Write Shader
+
+	Writes smoke depth to scene depth buffer for correct translucent sorting.
+	Only writes depth for pixels with alpha >= configurable threshold.
+	Uses ray march results from earlier in the same Pre-pass pipeline.
+=============================================================================*/
+
+#include "/Engine/Public/Platform.ush"
+#include "/Engine/Private/Common.ush"
+
+// Input textures (from ray march in same Pre-pass pipeline)
+Texture2D<float4> SmokeWorldPosDepthTex;
+Texture2D<float4> SmokeLocalPosAlphaTex;
+SamplerState LinearClampSampler;
+
+// Camera parameters
+float3 CameraForward;
+float3 CameraOrigin;
+float2 ViewportSize;
+float2 ViewRectMin;
+
+// Configuration
+float DepthBias;
+float AlphaThreshold;
+
+// Projection parameters for manual depth conversion (avoids View uniform buffer dependency)
+float ViewToClip_22;
+float ViewToClip_32;
+
+// Manual implementation of ConvertToDeviceZ
+// Formula: DeviceZ = ViewToClip[2][2] + ViewToClip[3][2] / LinearZ
+float ManualConvertToDeviceZ(float LinearZ)
+{
+	return ViewToClip_22 + ViewToClip_32 / LinearZ;
+}
+
+void MainPS(
+	float4 SvPosition : SV_POSITION,
+	out float OutDepth : SV_Depth)
+{
+	// Calculate UV for smoke texture sampling (account for ViewRect offset)
+	float2 UV = (SvPosition.xy - ViewRectMin) / ViewportSize;
+
+	// Sample previous frame's ray march results (bilinear for half-res upsampling)
+	float4 WorldPosDepth = SmokeWorldPosDepthTex.SampleLevel(LinearClampSampler, UV, 0);
+	float Alpha = SmokeLocalPosAlphaTex.SampleLevel(LinearClampSampler, UV, 0).w;
+
+	// Only write depth for pixels with alpha >= threshold
+	// User-configurable threshold via Project Settings > Plugins > IVSmoke.
+	// Depth position can be adjusted via DepthBias setting.
+	if (Alpha < AlphaThreshold || WorldPosDepth.w <= 0.0)
+	{
+		discard;
+	}
+
+	// Convert World Position to Linear Depth (view-space Z)
+	float3 HitWorldPos = WorldPosDepth.xyz;
+	float LinearDepth = dot(HitWorldPos - CameraOrigin, CameraForward);
+
+	// Validate: LinearDepth must be positive (in front of camera)
+	if (LinearDepth <= 0.0)
+	{
+		discard;
+	}
+
+	// Apply bias and convert to Device Z
+	float BiasedDepth = LinearDepth + DepthBias;
+	OutDepth = ManualConvertToDeviceZ(BiasedDepth);
+}

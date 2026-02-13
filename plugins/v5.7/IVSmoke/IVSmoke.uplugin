@@ -1,0 +1,26 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "IVSmoke",
+	"Description": "Real-time voxel-based interactive volumetric smoke plugin. Supports network replication and dynamic interaction with projectiles and objects. Features ray marching and tile-based occupancy optimization for efficient rendering.",
+	"Category": "Visual Effects",
+	"CreatedBy": "Team SDB",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"EngineVersion": "5.7.0",
+	"CanContainContent": true,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "IVSmoke",
+			"Type": "Runtime",
+			"LoadingPhase": "PostConfigInit",
+			"PlatformAllowList": [
+				"Win64"
+			]
+		}
+	]
+}

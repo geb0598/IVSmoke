@@ -1,0 +1,91 @@
+// Copyright (c) 2026, Team SDB. All rights reserved.
+// IVSmokeHoleBlurCS.usf - Separable Gaussian Blur for 3D Volume Texture
+
+#include "/Engine/Public/Platform.ush"
+
+//~============================================================================
+// Input / Output
+
+Texture3D<float4> InputTexture;
+SamplerState InputSampler;
+RWTexture3D<float4> OutputTexture;
+
+//~============================================================================
+// Uniforms
+
+int3 Resolution;
+int3 BlurDirection;
+int BlurStep;
+
+//~============================================================================
+// Gaussian Weights (Precomputed, normalized)
+
+// BlurStep 1: 3 samples (center + 2 neighbors)
+static const float Weights1[2] = { 0.5, 0.25 };
+
+// BlurStep 2: 5 samples
+static const float Weights2[3] = { 0.375, 0.25, 0.0625 };
+
+// BlurStep 3: 7 samples
+static const float Weights3[4] = { 0.28125, 0.21875, 0.109375, 0.03125 };
+
+// BlurStep 4: 9 samples
+static const float Weights4[5] = { 0.2265625, 0.1875, 0.1171875, 0.0546875, 0.015625 };
+
+//~============================================================================
+// Helper Functions
+
+float GetGaussianWeight(int Distance, int Radius)
+{
+	int AbsDistance = abs(Distance);
+
+	if (Radius == 1)
+	{
+		return (AbsDistance < 2) ? Weights1[AbsDistance] : 0.0;
+	}
+	else if (Radius == 2)
+	{
+		return (AbsDistance < 3) ? Weights2[AbsDistance] : 0.0;
+	}
+	else if (Radius == 3)
+	{
+		return (AbsDistance < 4) ? Weights3[AbsDistance] : 0.0;
+	}
+	else if (Radius == 4)
+	{
+		return (AbsDistance < 5) ? Weights4[AbsDistance] : 0.0;
+	}
+
+	return 0.0;
+}
+
+//~============================================================================
+// Main Compute Shader
+
+[numthreads(THREADGROUP_SIZEX, THREADGROUP_SIZEY, THREADGROUP_SIZEZ)]
+void MainCS(uint3 DTid : SV_DispatchThreadID)
+{
+	int3 VoxelCoord = int3(DTid);
+
+	// Bounds check
+	if (any(VoxelCoord >= Resolution))
+	{
+		return;
+	}
+
+	// Accumulate weighted samples along blur direction
+	float4 Result = float4(0, 0, 0, 0);
+
+	for (int i = -BlurStep; i <= BlurStep; i++)
+	{
+		int3 SampleCoord = VoxelCoord + BlurDirection * i;
+
+		// Clamp to texture bounds
+		SampleCoord = clamp(SampleCoord, int3(0, 0, 0), Resolution - 1);
+
+		float Weight = GetGaussianWeight(i, BlurStep);
+		Result += InputTexture[SampleCoord] * Weight;
+	}
+
+	OutputTexture[VoxelCoord] = Result;
+}

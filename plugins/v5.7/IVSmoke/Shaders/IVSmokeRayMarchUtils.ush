@@ -1,0 +1,720 @@
+// Copyright (c) 2026, Team SDB. All rights reserved.
+
+#pragma once
+
+//~==============================================================================
+// Occupancy System Shader Utilities
+//
+// Tile-based occupancy for efficient empty space skipping in volumetric rendering.
+// Uses W/16 × H/16 × S/4 resolution for optimal warp coherence.
+//
+// Memory Layout:
+//   - TileData: Per-tile depth range and quick volume mask
+//   - ViewOccupancy: 3D texture with 128-bit bitmask per cell (which volumes are present)
+//   - LightOccupancy: 3D texture with 128-bit bitmask per cell (which volumes affect light)
+
+#ifndef TILE_SIZE_X
+#define TILE_SIZE_X 16
+#endif
+
+#ifndef TILE_SIZE_Y
+#define TILE_SIZE_Y 16
+#endif
+
+#ifndef MAX_VOLUMES
+#define MAX_VOLUMES 128
+#endif
+
+//~==============================================================================
+// GPU Data Structures (must match C++ FIVSmokeTileData)
+
+/**
+ * Per-tile metadata computed in Pass 0.
+ * 48 bytes, 16-byte aligned, cache-friendly.
+ */
+struct FTileData
+{
+	float Near;                  // Minimum linear depth in tile
+	float Far;                   // Maximum linear depth in tile
+	float StepSize;              // (Far - Near) / TotalSteps
+	float TotalVolumeLength;     // Total ray-volume intersection length (interval merged, for early rejection)
+	uint4 VolumeMask128;         // 128-bit volume mask for sparse iteration
+	float MaxLightMarchDistance; // Unused - light march uses GlobalAABB per-pixel
+	float Padding0;              // Padding for 48-byte alignment
+	float Padding1;
+	float Padding2;
+};
+
+//~==============================================================================
+// Occupancy Lookup Helpers
+
+/**
+ * Load tile data from structured buffer.
+ * Uses direct indexing for optimal memory access pattern.
+ *
+ * @param TileDataBuffer  Structured buffer containing FTileData
+ * @param TileCoord       2D tile coordinate (x, y)
+ * @param TileCountX      Number of tiles in X dimension
+ * @return                Tile data for the specified tile
+ */
+FTileData LoadTileData(StructuredBuffer<FTileData> TileDataBuffer, uint2 TileCoord, uint TileCountX)
+{
+	uint TileIndex = TileCoord.y * TileCountX + TileCoord.x;
+	return TileDataBuffer[TileIndex];
+}
+
+/**
+ * Sample view occupancy bitmask at given tile/slice coordinate.
+ * Returns uint4 containing 128-bit volume mask.
+ *
+ * @param ViewOccupancy   3D texture containing occupancy data
+ * @param TileCoord       2D tile coordinate
+ * @param SliceIndex      Depth slice index (0 to StepSliceCount-1)
+ * @return                uint4 bitmask (128 bits for 128 volumes)
+ */
+uint4 SampleViewOccupancy(Texture3D<uint4> ViewOccupancy, uint2 TileCoord, uint SliceIndex)
+{
+	return ViewOccupancy.Load(int4(TileCoord.x, TileCoord.y, SliceIndex, 0));
+}
+
+/**
+ * Sample light occupancy bitmask at given world position.
+ * Converts world position to occupancy coordinate.
+ *
+ * @param LightOccupancy  3D texture containing light occupancy data
+ * @param TileCoord       2D tile coordinate
+ * @param SliceIndex      Depth slice index
+ * @return                uint4 bitmask (128 bits for 128 volumes)
+ */
+uint4 SampleLightOccupancy(Texture3D<uint4> LightOccupancy, uint2 TileCoord, uint SliceIndex)
+{
+	return LightOccupancy.Load(int4(TileCoord.x, TileCoord.y, SliceIndex, 0));
+}
+
+/**
+ * Check if any volume is present in the given bitmask.
+ * Fast early-out check using bitwise OR.
+ *
+ * @param Mask  uint4 bitmask to check
+ * @return      true if any bit is set
+ */
+bool AnyVolumePresent(uint4 Mask)
+{
+	return (Mask.x | Mask.y | Mask.z | Mask.w) != 0;
+}
+
+/**
+ * Check if a specific volume is present in the bitmask.
+ *
+ * @param Mask         uint4 bitmask
+ * @param VolumeIndex  Volume index (0 to MAX_VOLUMES-1)
+ * @return             true if volume is present
+ */
+bool IsVolumePresent(uint4 Mask, uint VolumeIndex)
+{
+	uint WordIndex = VolumeIndex / 32;
+	uint BitIndex = VolumeIndex % 32;
+	uint Word = Mask[WordIndex];
+	return (Word & (1u << BitIndex)) != 0;
+}
+
+/**
+ * Set volume bit in bitmask.
+ *
+ * @param Mask         uint4 bitmask (inout)
+ * @param VolumeIndex  Volume index to set
+ */
+void SetVolumeBit(inout uint4 Mask, uint VolumeIndex)
+{
+	uint WordIndex = VolumeIndex / 32;
+	uint BitIndex = VolumeIndex % 32;
+
+	// Branchless bit set using array indexing
+	// Note: HLSL doesn't support Mask[WordIndex] |= for vector types
+	switch (WordIndex)
+	{
+		case 0: Mask.x |= (1u << BitIndex); break;
+		case 1: Mask.y |= (1u << BitIndex); break;
+		case 2: Mask.z |= (1u << BitIndex); break;
+		case 3: Mask.w |= (1u << BitIndex); break;
+	}
+}
+
+//~==============================================================================
+// Sparse Volume Iteration
+
+/**
+ * Iterator state for sparse volume iteration using bitmask.
+ * Uses firstbitlow for efficient traversal of set bits.
+ */
+struct FVolumeMaskIterator
+{
+	uint4 Mask;         // Remaining bits to process
+	uint CurrentWord;   // Current word being processed (0-3)
+	uint CurrentBit;    // Current bit position within word
+	bool bValid;        // Iterator validity flag
+};
+
+/**
+ * Initialize volume mask iterator.
+ *
+ * @param Mask  Initial bitmask
+ * @return      Iterator positioned at first set bit
+ */
+FVolumeMaskIterator InitVolumeMaskIterator(uint4 Mask)
+{
+	FVolumeMaskIterator It;
+	It.Mask = Mask;
+	It.CurrentWord = 0;
+	It.CurrentBit = 0;
+	It.bValid = false;
+
+	// Find first non-zero word
+	[unroll]
+	for (uint w = 0; w < 4; w++)
+	{
+		if (It.Mask[w] != 0)
+		{
+			It.CurrentWord = w;
+			It.CurrentBit = firstbitlow(It.Mask[w]);
+			It.bValid = true;
+			break;
+		}
+	}
+
+	return It;
+}
+
+/**
+ * Get current volume index from iterator.
+ * Only valid if It.bValid is true.
+ *
+ * @param It  Iterator
+ * @return    Volume index (0 to MAX_VOLUMES-1)
+ */
+uint GetCurrentVolumeIndex(FVolumeMaskIterator It)
+{
+	return It.CurrentWord * 32 + It.CurrentBit;
+}
+
+/**
+ * Advance iterator to next set bit.
+ * Updates It.bValid to false when exhausted.
+ *
+ * @param It  Iterator (inout)
+ */
+void AdvanceVolumeMaskIterator(inout FVolumeMaskIterator It)
+{
+	if (!It.bValid)
+	{
+		return;
+	}
+
+	// Clear current bit
+	switch (It.CurrentWord)
+	{
+		case 0: It.Mask.x &= ~(1u << It.CurrentBit); break;
+		case 1: It.Mask.y &= ~(1u << It.CurrentBit); break;
+		case 2: It.Mask.z &= ~(1u << It.CurrentBit); break;
+		case 3: It.Mask.w &= ~(1u << It.CurrentBit); break;
+	}
+
+	// Find next set bit in current word
+	uint CurrentWordValue = It.Mask[It.CurrentWord];
+	if (CurrentWordValue != 0)
+	{
+		It.CurrentBit = firstbitlow(CurrentWordValue);
+		return;
+	}
+
+	// Search remaining words (explicit checks to avoid loop)
+	It.bValid = false;
+
+	// Check word 1 if current is 0
+	if (It.CurrentWord < 1 && It.Mask.y != 0)
+	{
+		It.CurrentWord = 1;
+		It.CurrentBit = firstbitlow(It.Mask.y);
+		It.bValid = true;
+		return;
+	}
+
+	// Check word 2 if current is 0 or 1
+	if (It.CurrentWord < 2 && It.Mask.z != 0)
+	{
+		It.CurrentWord = 2;
+		It.CurrentBit = firstbitlow(It.Mask.z);
+		It.bValid = true;
+		return;
+	}
+
+	// Check word 3 if current is 0, 1, or 2
+	if (It.CurrentWord < 3 && It.Mask.w != 0)
+	{
+		It.CurrentWord = 3;
+		It.CurrentBit = firstbitlow(It.Mask.w);
+		It.bValid = true;
+		return;
+	}
+}
+
+//~==============================================================================
+// Frustum Cell Utilities
+
+/**
+ * Compute world-space AABB for a frustum cell (tile + depth slice).
+ * Used for conservative volume intersection testing.
+ *
+ * @param TileCoord       2D tile coordinate
+ * @param TileCount       Total tile count (x, y)
+ * @param SliceNear       Near depth of the slice (linear)
+ * @param SliceFar        Far depth of the slice (linear)
+ * @param CameraPos       Camera world position
+ * @param CameraForward   Camera forward vector
+ * @param CameraRight     Camera right vector
+ * @param CameraUp        Camera up vector
+ * @param TanHalfFOV      tan(FOV/2)
+ * @param AspectRatio     Width/Height
+ * @param OutMin          Output AABB minimum (world space)
+ * @param OutMax          Output AABB maximum (world space)
+ */
+void ComputeFrustumCellAABB(
+	uint2 TileCoord,
+	uint2 TileCount,
+	float SliceNear,
+	float SliceFar,
+	float3 CameraPos,
+	float3 CameraForward,
+	float3 CameraRight,
+	float3 CameraUp,
+	float TanHalfFOV,
+	float AspectRatio,
+	out float3 OutMin,
+	out float3 OutMax)
+{
+	// Tile UV bounds [0, 1]
+	float2 TileUVMin = float2(TileCoord) / float2(TileCount);
+	float2 TileUVMax = float2(TileCoord + 1) / float2(TileCount);
+
+	// Convert to screen space [-1, 1]
+	float2 ScreenMin = TileUVMin * 2.0 - 1.0;
+	float2 ScreenMax = TileUVMax * 2.0 - 1.0;
+	ScreenMin.y *= -1.0;
+	ScreenMax.y *= -1.0;
+
+	// Swap Y if needed (after flip)
+	float ScreenMinY = min(ScreenMin.y, ScreenMax.y);
+	float ScreenMaxY = max(ScreenMin.y, ScreenMax.y);
+	ScreenMin.y = ScreenMinY;
+	ScreenMax.y = ScreenMaxY;
+
+	// Compute 8 frustum corners (4 corners × 2 depths)
+	float3 Corners[8];
+	int CornerIdx = 0;
+
+	[unroll]
+	for (int d = 0; d < 2; d++)
+	{
+		float Depth = (d == 0) ? SliceNear : SliceFar;
+
+		[unroll]
+		for (int cy = 0; cy < 2; cy++)
+		{
+			[unroll]
+			for (int cx = 0; cx < 2; cx++)
+			{
+				float2 ScreenPos = float2(
+					(cx == 0) ? ScreenMin.x : ScreenMax.x,
+					(cy == 0) ? ScreenMin.y : ScreenMax.y
+				);
+
+				float3 RayDir = normalize(
+					CameraForward
+					+ ScreenPos.x * CameraRight * TanHalfFOV * AspectRatio
+					+ ScreenPos.y * CameraUp * TanHalfFOV
+				);
+
+				// Convert linear depth to ray distance
+				float ViewDirDot = max(dot(RayDir, CameraForward), 0.001);
+				float RayDist = Depth / ViewDirDot;
+
+				Corners[CornerIdx++] = CameraPos + RayDir * RayDist;
+			}
+		}
+	}
+
+	// Compute AABB from corners
+	OutMin = Corners[0];
+	OutMax = Corners[0];
+
+	[unroll]
+	for (int i = 1; i < 8; i++)
+	{
+		OutMin = min(OutMin, Corners[i]);
+		OutMax = max(OutMax, Corners[i]);
+	}
+}
+
+//~==============================================================================
+// AABB Intersection Tests
+
+/**
+ * Test if two AABBs intersect.
+ * Uses separating axis theorem on aligned boxes.
+ *
+ * @param AMin  First AABB minimum
+ * @param AMax  First AABB maximum
+ * @param BMin  Second AABB minimum
+ * @param BMax  Second AABB maximum
+ * @return      true if AABBs intersect
+ */
+bool AABBIntersects(float3 AMin, float3 AMax, float3 BMin, float3 BMax)
+{
+	// Separating axis: if separated on any axis, no intersection
+	return all(AMin <= BMax) && all(AMax >= BMin);
+}
+
+/**
+ * Ray-AABB intersection for OCCUPANCY/CULLING tests.
+ * Returns RAW intersection distances (tNear may be negative if ray starts inside box).
+ *
+ * USE THIS for:
+ * - Occupancy grid building (need to know if ray exits box, regardless of start position)
+ * - Light march distance calculation (sample point is inside volume, need exit distance)
+ * - Conservative intersection testing
+ *
+ * For view ray marching where tNear should be clamped to 0, use RayBoxIntersection
+ * in IVSmokeCommon.ush instead.
+ *
+ * @param RayOrigin  Ray origin
+ * @param RayDir     Ray direction (normalized)
+ * @param BoxMin     AABB minimum
+ * @param BoxMax     AABB maximum
+ * @param OutTNear   Entry distance (MAY BE NEGATIVE if ray starts inside box)
+ * @param OutTFar    Exit distance (always positive if intersection exists)
+ * @return           true if intersection exists (ray passes through box)
+ */
+bool RayAABBIntersection(
+	float3 RayOrigin,
+	float3 RayDir,
+	float3 BoxMin,
+	float3 BoxMax,
+	out float OutTNear,
+	out float OutTFar)
+{
+	// Prevent NaN from division by zero when ray direction is nearly axis-aligned
+	// If RayDir component is ~0, replace with small epsilon preserving sign
+	const float EPSILON = 1e-8;
+	float3 SafeDir = float3(
+		abs(RayDir.x) > EPSILON ? RayDir.x : (RayDir.x >= 0.0 ? EPSILON : -EPSILON),
+		abs(RayDir.y) > EPSILON ? RayDir.y : (RayDir.y >= 0.0 ? EPSILON : -EPSILON),
+		abs(RayDir.z) > EPSILON ? RayDir.z : (RayDir.z >= 0.0 ? EPSILON : -EPSILON)
+	);
+	float3 InvDir = 1.0 / SafeDir;
+
+	float3 T0 = (BoxMin - RayOrigin) * InvDir;
+	float3 T1 = (BoxMax - RayOrigin) * InvDir;
+
+	float3 TMin = min(T0, T1);
+	float3 TMax = max(T0, T1);
+
+	OutTNear = max(max(TMin.x, TMin.y), TMin.z);
+	OutTFar = min(min(TMax.x, TMax.y), TMax.z);
+
+	// No clamping of tNear - caller decides how to handle negative values
+	return OutTFar >= OutTNear && OutTFar >= 0.0;
+}
+
+/**
+ * Conservative light ray intersection test.
+ * Tests if a light ray from the frustum cell might intersect a volume.
+ *
+ * Two-level test for accuracy:
+ * 1. Expand cell AABB along light direction, test against volume AABB
+ * 2. If pass, test actual ray-AABB from cell center
+ *
+ * @param CellMin          Cell AABB minimum
+ * @param CellMax          Cell AABB maximum
+ * @param LightDir         Light direction (toward light source)
+ * @param MaxLightDist     Maximum light march distance
+ * @param VolumeMin        Volume AABB minimum
+ * @param VolumeMax        Volume AABB maximum
+ * @return                 true if light ray might intersect volume
+ */
+bool LightRayIntersectsVolume(
+	float3 CellMin,
+	float3 CellMax,
+	float3 LightDir,
+	float MaxLightDist,
+	float3 VolumeMin,
+	float3 VolumeMax)
+{
+	// Level 1: Conservative AABB expansion test
+	// Expand cell AABB in light direction
+	float3 LightOffset = LightDir * MaxLightDist;
+	float3 ExpandedMin = min(CellMin, CellMin + LightOffset);
+	float3 ExpandedMax = max(CellMax, CellMax + LightOffset);
+
+	if (!AABBIntersects(ExpandedMin, ExpandedMax, VolumeMin, VolumeMax))
+	{
+		return false;  // Definitely no intersection
+	}
+
+	// Level 2: Ray-AABB test from cell center
+	// This catches edge cases where expansion includes volume but ray misses
+	float3 CellCenter = (CellMin + CellMax) * 0.5;
+	float TempNear, TempFar;
+
+	return RayAABBIntersection(CellCenter, LightDir, VolumeMin, VolumeMax, TempNear, TempFar)
+		&& TempNear < MaxLightDist;
+}
+
+//~==============================================================================
+// Depth Conversion Utilities
+
+/**
+ * Convert device Z to linear world depth.
+ * Uses InvDeviceZToWorldZTransform from engine.
+ *
+ * @param DeviceZ                      Device Z value (reversed Z: 1=near, 0=far)
+ * @param InvDeviceZToWorldZTransform  Transform parameters
+ * @return                             Linear world depth
+ */
+float DeviceZToLinearDepth(float DeviceZ, float4 InvDeviceZToWorldZTransform)
+{
+	return DeviceZ * InvDeviceZToWorldZTransform.x
+		+ InvDeviceZToWorldZTransform.y
+		+ 1.0 / (DeviceZ * InvDeviceZToWorldZTransform.z - InvDeviceZToWorldZTransform.w);
+}
+
+/**
+ * Compute depth slice index from linear depth.
+ *
+ * @param LinearDepth    Linear world depth
+ * @param TileNear       Tile near depth
+ * @param TileStepSize   Step size for the tile
+ * @param StepDivisor    Steps per slice (typically 4)
+ * @param StepSliceCount Total number of slices
+ * @return               Slice index (clamped to valid range)
+ */
+uint ComputeSliceIndex(
+	float LinearDepth,
+	float TileNear,
+	float TileStepSize,
+	uint StepDivisor,
+	uint StepSliceCount)
+{
+	float SliceDepth = (LinearDepth - TileNear) / (TileStepSize * StepDivisor);
+	return clamp(uint(SliceDepth), 0, StepSliceCount - 1);
+}
+
+//~==============================================================================
+// Interval Merging for Accurate TotalVolumeLength
+//
+// When volumes overlap, simple sum of intersection lengths overcounts.
+// Interval merging solves this by:
+// 1. Collecting [tNear, tFar] intervals for each ray-volume intersection
+// 2. Sorting intervals by tNear using Bitonic Sort (GPU-friendly)
+// 3. Merging overlapping intervals via linear sweep
+// 4. Summing merged interval lengths
+//
+// Performance: O(N log²N) for sort + O(N) for merge, where N = volume count
+// Memory: MAX_SORT_INTERVALS * 2 floats in registers
+
+/** Maximum intervals to sort. Matches MAX_VOLUMES for consistent 128 volume support. */
+#ifndef MAX_SORT_INTERVALS
+#define MAX_SORT_INTERVALS 128
+#endif
+
+/**
+ * Interval structure for ray-volume intersection.
+ * Stores entry (Near) and exit (Far) distances along ray.
+ */
+struct FRayInterval
+{
+	float Near;  // Entry distance (may be 0 if ray starts inside)
+	float Far;   // Exit distance
+};
+
+/**
+ * Bitonic compare-and-swap for interval sorting.
+ * Swaps A and B if they're out of order according to Dir.
+ *
+ * @param A    First interval (inout)
+ * @param B    Second interval (inout)
+ * @param Dir  Sort direction: true = ascending, false = descending
+ */
+void BitonicCompareSwap(inout FRayInterval A, inout FRayInterval B, bool Dir)
+{
+	// Swap if (A.Near > B.Near) when ascending, or (A.Near < B.Near) when descending
+	if ((A.Near > B.Near) == Dir)
+	{
+		FRayInterval Temp = A;
+		A = B;
+		B = Temp;
+	}
+}
+
+/**
+ * Bitonic Sort for ray intervals (ascending by Near).
+ * GPU-friendly sorting network with regular access pattern.
+ *
+ * Complexity: O(log²N) stages, each with O(N) comparisons
+ * Total: O(N log²N) comparisons
+ *
+ * @param Intervals  Array of intervals to sort (inout)
+ * @param Count      Number of valid intervals (rest are ignored)
+ */
+void BitonicSortIntervals(inout FRayInterval Intervals[MAX_SORT_INTERVALS], uint Count)
+{
+	if (Count <= 1)
+	{
+		return;
+	}
+
+	// Pad count to next power of 2 for bitonic sort
+	uint N = 1;
+	while (N < Count)
+	{
+		N *= 2;
+	}
+
+	// Pad unused slots with large values (will sort to end)
+	for (uint i = Count; i < N; i++)
+	{
+		Intervals[i].Near = 1e30;
+		Intervals[i].Far = 1e30;
+	}
+
+	// Bitonic sort: build and merge bitonic sequences
+	// Outer loop: sequence size doubles each iteration (2, 4, 8, ...)
+	for (uint k = 2; k <= N; k *= 2)
+	{
+		// Inner loop: compare distance halves each iteration (k/2, k/4, ..., 1)
+		for (uint j = k / 2; j > 0; j /= 2)
+		{
+			// Compare-swap pairs at distance j
+			for (uint i = 0; i < N; i++)
+			{
+				uint Partner = i ^ j;  // XOR gives partner index
+
+				if (Partner > i && Partner < N)
+				{
+					// Direction alternates based on which k-block we're in
+					bool Dir = ((i & k) == 0);
+					BitonicCompareSwap(Intervals[i], Intervals[Partner], Dir);
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Merge overlapping intervals and compute total length.
+ * Assumes intervals are sorted by Near (ascending).
+ *
+ * Algorithm: Linear sweep, extending current interval while overlapping
+ *
+ * Example:
+ *   Input:  [0,100], [50,150], [200,300]
+ *   Merge:  [0,150], [200,300]
+ *   Output: 150 + 100 = 250
+ *
+ * @param Intervals  Sorted array of intervals
+ * @param Count      Number of valid intervals
+ * @return           Total length of merged intervals
+ */
+float MergeIntervalsAndSum(FRayInterval Intervals[MAX_SORT_INTERVALS], uint Count)
+{
+	if (Count == 0)
+	{
+		return 0.0;
+	}
+
+	float TotalLength = 0.0;
+
+	// Start with first interval
+	float CurrentNear = Intervals[0].Near;
+	float CurrentFar = Intervals[0].Far;
+
+	// Sweep through remaining intervals
+	for (uint i = 1; i < Count; i++)
+	{
+		float NextNear = Intervals[i].Near;
+		float NextFar = Intervals[i].Far;
+
+		// Skip invalid intervals (padding)
+		if (NextNear >= 1e29)
+		{
+			break;
+		}
+
+		if (NextNear <= CurrentFar)
+		{
+			// Overlapping: extend current interval
+			CurrentFar = max(CurrentFar, NextFar);
+		}
+		else
+		{
+			// Non-overlapping: finalize current, start new
+			TotalLength += max(CurrentFar - CurrentNear, 0.0);
+			CurrentNear = NextNear;
+			CurrentFar = NextFar;
+		}
+	}
+
+	// Add final interval
+	TotalLength += max(CurrentFar - CurrentNear, 0.0);
+
+	return TotalLength;
+}
+
+/**
+ * Collect ray-volume intersections, sort, merge, and return total length.
+ * This is the main entry point for accurate TotalVolumeLength calculation.
+ *
+ * @param RayOrigin         Ray origin (camera position)
+ * @param RayDir            Ray direction (normalized)
+ * @param VolumeDataBuffer  Buffer containing volume AABBs
+ * @param VolumeCount       Number of active volumes
+ * @return                  Total length through all volumes (merged, no overlap)
+ */
+float ComputeMergedVolumeLength(
+	float3 RayOrigin,
+	float3 RayDir,
+	StructuredBuffer<FVolumeGPUData> VolumeDataBuffer,
+	uint VolumeCount)
+{
+	FRayInterval Intervals[MAX_SORT_INTERVALS];
+	uint IntervalCount = 0;
+
+	// Collect ray-volume intersections from ALL volumes (up to 128)
+	// Only store up to MAX_SORT_INTERVALS intervals due to array size limit
+	[loop]
+	for (uint v = 0; v < VolumeCount; v++)
+	{
+		FVolumeGPUData Vol = VolumeDataBuffer[v];
+
+		float EntryT, ExitT;
+		if (RayAABBIntersection(RayOrigin, RayDir, Vol.VolumeWorldAABBMin, Vol.VolumeWorldAABBMax, EntryT, ExitT))
+		{
+			if (IntervalCount < MAX_SORT_INTERVALS)
+			{
+				Intervals[IntervalCount].Near = max(EntryT, 0.0);
+				Intervals[IntervalCount].Far = ExitT;
+				IntervalCount++;
+			}
+		}
+	}
+
+	if (IntervalCount == 0)
+	{
+		return 0.0;
+	}
+
+	// Sort by Near (ascending)
+	BitonicSortIntervals(Intervals, IntervalCount);
+
+	// Merge overlapping and sum
+	return MergeIntervalsAndSum(Intervals, IntervalCount);
+}

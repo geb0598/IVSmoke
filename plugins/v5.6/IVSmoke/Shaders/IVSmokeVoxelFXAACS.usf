@@ -1,0 +1,80 @@
+// Copyright (c) 2026, Team SDB. All rights reserved.
+#include "/Engine/Private/Common.ush"
+
+RWTexture3D<float> Desti;
+Texture3D<float> Source;
+SamplerState LinearBorder_Sampler;
+int3 TexSize;
+
+// FXAA
+float FXAASpanMax;
+float FXAARange;
+float FXAASharpness;
+
+float GetFXAA(float3 uvw)
+{
+	float3 VoxelTexRCP = float3(1.0f / TexSize.x, 1.0f / TexSize.y, 1.0f / TexSize.z);
+	float M = Source.SampleLevel(LinearBorder_Sampler, uvw, 0);
+	float v000 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(-1, -1, -1) * VoxelTexRCP, 0);
+	float v001 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(-1, -1, 1) * VoxelTexRCP, 0);
+	float v010 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(-1, 1, -1) * VoxelTexRCP, 0);
+	float v011 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(-1, 1, 1) * VoxelTexRCP, 0);
+	float v100 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(1, -1, -1) * VoxelTexRCP, 0);
+	float v101 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(1, -1, 1) * VoxelTexRCP, 0);
+	float v110 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(1, 1, -1) * VoxelTexRCP, 0);
+	float v111 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(1, 1, 1) * VoxelTexRCP, 0);
+
+	// abs(dir) == spanmax => offset = 0
+	// abs(dir) == 0 => offset = FXAARange
+	// sharpness => nonlinear
+	
+	float3 Dir;
+	Dir.x = (v000 + v001 + v010 + v011) - (v100 + v101 + v110 + v111);
+	Dir.y = (v000 + v001 + v100 + v101) - (v010 + v011 + v110 + v111);
+	Dir.z = (v000 + v010 + v100 + v110) - (v001 + v011 + v101 + v111);
+
+	Dir.x = clamp(0, FXAASpanMax, abs(Dir.x));
+	Dir.y = clamp(0, FXAASpanMax, abs(Dir.y));
+	Dir.z = clamp(0, FXAASpanMax, abs(Dir.z));
+	
+	Dir /= FXAASpanMax;
+	Dir.x = pow(saturate(1 - Dir.x), FXAASharpness);
+	Dir.y = pow(saturate(1 - Dir.y), FXAASharpness);
+	Dir.z = pow(saturate(1 - Dir.z), FXAASharpness);
+	
+	// diff small = dir small
+	Dir = FXAARange * Dir * VoxelTexRCP;
+
+	float v0 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(-1, -1, -1) * Dir, 0);
+	float v1 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(-1, -1, 1) * Dir, 0);
+	float v2 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(-1, 1, -1) * Dir, 0);
+	float v3 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(-1, 1, 1) * Dir, 0);
+	float v4 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(1, -1, -1) * Dir, 0);
+	float v5 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(1, -1, 1) * Dir, 0);
+	float v6 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(1, 1, -1) * Dir, 0);
+	float v7 = Source.SampleLevel(LinearBorder_Sampler, uvw + int3(1, 1, 1) * Dir, 0);
+
+	return (v0 + v1 + v2 + v3 + v4 + v5 + v6 + v7) * 0.25f;
+}
+
+
+[numthreads(8, 8, 8)]
+void MainCS(uint3 DispatchThreadId : SV_DispatchThreadID)
+{
+	uint3 PixelCoord = DispatchThreadId.xyz;
+
+	// Bounds check (use TexSize for reduced resolution rendering)
+	if (PixelCoord.x >= TexSize.x || PixelCoord.y >= TexSize.y || PixelCoord.z >= TexSize.z)
+	{
+		return;
+	}
+
+	float3 pixelUVW = PixelCoord + float3(0.5f, 0.5f, 0.5f);
+	float3 uvw = pixelUVW / TexSize;
+
+	// FXAA sampling
+	Desti[PixelCoord] = GetFXAA(uvw);
+
+	// trilinear sampling
+	//Desti[PixelCoord] = Source.Sample(LinearBorder_Sampler, uvw);
+}

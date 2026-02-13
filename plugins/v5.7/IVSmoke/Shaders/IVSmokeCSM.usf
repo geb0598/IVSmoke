@@ -1,0 +1,200 @@
+// Copyright (c) 2026, Team SDB. All rights reserved.
+
+/**
+ * IVSmoke Cascaded Shadow Map Sampling Module
+ *
+ * This file provides CSM + VSM shadow sampling functions.
+ * Include this file AFTER defining the required uniform variables and helper.
+ *
+ * Required uniforms (define before including):
+ * - int NumCascades: Active cascade count
+ * - Texture2DArray CSMDepthTextureArray: Cascade depth textures (SCS_SceneDepth = linear cm)
+ * - Texture2DArray CSMVSMTextureArray: Cascade VSM textures
+ * - SamplerState CSMSampler: Shadow map sampler
+ * - float4x4 CSMViewProjectionMatrices[8]: Per-cascade VP matrices (for UV calculation only)
+ * - float4 CSMSplitDistances[2]: Per-cascade split distances (8 floats packed)
+ * - float3 CSMCameraPosition: Main camera position (for cascade selection)
+ * - float CascadeBlendRange: Blend region size (0-1)
+ * - float4 CSMLightCameraPositions[8]: Per-cascade light camera positions
+ * - float4 CSMLightCameraForwards[8]: Per-cascade light camera forward directions
+ * - int bEnableVSM: Whether to use VSM
+ * - float VSMMinVariance: Minimum variance for VSM
+ * - float VSMLightBleedingReduction: LBR amount
+ * - float ShadowDepthBias: Depth bias for hard shadows (in cm)
+ * - float ExternalShadowAmbient: Minimum shadow value
+ *
+ * Required helper function (define before including):
+ * - float GetCSMSplitDistance(int CascadeIndex): Unpacks split distance from float4[2]
+ */
+
+#ifndef IVSMOKE_CSM_USF
+#define IVSMOKE_CSM_USF
+
+//~==============================================================================
+// Constants
+
+#ifndef CSM_MAX_CASCADES
+#define CSM_MAX_CASCADES 8
+#endif
+
+//~==============================================================================
+// Internal: Cascade Selection
+
+/**
+ * Select the appropriate cascade index based on view distance.
+ *
+ * @param ViewDepth Pre-calculated view depth (length(WorldPos - CSMCameraPosition))
+ */
+int IVSmoke_SelectCascade(float ViewDepth)
+{
+	for (int i = 0; i < NumCascades; i++)
+	{
+		if (ViewDepth < GetCSMSplitDistance(i))
+		{
+			return i;
+		}
+	}
+
+	return NumCascades - 1;
+}
+
+//~==============================================================================
+// Internal: VSM Shadow Calculation
+
+/**
+ * Calculate shadow using Variance Shadow Map (Chebyshev's inequality).
+ */
+float IVSmoke_CalculateVSMShadow(float2 Moments, float FragmentDepth)
+{
+	float Mean = Moments.x;
+	float Variance = max(Moments.y - Mean * Mean, VSMMinVariance);
+
+	// If fragment is in front of mean depth, it's fully lit
+	if (FragmentDepth <= Mean)
+	{
+		return 1.0;
+	}
+
+	// Chebyshev's inequality
+	float d = FragmentDepth - Mean;
+	float pMax = Variance / (Variance + d * d);
+
+	// Light Bleeding Reduction
+	pMax = saturate((pMax - VSMLightBleedingReduction) / (1.0 - VSMLightBleedingReduction));
+
+	return lerp(ExternalShadowAmbient, 1.0, pMax);
+}
+
+/**
+ * Calculate shadow using standard depth comparison (hard shadows).
+ */
+float IVSmoke_CalculateHardShadow(float ShadowDepth, float FragmentDepth)
+{
+	float IsLit = step(FragmentDepth - ShadowDepthBias, ShadowDepth);
+	return lerp(ExternalShadowAmbient, 1.0, IsLit);
+}
+
+//~==============================================================================
+// Internal: Single Cascade Sampling
+
+/**
+ * Sample shadow from a single cascade.
+ * Uses linear depth comparison (SCS_SceneDepth outputs linear depth in cm).
+ *
+ * @param OutDebugUV Output shadow UV for debugging (optional, can be float2(0,0) if not needed)
+ * @param OutDebugDepths Output (ShadowDepth, FragmentDepth) for debugging
+ */
+float IVSmoke_SampleCascade(float3 WorldPos, int CascadeIndex, out float2 OutDebugUV, out float2 OutDebugDepths)
+{
+	OutDebugUV = float2(0, 0);
+	OutDebugDepths = float2(0, 0);
+
+	// Transform world position to light clip space
+	float4 LightClipPos = mul(float4(WorldPos, 1.0), CSMViewProjectionMatrices[CascadeIndex]);
+	float3 LightNDC = LightClipPos.xyz / LightClipPos.w;
+
+	// Convert from [-1, 1] to [0, 1] UV space
+	float2 ShadowUV = LightNDC.xy * 0.5 + 0.5;
+
+	// Flip Y for texture sampling (UE convention)
+	ShadowUV.y = 1.0 - ShadowUV.y;
+
+	OutDebugUV = ShadowUV;
+
+	// Check if position is outside shadow map
+	if (any(ShadowUV < 0.0) || any(ShadowUV > 1.0))
+	{
+		return 1.0;  // Outside shadow map = fully lit
+	}
+
+	// Calculate linear depth of current position from light camera
+	// For orthographic projection: depth = dot(WorldPos - CameraPos, CameraForward)
+	// This matches what SCS_SceneDepth outputs (linear depth in cm)
+	float3 LightCameraPos = CSMLightCameraPositions[CascadeIndex].xyz;
+	float3 LightCameraFwd = CSMLightCameraForwards[CascadeIndex].xyz;
+	float FragmentLinearDepth = dot(WorldPos - LightCameraPos, LightCameraFwd);
+
+	// SCS_SceneDepth outputs linear depth in cm from light camera
+	float ShadowLinearDepth = CSMDepthTextureArray.SampleLevel(CSMSampler, float3(ShadowUV, CascadeIndex), 0).r;
+
+	OutDebugDepths = float2(ShadowLinearDepth, FragmentLinearDepth);
+
+	if (bEnableVSM)
+	{
+		float2 Moments = CSMVSMTextureArray.SampleLevel(CSMSampler, float3(ShadowUV, CascadeIndex), 0).rg;
+		return IVSmoke_CalculateVSMShadow(Moments, FragmentLinearDepth);
+	}
+	else
+	{
+		return IVSmoke_CalculateHardShadow(ShadowLinearDepth, FragmentLinearDepth);
+	}
+}
+
+// Overload without debug outputs for normal use
+float IVSmoke_SampleCascade(float3 WorldPos, int CascadeIndex)
+{
+	float2 DebugUV, DebugDepths;
+	return IVSmoke_SampleCascade(WorldPos, CascadeIndex, DebugUV, DebugDepths);
+}
+
+//~==============================================================================
+// Public API: SampleExternalShadow
+
+/**
+ * Sample CSM shadow with cascade blending.
+ * This is the main entry point for external shadow sampling.
+ *
+ * @param WorldPos World space position to sample shadow at.
+ * @return Shadow value (1.0 = fully lit, ExternalShadowAmbient = fully shadowed).
+ */
+float SampleExternalShadow(float3 WorldPos)
+{
+	if (NumCascades <= 0)
+	{
+		return 1.0;
+	}
+
+	float ViewDepth = length(WorldPos - CSMCameraPosition);
+	int Cascade = IVSmoke_SelectCascade(ViewDepth);
+
+	// Sample primary cascade
+	float Shadow = IVSmoke_SampleCascade(WorldPos, Cascade);
+
+	// Blend with next cascade at boundary
+	if (Cascade < NumCascades - 1 && CascadeBlendRange > 0.0)
+	{
+		float SplitDist = GetCSMSplitDistance(Cascade);
+		float BlendStart = SplitDist * (1.0 - CascadeBlendRange);
+
+		if (ViewDepth > BlendStart)
+		{
+			float BlendFactor = saturate((ViewDepth - BlendStart) / (SplitDist - BlendStart));
+			float NextShadow = IVSmoke_SampleCascade(WorldPos, Cascade + 1);
+			Shadow = lerp(Shadow, NextShadow, BlendFactor);
+		}
+	}
+
+	return Shadow;
+}
+
+#endif // IVSMOKE_CSM_USF

@@ -1,0 +1,88 @@
+// Copyright (c) 2026, Team SDB. All rights reserved.
+#include "/Engine/Private/Common.ush"
+#include "IVSmokeCommon.ush"
+
+RWTexture3D<float> Desti;
+StructuredBuffer<float> BirthTimes;
+StructuredBuffer<float> DeathTimes;
+StructuredBuffer<FVolumeGPUData> VolumeDataBuffer;
+
+int3 TexSize;
+int3 VoxelResolution;
+int PackedInterval;
+int3 VoxelAtlasCount;
+float GameTime;
+int VolumeCount;
+
+bool IsValidTime(float t)
+{
+	return t >= 0.001 && t <= GameTime;
+}
+
+float GetExpansionCurve(float t)
+{
+	return pow(saturate(t), 0.5);
+}
+
+float GetDissipationCurve(float t)
+{
+	return 1.0 - pow(saturate(t), 0.5);
+}
+
+[numthreads(8, 8, 8)]
+void MainCS(uint3 DispatchThreadId : SV_DispatchThreadID)
+{
+	uint3 PixelCoord = DispatchThreadId.xyz;
+	if (PixelCoord.x >= TexSize.x || PixelCoord.y >= TexSize.y || PixelCoord.z >= TexSize.z)
+	{
+		return;
+	}
+
+	// 3D Grid atlas indexing
+	int3 SliceSize = VoxelResolution + PackedInterval;
+	int3 AtlasID;
+	AtlasID.x = PixelCoord.x / SliceSize.x;
+	AtlasID.y = PixelCoord.y / SliceSize.y;
+	AtlasID.z = PixelCoord.z / SliceSize.z;
+
+	uint VolumeIndex = AtlasID.x + AtlasID.y * VoxelAtlasCount.x + AtlasID.z * VoxelAtlasCount.x * VoxelAtlasCount.y;
+
+	// Bounds check: skip slots beyond actual volume count
+	if (VolumeIndex >= (uint)VolumeCount)
+	{
+		Desti[PixelCoord] = 0.0f;
+		return;
+	}
+
+	int3 LocalPos = PixelCoord % SliceSize;
+	if (any(LocalPos >= VoxelResolution))
+	{
+		Desti[PixelCoord] = 0.0f;
+		return;
+	}
+
+	FVolumeGPUData VolumeData = VolumeDataBuffer[VolumeIndex];
+
+	uint LocalIdx = LocalPos.x + VoxelResolution.x * LocalPos.y + VoxelResolution.x * VoxelResolution.y * LocalPos.z;
+	uint SourceIdx = VolumeData.VoxelBufferOffset + LocalIdx;
+
+	float BirthTime = BirthTimes[SourceIdx];
+	if (!IsValidTime(BirthTime))
+	{
+		Desti[PixelCoord] = 0.0f;
+		return;
+	}
+
+	float ExpansionProgress = saturate((GameTime - BirthTime) / VolumeData.FadeInDuration);
+	float ExpansionDensity = GetExpansionCurve(ExpansionProgress);
+
+	float DeathTime = DeathTimes[SourceIdx];
+	float DissipationDensity = 1.0f;
+	if (IsValidTime(DeathTime))
+	{
+		float DissipationProgress = saturate((GameTime - DeathTime) / VolumeData.FadeOutDuration);
+		DissipationDensity = GetDissipationCurve(DissipationProgress);
+	}
+
+	Desti[PixelCoord] = ExpansionDensity * DissipationDensity;
+}

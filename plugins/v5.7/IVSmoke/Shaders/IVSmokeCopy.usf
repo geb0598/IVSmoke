@@ -1,0 +1,15 @@
+// Copyright (c) 2026, Team SDB. All rights reserved.
+
+#include "/Engine/Public/Platform.ush"
+
+Texture2D MainTex;
+SamplerState LinearRepeat_Sampler;
+float2 ViewportSize;
+
+void MainPS(
+ 	float4 SvPosition : SV_POSITION,
+	out float4 OutColor : SV_Target0)
+{
+	float2 UV = SvPosition.xy / ViewportSize;
+	OutColor = MainTex.Sample(LinearRepeat_Sampler, UV);
+}

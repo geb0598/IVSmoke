@@ -1,0 +1,350 @@
+// Copyright (c) 2026, Team SDB. All rights reserved.
+
+#pragma once
+
+//~==============================================================================
+// GPU Data Structures
+
+/**
+ * Per-volume metadata. Must match FIVSmokeVolumeGPUData in C++.
+ * Total: 256 bytes
+ */
+struct FVolumeGPUData
+{
+	int3 GridResolution;
+	uint VoxelCount;            // Total voxel count for this volume
+
+	float3 SmokeColor;
+	float Absorption;
+
+	float3 CenterOffset;
+	float DensityScale;
+
+	float3 VolumeWorldAABBMin;
+	float VoxelSize;
+
+	float3 VolumeWorldAABBMax;
+	uint VoxelBufferOffset; // Offset into PackedVoxelBuffer
+
+	float3 VoxelWorldAABBMin;
+	float FadeInDuration;
+	float3 VoxelWorldAABBMax;
+	float FadeOutDuration;
+
+	float Reserved[4];
+};
+
+//~==============================================================================
+// Ray-Box Intersection
+
+/**
+ * Ray-AABB intersection for VIEW RAY marching.
+ * Uses slab method with CLAMPED tNear (returns 0 if ray starts inside box).
+ *
+ * USE THIS for view ray marching where you want to start at the box surface
+ * or at ray origin if already inside. OutTMin is guaranteed >= 0.
+ *
+ * For occupancy/culling tests where you need the raw intersection distances
+ * (including negative tNear when inside), use RayAABBIntersection in IVSmokeRayMarchUtils.ush.
+ *
+ * @param RayOrigin    Ray origin in world space
+ * @param RayDir       Normalized ray direction
+ * @param BoxMin       AABB minimum corner
+ * @param BoxMax       AABB maximum corner
+ * @param OutTMin      Entry distance (CLAMPED to 0 if inside box)
+ * @param OutTMax      Exit distance
+ * @return             True if ray intersects box (OutTMax >= 0)
+ */
+bool RayBoxIntersection(
+	float3 RayOrigin,
+	float3 RayDir,
+	float3 BoxMin,
+	float3 BoxMax,
+	out float OutTMin,
+	out float OutTMax)
+{
+	float3 InvRayDir = 1.0 / RayDir;
+
+	float3 T0 = (BoxMin - RayOrigin) * InvRayDir;
+	float3 T1 = (BoxMax - RayOrigin) * InvRayDir;
+
+	float3 TMin = min(T0, T1);
+	float3 TMax = max(T0, T1);
+
+	OutTMin = max(max(TMin.x, TMin.y), TMin.z);
+	OutTMax = min(min(TMax.x, TMax.y), TMax.z);
+
+	// Clamp tNear to 0: if ray starts inside box, start at origin
+	OutTMin = max(OutTMin, 0.0);
+
+	return OutTMax >= OutTMin;
+}
+
+//~==============================================================================
+// Voxel Grid Utilities
+
+/**
+ * Converts 3D grid position to linear index.
+ * Same formula as UIVSmokeGridLibrary::GridToIndex.
+ */
+int GridToIndex(int3 GridPos, int3 Resolution)
+{
+	return GridPos.x + GridPos.y * Resolution.x + GridPos.z * Resolution.x * Resolution.y;
+}
+
+/**
+ * Reads voxel density with bounds checking.
+ * Returns continuous density value instead of binary occupancy.
+ *
+ * @param GridPos       Integer grid position
+ * @param Resolution    Grid dimensions
+ * @param VoxelBuffer   Structured buffer containing voxel density data (continuous 0.0~N)
+ * @return              Density value at grid position (0.0 if out of bounds)
+ */
+float ReadVoxelDensity(int3 GridPos, int3 Resolution, StructuredBuffer<float> VoxelBuffer)
+{
+	// Bounds check
+	if (any(GridPos < 0) || any(GridPos >= Resolution))
+	{
+		return 0.0;
+	}
+
+	int Index = GridToIndex(GridPos, Resolution);
+	return VoxelBuffer[Index];
+}
+
+/**
+ * Samples voxel density with trilinear interpolation.
+ * Supports continuous density values (0.0~N) for natural smoke appearance.
+ *
+ * @param WorldPos      Sample position in world space
+ * @param WorldToLocal  Transform matrix from world to local space
+ * @param Resolution    Grid dimensions
+ * @param CenterOffset  Center offset for grid coordinate conversion
+ * @param VoxelSz       World-space size of each voxel
+ * @param VoxelBuffer   Structured buffer containing continuous voxel density data
+ * @return              Interpolated density value (0.0~N)
+ */
+float SampleVoxelDensityTrilinear(
+	float3 WorldPos,
+	float4x4 WorldToLocal,
+	int3 Resolution,
+	int3 CenterOffset,
+	float VoxelSz,
+	StructuredBuffer<float> VoxelBuffer
+)
+{
+	// World → Local transform
+	float3 LocalPos = mul(float4(WorldPos, 1.0), WorldToLocal).xyz;
+
+	// Local → Grid coordinate (continuous float)
+	float3 GridPosF = LocalPos / VoxelSz + float3(CenterOffset);
+
+	// 8 neighbor voxel integer coordinates
+	int3 P0 = int3(floor(GridPosF));
+	int3 P1 = P0 + int3(1, 1, 1);
+
+	// Interpolation weights
+	float3 F = frac(GridPosF);
+
+	// Sample 8 corners (continuous density values)
+	float C000 = ReadVoxelDensity(int3(P0.x, P0.y, P0.z), Resolution, VoxelBuffer);
+	float C100 = ReadVoxelDensity(int3(P1.x, P0.y, P0.z), Resolution, VoxelBuffer);
+	float C010 = ReadVoxelDensity(int3(P0.x, P1.y, P0.z), Resolution, VoxelBuffer);
+	float C110 = ReadVoxelDensity(int3(P1.x, P1.y, P0.z), Resolution, VoxelBuffer);
+	float C001 = ReadVoxelDensity(int3(P0.x, P0.y, P1.z), Resolution, VoxelBuffer);
+	float C101 = ReadVoxelDensity(int3(P1.x, P0.y, P1.z), Resolution, VoxelBuffer);
+	float C011 = ReadVoxelDensity(int3(P0.x, P1.y, P1.z), Resolution, VoxelBuffer);
+	float C111 = ReadVoxelDensity(int3(P1.x, P1.y, P1.z), Resolution, VoxelBuffer);
+
+	// Trilinear interpolation
+	float C00 = lerp(C000, C100, F.x);
+	float C10 = lerp(C010, C110, F.x);
+	float C01 = lerp(C001, C101, F.x);
+	float C11 = lerp(C011, C111, F.x);
+
+	float C0 = lerp(C00, C10, F.y);
+	float C1 = lerp(C01, C11, F.y);
+
+	return lerp(C0, C1, F.z);
+}
+
+//~==============================================================================
+// Legacy Density Functions
+
+/**
+ * Simple constant density within box.
+ */
+float SampleConstantDensity(float3 Position, float3 BoxMin, float3 BoxMax, float Density)
+{
+	// Check if position is inside box
+	if (all(Position >= BoxMin) && all(Position <= BoxMax))
+	{
+		return Density;
+	}
+	return 0.0;
+}
+
+/**
+ * Spherical falloff density.
+ */
+float SampleSphericalDensity(float3 Position, float3 Center, float Radius, float Density)
+{
+	float Dist = length(Position - Center);
+	float Falloff = saturate(1.0 - Dist / Radius);
+	return Falloff * Density;
+}
+
+//~==============================================================================
+// Transmittance & Accumulation
+
+/**
+ * Beer-Lambert law for light absorption.
+ *
+ * @param Density      Sampled density
+ * @param StepSize     Distance traveled
+ * @param Absorption   Absorption coefficient
+ * @return             Transmittance (0 = fully absorbed, 1 = fully transparent)
+ */
+float BeerLambert(float Density, float StepSize, float Absorption)
+{
+	return exp(-Density * StepSize * Absorption);
+}
+
+//~==============================================================================
+// Rayleigh Scattering
+
+/** PI constant for scattering calculations. */
+#ifndef PI
+#define PI 3.14159265359
+#endif
+
+/**
+ * Rayleigh phase function.
+ * Describes angular distribution of scattered light.
+ * P(theta) = (3/16pi) * (1 + cos^2(theta))
+ *
+ * @param CosTheta     Cosine of angle between light direction and view direction
+ * @return             Phase function value [0, 3/8pi]
+ */
+float RayleighPhase(float CosTheta)
+{
+	return (3.0 / (16.0 * PI)) * (1.0 + CosTheta * CosTheta);
+}
+
+/**
+ * Rayleigh scattering coefficients for RGB wavelengths.
+ * Based on lambda^-4 wavelength dependency.
+ * Normalized so that green channel = 1.0 for easier artistic control.
+ *
+ * Red:   ~650nm → (550/650)^4 ~= 0.51
+ * Green: ~550nm → 1.0 (reference)
+ * Blue:  ~450nm → (550/450)^4 ~= 2.23
+ *
+ * @return RGB scattering coefficients
+ */
+float3 RayleighCoefficients()
+{
+	return float3(0.51, 1.0, 2.23);
+}
+
+/**
+ * Calculates Rayleigh in-scattering contribution.
+ * Light scattered from the sun/main light toward the camera.
+ *
+ * @param ViewDir       Normalized view direction (camera to sample point)
+ * @param LightDir      Normalized light direction (sample point to light)
+ * @param LightColor    Light color and intensity
+ * @param Density       Local density at sample point
+ * @param ScatterScale  Artistic scattering intensity multiplier
+ * @return              RGB in-scattered light contribution
+ */
+float3 RayleighInScattering(
+	float3 ViewDir,
+	float3 LightDir,
+	float3 LightColor,
+	float Density,
+	float ScatterScale)
+{
+	// Angle between view and light
+	float CosTheta = dot(ViewDir, LightDir);
+
+	// Phase function
+	float Phase = RayleighPhase(CosTheta);
+
+	// Wavelength-dependent scattering
+	float3 ScatterCoeff = RayleighCoefficients();
+
+	// In-scattering = LightColor * Phase * ScatterCoeff * Density * Scale
+	return LightColor * Phase * ScatterCoeff * Density * ScatterScale;
+}
+
+/**
+ * Simplified Rayleigh scattering for performance.
+ * Uses single scalar coefficient instead of wavelength-dependent RGB.
+ *
+ * @param ViewDir       Normalized view direction
+ * @param LightDir      Normalized light direction
+ * @param LightColor    Light color and intensity
+ * @param Density       Local density
+ * @param ScatterScale  Scattering intensity multiplier
+ * @return              In-scattered light contribution
+ */
+float3 RayleighInScatteringSimple(
+	float3 ViewDir,
+	float3 LightDir,
+	float3 LightColor,
+	float Density,
+	float ScatterScale)
+{
+	float CosTheta = dot(ViewDir, LightDir);
+	float Phase = RayleighPhase(CosTheta);
+
+	return LightColor * Phase * Density * ScatterScale;
+}
+
+//~==============================================================================
+// Henyey-Greenstein Phase Function
+
+/**
+ * Henyey-Greenstein phase function.
+ * More versatile than Rayleigh - can model forward/backward scattering.
+ * P(theta) = (1 - g^2) / (4pi * (1 + g^2 - 2*g*cos(theta))^1.5)
+ *
+ * @param CosTheta     Cosine of angle between light and view direction
+ * @param G            Anisotropy parameter [-1, 1]
+ *                     G=0: isotropic (similar to Rayleigh)
+ *                     G>0: forward scattering (bright when looking toward light)
+ *                     G<0: backward scattering
+ * @return             Phase function value
+ */
+float HenyeyGreensteinPhase(float CosTheta, float G)
+{
+	float G2 = G * G;
+	float Denom = 1.0 + G2 - 2.0 * G * CosTheta;
+	return (1.0 - G2) / (4.0 * PI * pow(max(Denom, 0.0001), 1.5));
+}
+
+/**
+ * In-scattering using Henyey-Greenstein phase function.
+ *
+ * @param ViewDir       Normalized view direction (camera to sample)
+ * @param LightDir      Normalized light direction (sample to light)
+ * @param LightColor    Light color and intensity
+ * @param Density       Local density at sample point
+ * @param ScatterScale  Scattering intensity multiplier
+ * @param Anisotropy    HG anisotropy parameter (G)
+ * @return              RGB in-scattered light contribution
+ */
+float3 HenyeyGreensteinInScattering(
+	float3 ViewDir,
+	float3 LightDir,
+	float3 LightColor,
+	float Density,
+	float ScatterScale,
+	float Anisotropy)
+{
+	float CosTheta = dot(ViewDir, LightDir);
+	float Phase = HenyeyGreensteinPhase(CosTheta, Anisotropy);
+	return LightColor * Phase * Density * ScatterScale;
+}

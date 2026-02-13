@@ -1,0 +1,480 @@
+// Copyright (c) 2026, Team SDB. All rights reserved.
+//
+// Pass 0: Tile Setup Compute Shader (Parallel Version)
+// Computes per-tile depth range from volume bounds and quick volume mask.
+//
+// Dispatch: One thread group per tile (TileCountX × TileCountY × 1)
+// All threads cooperate for parallel interval collection and Bitonic Sort.
+//
+// Key Features:
+// - Volume-based depth range (not scene depth) for consistent StepSize
+// - Parallel Bitonic Sort for accurate TotalVolumeLength (handles overlapping volumes)
+// - 128-bit volume mask for sparse iteration
+//
+
+#include "/Engine/Private/Common.ush"
+#include "/Plugin/IVSmoke/IVSmokeCommon.ush"
+#include "/Plugin/IVSmoke/IVSmokeRayMarchUtils.ush"
+
+//~==============================================================================
+// Thread Group Configuration
+
+#define GROUP_SIZE 64
+
+#ifndef TILE_SIZE_X
+#define TILE_SIZE_X 16
+#endif
+#ifndef TILE_SIZE_Y
+#define TILE_SIZE_Y 16
+#endif
+#ifndef MAX_VOLUMES
+#define MAX_VOLUMES 128
+#endif
+#ifndef STEP_DIVISOR
+#define STEP_DIVISOR 4
+#endif
+
+#define MAX_INTERVALS MAX_VOLUMES
+
+//~==============================================================================
+// Shared Memory
+
+// Intervals for Bitonic Sort (8 bytes each = 1 KB)
+groupshared float SharedIntervalNear[MAX_INTERVALS];
+groupshared float SharedIntervalFar[MAX_INTERVALS];
+
+// Shared counters and results
+groupshared uint SharedIntervalCount;
+groupshared float SharedVolumeMinDepth;
+groupshared float SharedVolumeMaxDepth;
+groupshared uint4 SharedVolumeMask;
+groupshared float SharedTotalVolumeLength;
+
+// Shared arrays for parallel reduction
+groupshared float DepthMinArray[GROUP_SIZE];
+groupshared float DepthMaxArray[GROUP_SIZE];
+
+//~==============================================================================
+// Shader Parameters
+
+// Output
+RWStructuredBuffer<FTileData> TileDataBufferRW;
+
+// Volume data
+StructuredBuffer<FVolumeGPUData> VolumeDataBuffer;
+uint NumActiveVolumes;
+
+// Tile configuration
+int2 TileCount;
+uint StepSliceCount;
+float MaxRayDistance;
+
+// Viewport info (unused in shader, kept for C++ struct compatibility)
+int2 ViewportSize;
+int2 ViewRectMin;
+
+// Camera parameters
+float3 CameraPosition;
+float3 CameraForward;
+float3 CameraRight;
+float3 CameraUp;
+float TanHalfFOV;
+float AspectRatio;
+
+// Depth conversion (unused in shader, kept for C++ struct compatibility)
+float4 InvDeviceZToWorldZTransform;
+
+//~==============================================================================
+// Parallel Bitonic Sort (in shared memory)
+
+void ParallelBitonicSort(uint GroupIndex, uint Count)
+{
+	// Pad to next power of 2
+	uint N = 1;
+	while (N < Count)
+	{
+		N *= 2;
+	}
+
+	// Clamp N to GROUP_SIZE (we can only sort up to GROUP_SIZE elements in parallel)
+	N = min(N, GROUP_SIZE);
+
+	// Initialize padding with large values
+	if (GroupIndex < N && GroupIndex >= Count)
+	{
+		SharedIntervalNear[GroupIndex] = 1e30;
+		SharedIntervalFar[GroupIndex] = 1e30;
+	}
+	GroupMemoryBarrierWithGroupSync();
+
+	// Bitonic Sort - parallel version
+	// Each thread handles one element at index GroupIndex
+	for (uint k = 2; k <= N; k *= 2)
+	{
+		for (uint j = k / 2; j > 0; j /= 2)
+		{
+			if (GroupIndex < N)
+			{
+				uint Partner = GroupIndex ^ j;
+
+				if (Partner > GroupIndex && Partner < N)
+				{
+					bool Dir = ((GroupIndex & k) == 0);
+
+					float ANear = SharedIntervalNear[GroupIndex];
+					float BNear = SharedIntervalNear[Partner];
+
+					// Swap if out of order
+					if ((ANear > BNear) == Dir)
+					{
+						float AFar = SharedIntervalFar[GroupIndex];
+						float BFar = SharedIntervalFar[Partner];
+
+						SharedIntervalNear[GroupIndex] = BNear;
+						SharedIntervalFar[GroupIndex] = BFar;
+						SharedIntervalNear[Partner] = ANear;
+						SharedIntervalFar[Partner] = AFar;
+					}
+				}
+			}
+			GroupMemoryBarrierWithGroupSync();
+		}
+	}
+
+	// For counts > GROUP_SIZE, continue with remaining elements
+	// (This is a fallback for > 64 volumes, which is rare)
+	if (Count > GROUP_SIZE && GroupIndex == 0)
+	{
+		// Simple insertion sort for overflow (sequential but rare)
+		for (uint i = GROUP_SIZE; i < Count; i++)
+		{
+			float KeyNear = SharedIntervalNear[i];
+			float KeyFar = SharedIntervalFar[i];
+			int insertPos = i - 1;
+
+			while (insertPos >= 0 && SharedIntervalNear[insertPos] > KeyNear)
+			{
+				SharedIntervalNear[insertPos + 1] = SharedIntervalNear[insertPos];
+				SharedIntervalFar[insertPos + 1] = SharedIntervalFar[insertPos];
+				insertPos--;
+			}
+			SharedIntervalNear[insertPos + 1] = KeyNear;
+			SharedIntervalFar[insertPos + 1] = KeyFar;
+		}
+	}
+	GroupMemoryBarrierWithGroupSync();
+}
+
+//~==============================================================================
+// Interval Merge and Sum (sequential but on sorted data - fast)
+
+float MergeIntervalsAndSumLocal(uint Count)
+{
+	if (Count == 0)
+	{
+		return 0.0;
+	}
+
+	float TotalLength = 0.0;
+	float CurrentNear = SharedIntervalNear[0];
+	float CurrentFar = SharedIntervalFar[0];
+
+	for (uint i = 1; i < Count; i++)
+	{
+		float NextNear = SharedIntervalNear[i];
+		float NextFar = SharedIntervalFar[i];
+
+		// Skip padding
+		if (NextNear >= 1e29)
+		{
+			break;
+		}
+
+		if (NextNear <= CurrentFar)
+		{
+			// Overlapping: extend current interval
+			CurrentFar = max(CurrentFar, NextFar);
+		}
+		else
+		{
+			// Non-overlapping: finalize current, start new
+			TotalLength += max(CurrentFar - CurrentNear, 0.0);
+			CurrentNear = NextNear;
+			CurrentFar = NextFar;
+		}
+	}
+
+	// Add final interval
+	TotalLength += max(CurrentFar - CurrentNear, 0.0);
+
+	return TotalLength;
+}
+
+//~==============================================================================
+// Main Compute Shader
+
+[numthreads(GROUP_SIZE, 1, 1)]
+void MainCS(
+	uint3 GroupId : SV_GroupID,
+	uint GroupIndex : SV_GroupIndex)
+{
+	//~======================================================================
+	// Phase 0: Initialize shared memory
+
+	if (GroupIndex == 0)
+	{
+		SharedIntervalCount = 0;
+		SharedVolumeMinDepth = 1e30;
+		SharedVolumeMaxDepth = 0.0;
+		SharedVolumeMask = uint4(0, 0, 0, 0);
+		SharedTotalVolumeLength = 0.0;
+	}
+
+	// Initialize interval arrays
+	if (GroupIndex < MAX_INTERVALS)
+	{
+		SharedIntervalNear[GroupIndex] = 1e30;
+		SharedIntervalFar[GroupIndex] = 1e30;
+	}
+	if (GroupIndex + GROUP_SIZE < MAX_INTERVALS)
+	{
+		SharedIntervalNear[GroupIndex + GROUP_SIZE] = 1e30;
+		SharedIntervalFar[GroupIndex + GROUP_SIZE] = 1e30;
+	}
+	GroupMemoryBarrierWithGroupSync();
+
+	//~======================================================================
+	// Phase 1: Compute tile rays
+
+	float2 TileUVMin = float2(GroupId.xy) / float2(TileCount);
+	float2 TileUVMax = float2(GroupId.xy + 1) / float2(TileCount);
+	float2 TileScreenMin = TileUVMin * 2.0 - 1.0;
+	float2 TileScreenMax = TileUVMax * 2.0 - 1.0;
+	TileScreenMin.y *= -1.0;
+	TileScreenMax.y *= -1.0;
+
+	// Swap Y after flip
+	float ScreenMinY = min(TileScreenMin.y, TileScreenMax.y);
+	float ScreenMaxY = max(TileScreenMin.y, TileScreenMax.y);
+	TileScreenMin.y = ScreenMinY;
+	TileScreenMax.y = ScreenMaxY;
+
+	// Center ray for TotalVolumeLength calculation
+	float2 CenterScreenPos = (TileScreenMin + TileScreenMax) * 0.5;
+	float3 CenterRayDir = normalize(
+		CameraForward
+		+ CenterScreenPos.x * CameraRight * TanHalfFOV * AspectRatio
+		+ CenterScreenPos.y * CameraUp * TanHalfFOV
+	);
+
+	// 5 corner rays for depth bounds
+	float2 CornerScreenPos[5];
+	CornerScreenPos[0] = float2(TileScreenMin.x, TileScreenMin.y);
+	CornerScreenPos[1] = float2(TileScreenMax.x, TileScreenMin.y);
+	CornerScreenPos[2] = float2(TileScreenMin.x, TileScreenMax.y);
+	CornerScreenPos[3] = float2(TileScreenMax.x, TileScreenMax.y);
+	CornerScreenPos[4] = CenterScreenPos;
+
+	float3 CornerRayDirs[5];
+	float CornerViewDirDots[5];
+
+	[unroll]
+	for (uint c = 0; c < 5; c++)
+	{
+		CornerRayDirs[c] = normalize(
+			CameraForward
+			+ CornerScreenPos[c].x * CameraRight * TanHalfFOV * AspectRatio
+			+ CornerScreenPos[c].y * CameraUp * TanHalfFOV
+		);
+		CornerViewDirDots[c] = max(dot(CornerRayDirs[c], CameraForward), 0.001);
+	}
+
+	//~======================================================================
+	// Phase 2: Parallel interval collection and depth range computation
+
+	uint ClampedVolumeCount = min(NumActiveVolumes, uint(MAX_VOLUMES));
+	uint VolumesPerThread = (ClampedVolumeCount + GROUP_SIZE - 1) / GROUP_SIZE;
+
+	float LocalMinDepth = 1e30;
+	float LocalMaxDepth = 0.0;
+
+	for (uint i = 0; i < VolumesPerThread; i++)
+	{
+		uint VolumeIdx = GroupIndex + i * GROUP_SIZE;
+		if (VolumeIdx >= ClampedVolumeCount)
+		{
+			break;
+		}
+
+		FVolumeGPUData Vol = VolumeDataBuffer[VolumeIdx];
+
+		// Test center ray for interval collection
+		float EntryT, ExitT;
+		if (RayAABBIntersection(CameraPosition, CenterRayDir, Vol.VolumeWorldAABBMin, Vol.VolumeWorldAABBMax, EntryT, ExitT))
+		{
+			// Store interval in shared memory using atomic add for slot
+			uint Slot;
+			InterlockedAdd(SharedIntervalCount, 1, Slot);
+			if (Slot < MAX_INTERVALS)
+			{
+				SharedIntervalNear[Slot] = max(EntryT, 0.0);
+				SharedIntervalFar[Slot] = ExitT;
+			}
+		}
+
+		// Test all 5 corner rays for depth bounds
+		[unroll]
+		for (uint ci = 0; ci < 5; ci++)
+		{
+			float CornerEntryT, CornerExitT;
+			if (RayAABBIntersection(CameraPosition, CornerRayDirs[ci], Vol.VolumeWorldAABBMin, Vol.VolumeWorldAABBMax, CornerEntryT, CornerExitT))
+			{
+				float VolumeNearDepth = max(CornerEntryT, 0.0) * CornerViewDirDots[ci];
+				float VolumeFarDepth = CornerExitT * CornerViewDirDots[ci];
+
+				LocalMinDepth = min(LocalMinDepth, VolumeNearDepth);
+				LocalMaxDepth = max(LocalMaxDepth, VolumeFarDepth);
+			}
+		}
+	}
+
+	GroupMemoryBarrierWithGroupSync();
+
+	//~======================================================================
+	// Phase 3: Reduce depth bounds (parallel reduction)
+
+	DepthMinArray[GroupIndex] = LocalMinDepth;
+	DepthMaxArray[GroupIndex] = LocalMaxDepth;
+	GroupMemoryBarrierWithGroupSync();
+
+	// Parallel reduction
+	for (uint stride = GROUP_SIZE / 2; stride > 0; stride /= 2)
+	{
+		if (GroupIndex < stride)
+		{
+			DepthMinArray[GroupIndex] = min(DepthMinArray[GroupIndex], DepthMinArray[GroupIndex + stride]);
+			DepthMaxArray[GroupIndex] = max(DepthMaxArray[GroupIndex], DepthMaxArray[GroupIndex + stride]);
+		}
+		GroupMemoryBarrierWithGroupSync();
+	}
+
+	if (GroupIndex == 0)
+	{
+		SharedVolumeMinDepth = DepthMinArray[0];
+		SharedVolumeMaxDepth = DepthMaxArray[0];
+	}
+	GroupMemoryBarrierWithGroupSync();
+
+	//~======================================================================
+	// Phase 4: Parallel Bitonic Sort
+
+	uint IntervalCount = min(SharedIntervalCount, MAX_INTERVALS);
+	ParallelBitonicSort(GroupIndex, IntervalCount);
+
+	//~======================================================================
+	// Phase 5: Merge intervals (thread 0 only - sequential but fast on sorted data)
+
+	if (GroupIndex == 0)
+	{
+		SharedTotalVolumeLength = MergeIntervalsAndSumLocal(IntervalCount);
+	}
+	GroupMemoryBarrierWithGroupSync();
+
+	//~======================================================================
+	// Phase 6: Compute tile depth range
+
+	float TileMinDepth = SharedVolumeMinDepth;
+	float TileMaxDepth = SharedVolumeMaxDepth;
+
+	if (TileMaxDepth <= 0.0)
+	{
+		TileMinDepth = 0.0;
+		TileMaxDepth = 0.0;
+	}
+
+	TileMinDepth = max(TileMinDepth, 0.1);
+	TileMaxDepth = min(TileMaxDepth, MaxRayDistance);
+
+	if (TileMaxDepth <= TileMinDepth)
+	{
+		TileMaxDepth = TileMinDepth + 1.0;
+	}
+
+	//~======================================================================
+	// Phase 7: Parallel 128-bit volume mask computation
+
+	float3 TileFrustumMin, TileFrustumMax;
+	ComputeFrustumCellAABB(
+		GroupId.xy,
+		uint2(TileCount),
+		TileMinDepth,
+		TileMaxDepth,
+		CameraPosition,
+		CameraForward,
+		CameraRight,
+		CameraUp,
+		TanHalfFOV,
+		AspectRatio,
+		TileFrustumMin,
+		TileFrustumMax
+	);
+
+	// Each thread checks a subset of volumes
+	uint4 LocalMask = uint4(0, 0, 0, 0);
+
+	for (uint vi = 0; vi < VolumesPerThread; vi++)
+	{
+		uint VolumeIdx = GroupIndex + vi * GROUP_SIZE;
+		if (VolumeIdx >= ClampedVolumeCount)
+		{
+			break;
+		}
+
+		FVolumeGPUData Vol = VolumeDataBuffer[VolumeIdx];
+
+		if (AABBIntersects(TileFrustumMin, TileFrustumMax, Vol.VolumeWorldAABBMin, Vol.VolumeWorldAABBMax))
+		{
+			SetVolumeBit(LocalMask, VolumeIdx);
+		}
+	}
+
+	// Combine masks using InterlockedOr
+	if (LocalMask.x != 0)
+	{
+		InterlockedOr(SharedVolumeMask.x, LocalMask.x);
+	}
+	if (LocalMask.y != 0)
+	{
+		InterlockedOr(SharedVolumeMask.y, LocalMask.y);
+	}
+	if (LocalMask.z != 0)
+	{
+		InterlockedOr(SharedVolumeMask.z, LocalMask.z);
+	}
+	if (LocalMask.w != 0)
+	{
+		InterlockedOr(SharedVolumeMask.w, LocalMask.w);
+	}
+	GroupMemoryBarrierWithGroupSync();
+
+	//~======================================================================
+	// Phase 8: Write tile data (thread 0 only)
+
+	if (GroupIndex == 0)
+	{
+		uint TileIndex = GroupId.y * uint(TileCount.x) + GroupId.x;
+
+		FTileData OutTile;
+		OutTile.Near = TileMinDepth;
+		OutTile.Far = TileMaxDepth;
+		OutTile.StepSize = (TileMaxDepth - TileMinDepth) / float(StepSliceCount * STEP_DIVISOR);
+		OutTile.TotalVolumeLength = SharedTotalVolumeLength;
+		OutTile.VolumeMask128 = SharedVolumeMask;
+		OutTile.MaxLightMarchDistance = 0.0;
+		OutTile.Padding0 = 0.0;
+		OutTile.Padding1 = 0.0;
+		OutTile.Padding2 = 0.0;
+
+		TileDataBufferRW[TileIndex] = OutTile;
+	}
+}

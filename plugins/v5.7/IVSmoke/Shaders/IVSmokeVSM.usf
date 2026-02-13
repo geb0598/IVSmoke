@@ -1,0 +1,84 @@
+// Copyright (c) 2026, Team SDB. All rights reserved.
+
+/**
+ * IVSmoke Variance Shadow Map Shaders
+ *
+ * Contains:
+ * - Depth to Variance conversion (DepthToVarianceCS)
+ * - Separable Gaussian blur (BlurCS)
+ */
+
+#include "/Engine/Private/Common.ush"
+
+//~==============================================================================
+// Depth to Variance Compute Shader
+
+Texture2D<float> DepthTexture;
+RWTexture2D<float2> VarianceTexture;
+int2 TextureSize;
+
+[numthreads(THREADGROUP_SIZE_X, THREADGROUP_SIZE_Y, 1)]
+void DepthToVarianceCS(uint3 DTid : SV_DispatchThreadID)
+{
+	if (DTid.x >= (uint)TextureSize.x || DTid.y >= (uint)TextureSize.y)
+	{
+		return;
+	}
+
+	float Depth = DepthTexture.Load(int3(DTid.xy, 0));
+
+	// Store (depth, depth²) for variance calculation
+	// Variance = E[X²] - E[X]²
+	VarianceTexture[DTid.xy] = float2(Depth, Depth * Depth);
+}
+
+//~==============================================================================
+// Gaussian Blur Compute Shader
+
+Texture2D<float2> SourceTexture;
+RWTexture2D<float2> DestTexture;
+SamplerState LinearClampSampler;
+int BlurRadius;
+int BlurDirection;  // 0 = Horizontal, 1 = Vertical
+
+// Gaussian weight function
+float GaussianWeight(int Offset, int Radius)
+{
+	// Sigma is approximately Radius / 3 for good falloff
+	float Sigma = max((float)Radius / 3.0, 0.001);
+	float x = (float)Offset;
+	return exp(-(x * x) / (2.0 * Sigma * Sigma));
+}
+
+[numthreads(THREADGROUP_SIZE_X, THREADGROUP_SIZE_Y, 1)]
+void BlurCS(uint3 DTid : SV_DispatchThreadID)
+{
+	if (DTid.x >= (uint)TextureSize.x || DTid.y >= (uint)TextureSize.y)
+	{
+		return;
+	}
+
+	float2 TexelSize = 1.0 / float2(TextureSize);
+	float2 UV = (float2(DTid.xy) + 0.5) * TexelSize;
+
+	// Direction vector (horizontal or vertical)
+	float2 Direction = (BlurDirection == 0) ? float2(1.0, 0.0) : float2(0.0, 1.0);
+
+	float2 Result = float2(0.0, 0.0);
+	float TotalWeight = 0.0;
+
+	// Separable Gaussian blur
+	for (int i = -BlurRadius; i <= BlurRadius; i++)
+	{
+		float Weight = GaussianWeight(i, BlurRadius);
+		float2 SampleUV = UV + Direction * (float)i * TexelSize;
+
+		// Clamp UV to valid range
+		SampleUV = saturate(SampleUV);
+
+		Result += SourceTexture.SampleLevel(LinearClampSampler, SampleUV, 0).rg * Weight;
+		TotalWeight += Weight;
+	}
+
+	DestTexture[DTid.xy] = Result / TotalWeight;
+}

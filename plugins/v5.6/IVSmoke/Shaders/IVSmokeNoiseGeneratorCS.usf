@@ -1,0 +1,113 @@
+#include "/Engine/Public/Platform.ush"
+
+RWTexture3D<half> RWNoiseTex;
+
+uint3 TexSize;
+int Octaves;
+float Wrap;
+int AxisCellCount;
+float Amplitude;
+int CellSize;
+int Seed;
+
+float hash(uint n)
+{
+    // integer hash copied from Hugo Elias
+    n = (n << 13U) ^ n;
+    n = n * (n * n * 15731U + 0x789221U) + 0x1376312589U;
+    return float(n & uint(0x7fffffffU)) / float(0x7fffffff);
+}
+
+/**
+ * Seamless tileable Worley noise.
+ * Works in normalized [0, cellCount) space for proper periodicity.
+ *
+ * @param normalizedCoord  Position in [0, cellCount) space
+ * @param cellCount        Number of cells (must match for seamless tiling)
+ * @param seedOffset       Seed offset for this octave
+ */
+float SeamlessWorley(float3 normalizedCoord, int cellCount, int seedOffset)
+{
+    // Cell position and fractional position within cell
+    int3 cellPos = int3(floor(normalizedCoord));
+    float3 fracPos = normalizedCoord - float3(cellPos);
+
+    float minDist = 1.0f;
+
+    // Check 3x3x3 neighborhood
+    for (int z = -1; z <= 1; ++z)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            for (int x = -1; x <= 1; ++x)
+            {
+                int3 offset = int3(x, y, z);
+                int3 neighborCell = cellPos + offset;
+
+                // Wrap cell position for seamless tiling (handles negative values)
+                int3 wrappedCell = ((neighborCell % cellCount) + cellCount) % cellCount;
+
+                // Generate consistent random point for this cell
+                int cellIndex = wrappedCell.x + cellCount * (wrappedCell.y + wrappedCell.z * cellCount);
+
+                float3 randomPoint = float3(
+                    hash(seedOffset + cellIndex),
+                    hash(seedOffset + cellIndex * 2),
+                    hash(seedOffset + cellIndex * 3)
+                );
+
+                // Point position relative to current cell
+                float3 pointPos = float3(offset) + randomPoint;
+
+                // Distance from sample position to this point
+                float dist = distance(fracPos, pointPos);
+                minDist = min(minDist, dist);
+            }
+        }
+    }
+
+    // Smooth falloff - original formula
+    float result = sqrt(1.0f - minDist * minDist);
+    result = result * result * result * result * result * result;
+    return result;
+}
+
+[numthreads(8, 8, 8)]
+void GenerateNoise(uint3 DTid : SV_DispatchThreadID)
+{
+    if (DTid.x >= TexSize.x || DTid.y >= TexSize.y || DTid.z >= TexSize.z)
+        return;
+
+    // Normalize position to [0, 1) range
+    float3 normalizedPos = float3(DTid.xyz) / float3(TexSize);
+
+    float n = 0;
+    float amplitude = 1.0f;
+    float frequency = 1.0f;
+    float amplitudeSum = 0.0f;
+
+    for (int i = 0; i < Octaves; ++i)
+    {
+        // Scale to cell space: [0, 1) -> [0, cellCount)
+        // Each octave doubles the cell count for more detail
+        int cellCount = AxisCellCount * (int)frequency;
+        float3 coord = normalizedPos * float(cellCount);
+
+        // Use different seed for each octave
+        int octaveSeed = Seed + i * 1000;
+
+        float noise = SeamlessWorley(coord, cellCount, octaveSeed);
+        n += noise * amplitude;
+        amplitudeSum += amplitude;
+
+        frequency *= 2.0f;
+        amplitude *= 0.5f;
+    }
+
+    // Normalize and apply amplitude
+    n = n / amplitudeSum;
+    n = saturate(n) * Amplitude;
+    n = Amplitude - n;  // Invert for smoke-like appearance
+
+    RWNoiseTex[DTid.xyz] = n;
+}

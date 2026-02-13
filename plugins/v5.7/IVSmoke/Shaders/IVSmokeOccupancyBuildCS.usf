@@ -1,0 +1,256 @@
+// Copyright (c) 2026, Team SDB. All rights reserved.
+//
+// Pass 1: Occupancy Build Compute Shader
+// Builds View and Light occupancy 3D textures.
+//
+// Dispatch: ceil(TileCountX/8) × ceil(TileCountY/8) × ceil(StepSliceCount/4)
+// Each thread processes one occupancy texel (tile × slice).
+//
+// Performance Notes:
+// - Uses shared memory to cache volume AABB data
+// - Cooperative loading reduces global memory traffic
+// - Two-level light test for conservative but accurate results
+//
+
+#include "/Engine/Private/Common.ush"
+#include "/Plugin/IVSmoke/IVSmokeCommon.ush"
+#include "/Plugin/IVSmoke/IVSmokeRayMarchUtils.ush"
+
+//~==============================================================================
+// Thread Group Configuration
+
+#ifndef THREADGROUP_SIZE_X
+#define THREADGROUP_SIZE_X 8
+#endif
+#ifndef THREADGROUP_SIZE_Y
+#define THREADGROUP_SIZE_Y 8
+#endif
+#ifndef THREADGROUP_SIZE_Z
+#define THREADGROUP_SIZE_Z 4
+#endif
+#ifndef TILE_SIZE_X
+#define TILE_SIZE_X 16
+#endif
+#ifndef TILE_SIZE_Y
+#define TILE_SIZE_Y 16
+#endif
+#ifndef MAX_VOLUMES
+#define MAX_VOLUMES 128
+#endif
+
+// Thread group total size
+#define GROUP_SIZE (THREADGROUP_SIZE_X * THREADGROUP_SIZE_Y * THREADGROUP_SIZE_Z)
+
+//~==============================================================================
+// Shared Memory for Volume AABB Caching
+
+// Cache volume AABBs in shared memory to reduce global memory traffic
+// Each volume needs 6 floats (min xyz, max xyz) = 24 bytes
+// 128 volumes × 24 bytes = 3 KB (fits in shared memory budget)
+groupshared float3 SharedVolumeMin[MAX_VOLUMES];
+groupshared float3 SharedVolumeMax[MAX_VOLUMES];
+
+//~==============================================================================
+// Shader Parameters
+
+// Input: Tile data from Pass 0
+StructuredBuffer<FTileData> TileDataBuffer;
+
+// Output: Occupancy 3D textures
+RWTexture3D<uint4> ViewOccupancyRW;
+RWTexture3D<uint4> LightOccupancyRW;
+
+// Volume data
+StructuredBuffer<FVolumeGPUData> VolumeDataBuffer;
+uint NumActiveVolumes;
+
+// Tile/Occupancy configuration
+int2 TileCount;
+uint StepSliceCount;
+uint StepDivisor;  // Typically 4
+
+// Camera parameters
+float3 CameraPosition;
+float3 CameraForward;
+float3 CameraRight;
+float3 CameraUp;
+float TanHalfFOV;
+float AspectRatio;
+
+// Light parameters
+float3 LightDirection;
+float MaxLightMarchDistance;
+
+//~==============================================================================
+// Main Compute Shader
+
+[numthreads(THREADGROUP_SIZE_X, THREADGROUP_SIZE_Y, THREADGROUP_SIZE_Z)]
+void MainCS(
+	uint3 GroupId : SV_GroupID,
+	uint3 GroupThreadId : SV_GroupThreadID,
+	uint3 DispatchThreadId : SV_DispatchThreadID,
+	uint GroupIndex : SV_GroupIndex)
+{
+	//~======================================================================
+	// Phase 1: Cooperative loading of volume AABB data to shared memory
+	//
+	// Each thread loads multiple volumes to fill shared memory.
+	// This reduces global memory traffic significantly when processing
+	// many texels that all need the same volume data.
+	//
+
+	// Clamp to MAX_VOLUMES to prevent out-of-bounds access
+	uint ClampedVolumeCount = min(NumActiveVolumes, uint(MAX_VOLUMES));
+
+	// Number of volumes each thread should load
+	uint VolumesPerThread = (ClampedVolumeCount + GROUP_SIZE - 1) / GROUP_SIZE;
+
+	[loop]
+	for (uint i = 0; i < VolumesPerThread; i++)
+	{
+		uint VolumeIdx = GroupIndex + i * GROUP_SIZE;
+		if (VolumeIdx < ClampedVolumeCount)
+		{
+			FVolumeGPUData Vol = VolumeDataBuffer[VolumeIdx];
+			SharedVolumeMin[VolumeIdx] = Vol.VolumeWorldAABBMin;
+			SharedVolumeMax[VolumeIdx] = Vol.VolumeWorldAABBMax;
+		}
+	}
+
+	// Ensure all threads have finished loading
+	GroupMemoryBarrierWithGroupSync();
+
+	//~======================================================================
+	// Phase 2: Bounds check and early exit
+
+	uint3 TexelCoord = DispatchThreadId;
+
+	// Check if this texel is within valid range
+	if (TexelCoord.x >= uint(TileCount.x) ||
+	    TexelCoord.y >= uint(TileCount.y) ||
+	    TexelCoord.z >= StepSliceCount)
+	{
+		return;
+	}
+
+	//~======================================================================
+	// Phase 3: Load tile data and compute cell bounds
+
+	uint TileIndex = TexelCoord.y * uint(TileCount.x) + TexelCoord.x;
+	FTileData Tile = TileDataBuffer[TileIndex];
+
+	// Get tile's 128-bit volume mask for sparse iteration
+	uint4 TileVolumeMask = Tile.VolumeMask128;
+
+	// Early-out: if tile has no volumes at all, skip processing
+	if (!AnyVolumePresent(TileVolumeMask))
+	{
+		ViewOccupancyRW[TexelCoord] = uint4(0, 0, 0, 0);
+		LightOccupancyRW[TexelCoord] = uint4(0, 0, 0, 0);
+		return;
+	}
+
+	// Compute depth range for this slice
+	float SliceSize = Tile.StepSize * float(StepDivisor);
+	float SliceNear = Tile.Near + SliceSize * float(TexelCoord.z);
+	float SliceFar = SliceNear + SliceSize;
+
+	// Clamp to tile bounds
+	SliceFar = min(SliceFar, Tile.Far);
+
+	// Skip invalid slices
+	if (SliceNear >= SliceFar)
+	{
+		ViewOccupancyRW[TexelCoord] = uint4(0, 0, 0, 0);
+		LightOccupancyRW[TexelCoord] = uint4(0, 0, 0, 0);
+		return;
+	}
+
+	// Compute frustum cell AABB
+	float3 CellMin, CellMax;
+	ComputeFrustumCellAABB(
+		TexelCoord.xy,
+		uint2(TileCount),
+		SliceNear,
+		SliceFar,
+		CameraPosition,
+		CameraForward,
+		CameraRight,
+		CameraUp,
+		TanHalfFOV,
+		AspectRatio,
+		CellMin,
+		CellMax
+	);
+
+	//~======================================================================
+	// Phase 4: Build View Occupancy (Sparse Iteration)
+	//
+	// Only iterate over volumes present in this tile (from TileVolumeMask).
+	// Uses firstbitlow for efficient sparse iteration.
+	//
+
+	uint4 ViewMask = uint4(0, 0, 0, 0);
+
+	FVolumeMaskIterator ViewIt = InitVolumeMaskIterator(TileVolumeMask);
+	while (ViewIt.bValid)
+	{
+		uint v = GetCurrentVolumeIndex(ViewIt);
+
+		float3 VolMin = SharedVolumeMin[v];
+		float3 VolMax = SharedVolumeMax[v];
+
+		// AABB-AABB intersection test
+		if (AABBIntersects(CellMin, CellMax, VolMin, VolMax))
+		{
+			SetVolumeBit(ViewMask, v);
+		}
+
+		AdvanceVolumeMaskIterator(ViewIt);
+	}
+
+	//~======================================================================
+	// Phase 5: Build Light Occupancy (Sparse Iteration)
+	//
+	// Only iterate over volumes present in this tile (from TileVolumeMask).
+	// For light marching optimization, we need to know which volumes
+	// a light ray from this cell might intersect.
+	//
+
+	uint4 LightMask = uint4(0, 0, 0, 0);
+
+	// Only compute light occupancy if we have any view occupancy
+	// (no point computing light for empty cells)
+	if (AnyVolumePresent(ViewMask))
+	{
+		// Light direction: must match RayMarchCS's LightDirection usage
+		// Handle zero-length LightDirection by defaulting to up vector
+		float LightDirLen = length(LightDirection);
+		float3 ToLight = (LightDirLen > 0.001) ? (LightDirection / LightDirLen) : float3(0, 0, 1);
+
+		// Iterate ALL volumes for light occupancy (not just TileVolumeMask)
+		// Light rays can intersect volumes outside the tile's view frustum
+		[loop]
+		for (uint v = 0; v < ClampedVolumeCount; v++)
+		{
+			float3 VolMin = SharedVolumeMin[v];
+			float3 VolMax = SharedVolumeMax[v];
+
+			// Conservative light ray intersection test
+			if (LightRayIntersectsVolume(
+				CellMin, CellMax,
+				ToLight,
+				MaxLightMarchDistance,
+				VolMin, VolMax))
+			{
+				SetVolumeBit(LightMask, v);
+			}
+		}
+	}
+
+	//~======================================================================
+	// Phase 6: Write output
+
+	ViewOccupancyRW[TexelCoord] = ViewMask;
+	LightOccupancyRW[TexelCoord] = LightMask;
+}
