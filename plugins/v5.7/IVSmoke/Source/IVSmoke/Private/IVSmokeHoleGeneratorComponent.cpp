@@ -421,15 +421,10 @@ void UIVSmokeHoleGeneratorComponent::Authority_UpdateDynamicSubjectList()
 #if !UE_SERVER
 void UIVSmokeHoleGeneratorComponent::Local_InitializeHoleTexture()
 {
-	if (VoxelResolution.X <= 0 || VoxelResolution.Y <= 0 || VoxelResolution.Z <= 0)
-	{
-		return;
-	}
-
 	// Create UTextureRenderTargetVolume
 	HoleTexture = NewObject<UTextureRenderTargetVolume>(this, TEXT("HoleTexture"));
 	HoleTexture->bCanCreateUAV = true;
-	HoleTexture->Init(VoxelResolution.X, VoxelResolution.Y, VoxelResolution.Z, PF_FloatRGBA);
+	HoleTexture->Init(VoxelResolution.X * VoxelResolutionQuality, VoxelResolution.Y * VoxelResolutionQuality, VoxelResolution.Z * VoxelResolutionQuality, PF_FloatRGBA);
 	HoleTexture->ClearColor = FLinearColor::White;
 	HoleTexture->SRGB = false;
 	HoleTexture->UpdateResourceImmediate(true);
@@ -489,9 +484,9 @@ void UIVSmokeHoleGeneratorComponent::Local_RebuildHoleTexture()
 		return;
 	}
 
-	if (HoleTexture->SizeX != VoxelResolution.X ||
-		HoleTexture->SizeY != VoxelResolution.Y ||
-		HoleTexture->SizeZ != VoxelResolution.Z)
+	if (HoleTexture->SizeX != VoxelResolution.X * VoxelResolutionQuality ||
+		HoleTexture->SizeY != VoxelResolution.Y * VoxelResolutionQuality ||
+		HoleTexture->SizeZ != VoxelResolution.Z * VoxelResolutionQuality)
 	{
 		Local_InitializeHoleTexture();
 		return;
@@ -519,9 +514,8 @@ void UIVSmokeHoleGeneratorComponent::Local_RebuildHoleTexture()
 
 	const FVector3f WorldVolumeMin = FVector3f(VoxelVolume->GetVoxelWorldAABBMin());
 	const FVector3f WorldVolumeMax = FVector3f(VoxelVolume->GetVoxelWorldAABBMax());
-	const FIntVector Resolution = VoxelResolution;
+	const FIntVector Resolution = VoxelResolution * VoxelResolutionQuality;
 	const int32 NumHoles = ActiveHoles.Num();
-	const int32 CapturedBlurStep = BlurStep;
 
 	// Capture noise settings for render thread
 	FTextureRHIRef PenetrationNoiseTextureRHI = PenetrationNoise.Texture && PenetrationNoise.Texture->GetResource()
@@ -539,7 +533,7 @@ void UIVSmokeHoleGeneratorComponent::Local_RebuildHoleTexture()
 	const float CapturedDynamicNoiseScale = DynamicNoise.Scale;
 
 	ENQUEUE_RENDER_COMMAND(IVSmokeHoleCarveFullRebuild)(
-		[Texture, GPUHoles = MoveTemp(GPUHoles), WorldVolumeMin, WorldVolumeMax, Resolution, NumHoles, CapturedBlurStep,
+		[Texture, GPUHoles = MoveTemp(GPUHoles), WorldVolumeMin, WorldVolumeMax, Resolution, NumHoles,
 		 PenetrationNoiseTextureRHI, ExplosionNoiseTextureRHI, DynamicNoiseTextureRHI,
 		 CapturedPenetrationNoiseStrength, CapturedPenetrationNoiseScale,
 		 CapturedExplosionNoiseStrength, CapturedExplosionNoiseScale,
@@ -592,51 +586,48 @@ void UIVSmokeHoleGeneratorComponent::Local_RebuildHoleTexture()
 			// ============================================================================
 			// Pass 2-4: Separable Gaussian Blur (X, Y, Z)
 			// ============================================================================
-			if (CapturedBlurStep > 0)
+
+			// Create ping-pong texture for blur
+			const FRDGTextureDesc BlurTexDesc = FRDGTextureDesc::Create3D(
+				FIntVector(Resolution.X, Resolution.Y, Resolution.Z),
+				PF_FloatRGBA,
+				FClearValueBinding::Black,
+				TexCreate_ShaderResource | TexCreate_UAV
+			);
+			const FRDGTextureRef BlurTempTexture = GraphBuilder.CreateTexture(BlurTexDesc, TEXT("IVSmokeHoleBlurTemp"));
+
+			const TShaderMapRef<FIVSmokeHoleBlurCS> BlurShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+			FRHISamplerState* LinearClampSampler = TStaticSamplerState<SF_Bilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
+
+			// Blur directions
+			const FIntVector BlurDirections[3] = {
+				FIntVector(1, 0, 0),  // X
+				FIntVector(0, 1, 0),  // Y
+				FIntVector(0, 0, 1)   // Z
+			};
+
+			const FRDGTextureRef PingPong[2] = { RDGTexture, BlurTempTexture };
+			int32 CurrentInput = 0;
+
+			for (int32 i = 0; i < 3; ++i)
 			{
-				// Create ping-pong texture for blur
-				const FRDGTextureDesc BlurTexDesc = FRDGTextureDesc::Create3D(
-					FIntVector(Resolution.X, Resolution.Y, Resolution.Z),
-					PF_FloatRGBA,
-					FClearValueBinding::Black,
-					TexCreate_ShaderResource | TexCreate_UAV
-				);
-				const FRDGTextureRef BlurTempTexture = GraphBuilder.CreateTexture(BlurTexDesc, TEXT("IVSmokeHoleBlurTemp"));
+				FIVSmokeHoleBlurCS::FParameters* BlurParameters = GraphBuilder.AllocParameters<FIVSmokeHoleBlurCS::FParameters>();
+				BlurParameters->InputTexture = GraphBuilder.CreateSRV(PingPong[CurrentInput]);
+				BlurParameters->InputSampler = LinearClampSampler;
+				BlurParameters->OutputTexture = GraphBuilder.CreateUAV(PingPong[1 - CurrentInput]);
+				BlurParameters->Resolution = Resolution;
+				BlurParameters->BlurDirection = BlurDirections[i];
 
-				const TShaderMapRef<FIVSmokeHoleBlurCS> BlurShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-				FRHISamplerState* LinearClampSampler = TStaticSamplerState<SF_Bilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
+				FIVSmokePostProcessPass::AddComputeShaderPass<FIVSmokeHoleBlurCS>(GraphBuilder,
+					GetGlobalShaderMap(GMaxRHIFeatureLevel), BlurShader, BlurParameters, Resolution);
 
-				// Blur directions
-				const FIntVector BlurDirections[3] = {
-					FIntVector(1, 0, 0),  // X
-					FIntVector(0, 1, 0),  // Y
-					FIntVector(0, 0, 1)   // Z
-				};
+				CurrentInput = 1 - CurrentInput;
+			}
 
-				const FRDGTextureRef PingPong[2] = { RDGTexture, BlurTempTexture };
-				int32 CurrentInput = 0;
-
-				for (int32 i = 0; i < 3; ++i)
-				{
-					FIVSmokeHoleBlurCS::FParameters* BlurParameters = GraphBuilder.AllocParameters<FIVSmokeHoleBlurCS::FParameters>();
-					BlurParameters->InputTexture = GraphBuilder.CreateSRV(PingPong[CurrentInput]);
-					BlurParameters->InputSampler = LinearClampSampler;
-					BlurParameters->OutputTexture = GraphBuilder.CreateUAV(PingPong[1 - CurrentInput]);
-					BlurParameters->Resolution = Resolution;
-					BlurParameters->BlurDirection = BlurDirections[i];
-					BlurParameters->BlurStep = CapturedBlurStep;
-
-					FIVSmokePostProcessPass::AddComputeShaderPass<FIVSmokeHoleBlurCS>(GraphBuilder,
-						GetGlobalShaderMap(GMaxRHIFeatureLevel), BlurShader, BlurParameters, Resolution);
-
-					CurrentInput = 1 - CurrentInput;
-				}
-
-				// If final result is in BlurTempTexture (CurrentInput == 1), copy back to RDGTexture
-				if (CurrentInput == 1)
-				{
-					AddCopyTexturePass(GraphBuilder, BlurTempTexture, RDGTexture, FRHICopyTextureInfo());
-				}
+			// If final result is in BlurTempTexture (CurrentInput == 1), copy back to RDGTexture
+			if (CurrentInput == 1)
+			{
+				AddCopyTexturePass(GraphBuilder, BlurTempTexture, RDGTexture, FRHICopyTextureInfo());
 			}
 
 			GraphBuilder.Execute();
