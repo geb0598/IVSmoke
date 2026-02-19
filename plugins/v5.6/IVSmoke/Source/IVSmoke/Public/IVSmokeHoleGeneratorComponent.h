@@ -95,18 +95,14 @@ public:
 	int32 MaxHoles = 128;
 
 	/** Hole voxel volume resolution. */
-	UPROPERTY(EditAnywhere, Category = "IVSmoke | Hole | Configuration", meta = (ClampMin = "64", ClampMax = "128"))
-	FIntVector VoxelResolution = FIntVector(64, 64, 64);
+	UPROPERTY(EditAnywhere, Category = "IVSmoke | Hole | Configuration", meta = (ClampMin = "1", ClampMax = "2",
+		Tooltip = "1 : Optimization (64x64x64), 2 : Quality (128x128,128)"))
+	int32 VoxelResolutionQuality = 1;
 
 	/** Maximum number of holes that can be activated. */
 	UPROPERTY(EditAnywhere, Category = "IVSmoke | Hole | Configuration",
 		meta = (ToolTip = "Select the type of obstacle that will block the penetration hole in the smoke"))
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObstacleObjectTypes;
-
-	/** Blur radius in voxels. */
-	UPROPERTY(EditAnywhere, Category = "IVSmoke | Hole | Configuration", meta = (ClampMin = "0", ClampMax = "4",
-		Tooltip = "samples the surrounding pixels to reduce the aliasing. Recommended value is 2."))
-	int32 BlurStep = 2;
 
 	/** Noise settings for penetration holes. */
 	UPROPERTY(EditAnywhere, Category = "IVSmoke | Hole | Noise")
@@ -137,6 +133,9 @@ private:
 	/** These are the holes activated in this smoke volume.*/
 	UPROPERTY(Transient, Replicated, VisibleAnywhere, Category = "IVSmoke | Hole | Debug")
 	FIVSmokeHoleArray ActiveHoles;
+
+	/** Hole voxel volume resolution. */
+	FIntVector VoxelResolution = FIntVector(64, 64, 64);
 
 	/** HoleTexture dirty flag. */
 	uint8 bHoleTextureDirty : 1;
