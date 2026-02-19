@@ -151,11 +151,11 @@ AIVSmokeVoxelVolume::AIVSmokeVoxelVolume()
 #if WITH_EDITORONLY_DATA
 	BillboardComponent->SetEditorScale(1.0f);
 
-	//ConstructorHelpers::FObjectFinder<UTexture2D> IconTexture(TEXT("/IVSmoke/Icons/T_IVSmoke_VoxelVolumeIcon.T_IVSmoke_VoxelVolumeICon"));
-	//if (IconTexture.Succeeded())
-	//{
-	//	BillboardComponent->SetSprite(IconTexture.Object);
-	//}
+	ConstructorHelpers::FObjectFinder<UTexture2D> IconTexture(TEXT("/IVSmoke/Icons/T_IVSmoke_VoxelVolumeIcon.T_IVSmoke_VoxelVolumeICon"));
+	if (IconTexture.Succeeded())
+	{
+		BillboardComponent->SetSprite(IconTexture.Object);
+	}
 #endif
 
 #if WITH_EDITORONLY_DATA
