@@ -1,0 +1,7 @@
+<map id="UIVSmokeHoleGeneratorComponent" name="UIVSmokeHoleGeneratorComponent">
+<area shape="rect" id="Node000001" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e..." alt="" coords="21,203,297,588"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,25,129,91"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="82,103,109,202,104,203,77,104"/>
+<area shape="rect" id="Node000003" href="$structFIVSmokeHoleNoiseSettings.html" title="Noise settings for hole shape distortion." alt="" coords="153,5,352,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="241,112,220,187,215,186,236,110"/>
+</map>
