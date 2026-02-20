@@ -1,5 +1,0 @@
-<map id="UIVSmokeHoleGeneratorComponent" name="UIVSmokeHoleGeneratorComponent">
-<area shape="rect" id="Node000001" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e..." alt="" coords="5,123,252,597"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="74,5,184,75"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,86,131,123,126,123,128,92"/>
-</map>

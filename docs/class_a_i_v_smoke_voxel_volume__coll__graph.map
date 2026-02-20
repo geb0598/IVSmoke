@@ -1,7 +1,0 @@
-<map id="AIVSmokeVoxelVolume" name="AIVSmokeVoxelVolume">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,339,209,899"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="14,101,65,171"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="46,183,71,339,65,339,46,188"/>
-<area shape="rect" id="Node000003" href="$struct_f_i_v_smoke_debug_settings.html" title=" " alt="" coords="89,5,261,267"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="158,264,152,322,147,321,156,269"/>
-</map>
