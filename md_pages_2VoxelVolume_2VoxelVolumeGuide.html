@@ -92,11 +92,11 @@ $(document).ready(function(){initNavTree('md_pages_2VoxelVolume_2VoxelVolumeGuid
   <div class="headertitle"><div class="title">Voxel Volume Guide</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md129"></a> <code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code> is the central actor of the <a class="el" href="classIVSmoke.html">IVSmoke</a> plugin. It is responsible for the simulation, management, and replication of physically aware volumetric smoke.</p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md127"></a> <code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code> is the central actor of the <a class="el" href="classIVSmoke.html">IVSmoke</a> plugin. It is responsible for the simulation, management, and replication of physically aware volumetric smoke.</p>
 <p>Unlike traditional particle-based smoke, this actor utilizes a <b>voxel-based deterministic flood-fill algorithm</b>. This allows the smoke to naturally expand into spaces, flow around corners, and be blocked by walls, creating high-fidelity tactical concealment without clipping through geometry.</p>
-<h1><a class="anchor" id="autotoc_md130"></a>
+<h1><a class="anchor" id="autotoc_md128"></a>
 Core Concepts</h1>
-<h2><a class="anchor" id="autotoc_md131"></a>
+<h2><a class="anchor" id="autotoc_md129"></a>
 Volumetric Flood-Fill</h2>
 <p>The volume generates a 3D grid of voxels. Starting from the center, the smoke performs a Lazy Theta*-based pathfinding expansion.</p>
 <ul>
@@ -104,7 +104,7 @@ Volumetric Flood-Fill</h2>
 <li><b>Volumetric Flow:</b> If a direct path is blocked by a wall, the smoke will "flow" around the obstacle to fill the space behind it, provided there is an open path.</li>
 <li><b>Natural Shape:</b> By applying <code>ExpansionNoise</code> to the pathfinding cost, the smoke creates irregular, organic shapes rather than perfect spheres.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md132"></a>
+<h2><a class="anchor" id="autotoc_md130"></a>
 Deterministic Networking</h2>
 <p>To maintain high performance and low bandwidth usage, <b>voxel data is never replicated</b>.</p>
 <p>Instead, the simulation is fully deterministic:</p>
@@ -114,7 +114,8 @@ Deterministic Networking</h2>
 <li><b>Local Simulation:</b> Clients run the exact same flood-fill algorithm locally using the replicated seed. This ensures every client sees the exact same smoke shape without sending array data across the network.</li>
 </ol>
 <blockquote class="doxtable">
-<p>&zwj;<b>CRITICAL: Network Determinism &amp; Collision Channels</b> The simulation is <b>deterministic</b>, meaning clients calculate the smoke shape locally to save bandwidth. However, they rely on the world geometry being identical to the server.</p>
+<p>&zwj;<b>CRITICAL: Network Determinism &amp; Collision Channels</b></p>
+<p>The simulation is <b>deterministic</b>, meaning clients calculate the smoke shape locally to save bandwidth. However, they rely on the world geometry being identical to the server.</p>
 <p>If you set the <code>VoxelCollisionChannel</code> to detect <b>Dynamic Objects</b> (e.g., destructible walls, moving doors, or vehicles), you <b>MUST</b> ensure those objects are perfectly synchronized (replicated) across the network.</p>
 <ul>
 <li><b>Risk:</b> If a door is open on the Server but closed on a Client (due to lag or lack of replication), the smoke will flow through the door on the Server but be blocked on the Client.</li>
@@ -122,40 +123,39 @@ Deterministic Networking</h2>
 <li><b>Recommendation:</b> It is safest to use <code>ECC_WorldStatic</code> or a custom channel dedicated to static level geometry. </li>
 </ul>
 </blockquote>
-<h1><a class="anchor" id="autotoc_md133"></a>
-&lt;/blockquote&gt;</h1>
-<h1><a class="anchor" id="autotoc_md134"></a>
+<hr  />
+<h1><a class="anchor" id="autotoc_md131"></a>
 Simulation Lifecycle</h1>
 <p>The actor operates on a state machine (<code>EIVSmokeVoxelVolumeState</code>) that progresses based on duration settings.</p>
-<h2><a class="anchor" id="autotoc_md135"></a>
+<h2><a class="anchor" id="autotoc_md132"></a>
 1. Expansion Phase</h2>
 <ul>
 <li><b>Behavior:</b> The smoke actively spawns new voxels, expanding outward from the center.</li>
 <li><b>Control:</b> The rate of expansion is controlled by the <code>ExpansionCurve</code> and <code>ExpansionDuration</code>.</li>
 <li><b>Visuals:</b> Voxels fade in based on <code>FadeInDuration</code>.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md136"></a>
+<h2><a class="anchor" id="autotoc_md133"></a>
 2. Sustain Phase</h2>
 <ul>
 <li><b>Behavior:</b> The smoke has reached its maximum size (or <code>MaxVoxelNum</code> limit). It maintains its shape and density.</li>
 <li><b>Duration:</b> Controlled by <code>SustainDuration</code>. If <code>bIsInfinite</code> is true, it remains in this state indefinitely.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md137"></a>
+<h2><a class="anchor" id="autotoc_md134"></a>
 3. Dissipation Phase</h2>
 <ul>
 <li><b>Behavior:</b> The smoke begins to recede. Voxels are removed effectively in the reverse order of their generation (or based on noise), simulating the smoke thinning out.</li>
 <li><b>Control:</b> The rate of removal is controlled by <code>DissipationCurve</code> and <code>DissipationDuration</code>.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md138"></a>
+<h2><a class="anchor" id="autotoc_md135"></a>
 4. Finished</h2>
 <ul>
 <li><b>Behavior:</b> All voxels are removed.</li>
 <li><b>Cleanup:</b> If <code>bDestroyOnFinish</code> is enabled, the actor is destroyed. Otherwise, it resets to an Idle state.</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md140"></a>
+<h1><a class="anchor" id="autotoc_md137"></a>
 Configuration Guidelines</h1>
-<h2><a class="anchor" id="autotoc_md141"></a>
+<h2><a class="anchor" id="autotoc_md138"></a>
 Performance &amp; Resolution</h2>
 <p>The visual fidelity and performance cost are managed by balancing the physical size of the voxels against the total number of voxels allowed.</p>
 <table class="markdownTable">
@@ -170,10 +170,10 @@ Performance &amp; Resolution</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Volume Extent</b>   </td><td class="markdownTableBodyNone">The grid index radius.   </td><td class="markdownTableBodyNone"><b>Memory Usage.</b> Defines the maximum memory buffer size. Keep this optimized (e.g., 8-16) to minimize memory footprint.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md142"></a>
+<h2><a class="anchor" id="autotoc_md139"></a>
 Shape Control</h2>
 <p>The overall shape of the smoke cloud is defined by the <b>Radii</b> and <b>Noise</b> settings.</p>
-<h2><a class="anchor" id="autotoc_md143"></a>
+<h2><a class="anchor" id="autotoc_md140"></a>
 Radii (Aspect Ratio)</h2>
 <p><code>Radii</code> defines the <b>relative shape ratio</b> of the expansion per axis. These are not absolute units; they function as weights for the flood-fill propagation.</p>
 <p><b>Examples:</b></p>
@@ -183,7 +183,7 @@ Radii (Aspect Ratio)</h2>
 <li><code>(2.0, 1.0, 1.0)</code> : Creates an <b>Ellipsoid</b> that stretches twice as far along the X-axis compared to Y and Z.</li>
 <li><code>(1.0, 1.0, 0.5)</code> : Creates a flattened "pancake" shape.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md144"></a>
+<h2><a class="anchor" id="autotoc_md141"></a>
 Expansion Noise</h2>
 <p>Adds randomness to the pathfinding cost.</p>
 <ul>
@@ -191,9 +191,9 @@ Expansion Noise</h2>
 <li><b>High Value:</b> The smoke becomes jagged and irregular, seeping into cracks and forming a more organic cloud.</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md146"></a>
+<h1><a class="anchor" id="autotoc_md143"></a>
 Network Synchronization</h1>
-<h2><a class="anchor" id="autotoc_md147"></a>
+<h2><a class="anchor" id="autotoc_md144"></a>
 Late-Join Handling (Fast Forwarding)</h2>
 <p>A common challenge with deterministic simulations is handling clients who join the game after the smoke has already started.</p>
 <p><code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code> handles this automatically:</p>
@@ -202,35 +202,35 @@ Late-Join Handling (Fast Forwarding)</h2>
 <li>If the client is behind, it triggers a <b>Fast-Forward</b> routine.</li>
 <li>The client internally simulates the elapsed time in a tight loop to catch up to the server's current state instantly.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md148"></a>
+<h2><a class="anchor" id="autotoc_md145"></a>
 Time Synchronization</h2>
 <p>The simulation relies on <code>GetSyncWorldTimeSeconds()</code> to ensure that the expansion animation plays at the exact same world-time timestamp on all clients, compensating for network latency.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md150"></a>
+<h1><a class="anchor" id="autotoc_md147"></a>
 Interaction Components</h1>
 <p>This actor coordinates with helper components to handle gameplay interactions:</p>
 <ol type="1">
-<li>**Hole Generator (<code><a class="el" href="classUIVSmokeHoleGeneratorComponent.html" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e...">UIVSmokeHoleGeneratorComponent</a></code>):**<ul>
+<li><b>Hole Generator</b> (<code><a class="el" href="classUIVSmokeHoleGeneratorComponent.html" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e...">UIVSmokeHoleGeneratorComponent</a></code>):<ul>
 <li>Handles dynamic modifications to the smoke texture (e.g., when a grenade explodes inside the smoke or a projectile passes through).</li>
 <li>This is purely visual and does not alter the voxel grid topology.</li>
 </ul>
 </li>
-<li>**Collision Component (<code><a class="el" href="classUIVSmokeCollisionComponent.html">UIVSmokeCollisionComponent</a></code>):**<ul>
+<li><b>Collision Component</b> (<code><a class="el" href="classUIVSmokeCollisionComponent.html">UIVSmokeCollisionComponent</a></code>):<ul>
 <li>Generates physics collision bodies based on the active voxels.</li>
 <li><b>Usage:</b> Primarily used for <b>AI Perception blocking</b>. It allows AI to understand that they cannot see through the smoke volume.</li>
 </ul>
 </li>
 </ol>
 <blockquote class="doxtable">
-<p>&zwj;<b>Interaction vs. Simulation</b> Do not confuse <code>VoxelCollisionChannel</code> (Settings) with <code><a class="el" href="classUIVSmokeCollisionComponent.html">UIVSmokeCollisionComponent</a></code> (Component).</p>
+<p>&zwj;<b>Interaction vs. Simulation</b></p>
+<p>Do not confuse <code>VoxelCollisionChannel</code> (Settings) with <code><a class="el" href="classUIVSmokeCollisionComponent.html">UIVSmokeCollisionComponent</a></code> (Component).</p>
 <ul>
 <li><b>VoxelCollisionChannel:</b> Used by the <em>simulation</em> to detect walls and stop expansion.</li>
 <li><b><a class="el" href="classUIVSmokeCollisionComponent.html">UIVSmokeCollisionComponent</a>:</b> Created by the <em>simulation</em> to block other actors (like AI Line of Sight). </li>
 </ul>
 </blockquote>
-<h1><a class="anchor" id="autotoc_md151"></a>
-&lt;/blockquote&gt;</h1>
-<h1><a class="anchor" id="autotoc_md152"></a>
+<hr  />
+<h1><a class="anchor" id="autotoc_md148"></a>
 Debugging</h1>
 <p>The class includes robust editor and runtime debugging tools located under <code>Debug Settings</code>.</p>
 <ul>
@@ -245,25 +245,24 @@ Debugging</h1>
 <blockquote class="doxtable">
 <p>&zwj;<b>Note on Checksums:</b> The debug text displays a CRC32 Checksum. If you suspect a desync issue, compare this number between the Server and Client. They must match exactly. </p>
 </blockquote>
-<h1><a class="anchor" id="autotoc_md153"></a>
-&lt;/blockquote&gt;</h1>
-<h2><a class="anchor" id="autotoc_md154"></a>
+<hr  />
+<h2><a class="anchor" id="autotoc_md149"></a>
 Console Commands (CVars)</h2>
 <p>You can control debug visualizations at runtime using the console (<code>~</code> key). These commands affect <b>all</b> active <code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code> actors in the world simultaneously.</p>
-<p>All commands share the prefix: **<code>IVSmoke.Volume.</code>**</p>
+<p>All commands share the prefix <code>IVSmoke.Volume.</code></p>
 <table class="markdownTable">
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Command   </th><th class="markdownTableHeadNone">Arguments   </th><th class="markdownTableHeadNone">Description    </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">**<code>IVSmoke.Volume.Debug</code>**   </td><td class="markdownTableBodyNone"><code>0</code> or <code>1</code>   </td><td class="markdownTableBodyNone"><b>Master Switch.</b> Toggles the entire debug system on or off. Setting this to 0 hides all visualizations immediately.    </td></tr>
+<td class="markdownTableBodyNone"><code>IVSmoke.Volume.Debug</code>   </td><td class="markdownTableBodyNone"><code>0</code> or <code>1</code>   </td><td class="markdownTableBodyNone"><b>Master Switch.</b> Toggles the entire debug system on or off. Setting this to 0 hides all visualizations immediately.    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">**<code>IVSmoke.Volume.ShowWireframe</code>**   </td><td class="markdownTableBodyNone"><code>0</code> or <code>1</code>   </td><td class="markdownTableBodyNone">Toggles the lightweight wireframe cube visualization for active voxels.    </td></tr>
+<td class="markdownTableBodyNone"><code>IVSmoke.Volume.ShowWireframe</code>   </td><td class="markdownTableBodyNone"><code>0</code> or <code>1</code>   </td><td class="markdownTableBodyNone">Toggles the lightweight wireframe cube visualization for active voxels.    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">**<code>IVSmoke.Volume.ShowMesh</code>**   </td><td class="markdownTableBodyNone"><code>0</code> or <code>1</code>   </td><td class="markdownTableBodyNone">Toggles the Instanced Static Mesh visualization. <b>Warning:</b> Rendering thousands of meshes can be expensive.    </td></tr>
+<td class="markdownTableBodyNone"><code>IVSmoke.Volume.ShowMesh</code>   </td><td class="markdownTableBodyNone"><code>0</code> or <code>1</code>   </td><td class="markdownTableBodyNone">Toggles the Instanced Static Mesh visualization. <b>Warning:</b> Rendering thousands of meshes can be expensive.    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">**<code>IVSmoke.Volume.ShowStatus</code>**   </td><td class="markdownTableBodyNone"><code>0</code> or <code>1</code>   </td><td class="markdownTableBodyNone">Toggles the floating status text (State, Voxel Count, Checksum) above the actor.    </td></tr>
+<td class="markdownTableBodyNone"><code>IVSmoke.Volume.ShowStatus</code>   </td><td class="markdownTableBodyNone"><code>0</code> or <code>1</code>   </td><td class="markdownTableBodyNone">Toggles the floating status text (State, Voxel Count, Checksum) above the actor.    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">**<code>IVSmoke.Volume.SetViewMode</code>**   </td><td class="markdownTableBodyNone"><code>Mode ID</code>   </td><td class="markdownTableBodyNone">Changes visualization color. Use **<code>0</code>** for Solid Color (default) or **<code>1</code>** for Heatmap (gradient based on generation order).   </td></tr>
+<td class="markdownTableBodyNone"><code>IVSmoke.Volume.SetViewMode</code>   </td><td class="markdownTableBodyNone"><code>Mode ID</code>   </td><td class="markdownTableBodyNone">Changes visualization color. Use <code>0</code> for Solid Color (default) or <code>1</code> for Heatmap (gradient based on generation order).   </td></tr>
 </table>
 <hr  />
 <p><em>Copyright (c) 2026, Team SDB. All rights reserved.</em> </p>

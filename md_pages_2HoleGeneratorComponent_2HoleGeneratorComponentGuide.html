@@ -92,7 +92,7 @@ $(document).ready(function(){initNavTree('md_pages_2HoleGeneratorComponent_2Hole
   <div class="headertitle"><div class="title">HoleGenerator Component Guide</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md114"></a> <code><a class="el" href="classUIVSmokeHoleGeneratorComponent.html" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e...">UIVSmokeHoleGeneratorComponent</a></code> lets gameplay events carve temporary holes into the smoke — bullet trails, explosion voids, or a moving character clearing a path. Holes are purely visual and do not change the voxel simulation itself.</p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md112"></a> <code><a class="el" href="classUIVSmokeHoleGeneratorComponent.html" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e...">UIVSmokeHoleGeneratorComponent</a></code> lets gameplay events carve temporary holes into the smoke — bullet trails, explosion voids, or a moving character clearing a path. Holes are purely visual and do not change the voxel simulation itself.</p>
 <p>There are three hole types:</p>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -106,7 +106,7 @@ $(document).ready(function(){initNavTree('md_pages_2HoleGeneratorComponent_2Hole
 </table>
 <p>Hole behavior is configured through <b>Hole Preset</b> Data Assets, then triggered at runtime via Blueprint request nodes.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md116"></a>
+<h1><a class="anchor" id="autotoc_md114"></a>
 Creating a Hole Preset</h1>
 <p>In the <b>Content Drawer</b>, right-click and select <b>Miscellaneous &gt; Data Asset</b>, then choose <b><a class="el" href="classIVSmoke.html">IVSmoke</a> Hole Preset</b> as the class.</p>
 <div class="image">
@@ -123,7 +123,7 @@ Selecting IVSmoke Hole Preset</div></div>
 <div class="caption">
 Demo preset assets</div></div>
     <hr  />
-<h1><a class="anchor" id="autotoc_md118"></a>
+<h1><a class="anchor" id="autotoc_md116"></a>
 Preset Properties</h1>
 <p>All presets share these common properties:</p>
 <table class="markdownTable">
@@ -136,7 +136,7 @@ Preset Properties</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Softness</b>   </td><td class="markdownTableBodyNone">Edge softness (0 = hard edge, 1 = soft gradient).   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md119"></a>
+<h2><a class="anchor" id="autotoc_md117"></a>
 Explosion (Grenade)</h2>
 <div class="image">
 <img src="HoleGeneratorComponent_image.png" alt=""/>
@@ -158,7 +158,7 @@ Explosion preset properties</div></div>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>Distortion Distance</b>   </td><td class="markdownTableBodyNone">Maximum distortion distance.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md120"></a>
+<h2><a class="anchor" id="autotoc_md118"></a>
 Penetration (Bullet)</h2>
 <div class="image">
 <img src="HoleGeneratorComponent_image1.png" alt=""/>
@@ -174,7 +174,7 @@ Penetration preset properties</div></div>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Bullet Thickness</b>   </td><td class="markdownTableBodyNone">Physical collision size of the bullet, used for obstacle detection. Larger values make bullets more likely to be blocked by nearby walls.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md121"></a>
+<h2><a class="anchor" id="autotoc_md119"></a>
 Dynamic (Moving Actor)</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -185,20 +185,20 @@ Dynamic (Moving Actor)</h2>
 <td class="markdownTableBodyNone"><b>Distance Threshold</b>   </td><td class="markdownTableBodyNone">Minimum distance the actor must travel before a new hole segment is created.   </td></tr>
 </table>
 <hr  />
-<h1><a class="anchor" id="autotoc_md123"></a>
+<h1><a class="anchor" id="autotoc_md121"></a>
 Usage</h1>
 <div class="image">
 <img src="HoleGeneratorComponent_image5.png" alt=""/>
 <div class="caption">
 Blueprint request nodes</div></div>
-    <h2><a class="anchor" id="autotoc_md124"></a>
+    <h2><a class="anchor" id="autotoc_md122"></a>
 Prerequisite: Add UIVSmokeHoleRequestComponent</h2>
-<p>Before calling any request node, add a **<code><a class="el" href="classUIVSmokeHoleRequestComponent.html" title="Handles network routing for hole requests. This component enables clients to request holes on VoxelVo...">UIVSmokeHoleRequestComponent</a></code>** to the Character or Pawn that will interact with the smoke. This component handles the interaction queries between the actor and the smoke volume, and is required whenever the target <code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code> uses a <code><a class="el" href="classUIVSmokeHoleGeneratorComponent.html" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e...">UIVSmokeHoleGeneratorComponent</a></code>.</p>
+<p>Before calling any request node, add a <code><a class="el" href="classUIVSmokeHoleRequestComponent.html" title="Handles network routing for hole requests. This component enables clients to request holes on VoxelVo...">UIVSmokeHoleRequestComponent</a></code> to the Character or Pawn that will interact with the smoke. This component handles the interaction queries between the actor and the smoke volume, and is required whenever the target <code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code> uses a <code><a class="el" href="classUIVSmokeHoleGeneratorComponent.html" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e...">UIVSmokeHoleGeneratorComponent</a></code>.</p>
 <div class="image">
 <img src="HoleGeneratorComponent_image6.png" alt=""/>
 <div class="caption">
 Attach UIVSmokeHoleRequestComponent to the pawn class</div></div>
-    <h2><a class="anchor" id="autotoc_md125"></a>
+    <h2><a class="anchor" id="autotoc_md123"></a>
 Case A. Request Penetration Hole</h2>
 <p>Simulates a high-speed projectile piercing through the smoke in a straight line.</p>
 <div class="image">
@@ -218,7 +218,7 @@ Request Penetration Hole example</div></div>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>Bullet Preset</b>   </td><td class="markdownTableBodyNone">Preset dropdown   </td><td class="markdownTableBodyNone">An <code>IVSmokeHolePreset</code> with Hole Type set to <b>Penetration</b>.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md126"></a>
+<h2><a class="anchor" id="autotoc_md124"></a>
 Case B. Request Explosion Hole</h2>
 <p>Creates a spherical void, e.g. for grenades, C4, or artillery shells.</p>
 <div class="image">
@@ -236,7 +236,7 @@ Request Explosion Hole example</div></div>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Explosion Preset</b>   </td><td class="markdownTableBodyNone">Preset dropdown   </td><td class="markdownTableBodyNone">An <code>IVSmokeHolePreset</code> with Hole Type set to <b>Explosion</b>.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md127"></a>
+<h2><a class="anchor" id="autotoc_md125"></a>
 Case C. Request Dynamic Hole</h2>
 <p>Clears smoke in real time along the path of a moving actor, such as a character or vehicle. Once triggered, the system tracks the actor automatically.</p>
 <div class="image">

@@ -92,9 +92,9 @@ $(document).ready(function(){initNavTree('md_pages_2CustomMaterial_2CustomMateri
   <div class="headertitle"><div class="title">Custom Material Guide</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md40"></a> <a class="el" href="classIVSmoke.html">IVSmoke</a> renders smoke through a built-in composite shader by default. If you want full control over how the smoke is blended with the scene, you can supply your own <b>Post Process material</b> and register it via a <b>Visual Material Preset</b>. This guide walks through creating the material, wiring up the <a class="el" href="classIVSmoke.html">IVSmoke</a> texture nodes, and registering the preset in Project Settings.</p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md38"></a> <a class="el" href="classIVSmoke.html">IVSmoke</a> renders smoke through a built-in composite shader by default. If you want full control over how the smoke is blended with the scene, you can supply your own <b>Post Process material</b> and register it via a <b>Visual Material Preset</b>. This guide walks through creating the material, wiring up the <a class="el" href="classIVSmoke.html">IVSmoke</a> texture nodes, and registering the preset in Project Settings.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md42"></a>
+<h1><a class="anchor" id="autotoc_md40"></a>
 1. Creating the Material</h1>
 <p>Create a new material and set its <b>Material Domain</b> to <b>Post Process</b>. Inside the material, you define how the Scene and Smoke textures are mixed.</p>
 <div class="image">
@@ -105,7 +105,7 @@ Demo custom material graph</div></div>
 <img src="CustomMaterial_image1.png" alt=""/>
 <div class="caption">
 Material Domain set to Post Process</div></div>
-    <h2><a class="anchor" id="autotoc_md43"></a>
+    <h2><a class="anchor" id="autotoc_md41"></a>
 IVSmoke_TextureSample Node</h2>
 <p>Search for <b>IVSmoke_TextureSample</b> in the material palette and add it to your graph. This node gives you access to the smoke render targets.</p>
 <div class="image">
@@ -136,7 +136,7 @@ Texture Type options</div></div>
 <div class="caption">
 Color Mask options</div></div>
     <hr  />
-<h1><a class="anchor" id="autotoc_md45"></a>
+<h1><a class="anchor" id="autotoc_md43"></a>
 2. Creating a Visual Material Preset</h1>
 <p>The preset is a Data Asset that links your material to the <a class="el" href="classIVSmoke.html">IVSmoke</a> render pipeline.</p>
 <ol type="1">
@@ -144,7 +144,7 @@ Color Mask options</div></div>
 <li>Choose <b><a class="el" href="classIVSmoke.html">IVSmoke</a> Visual Material Preset</b> as the class.</li>
 </ol>
 <p><img src="IVSmoke_DataAsset.png" alt="" class="inline" title="Data Asset creation menu"/>     <img src="IVSmoke_DataAsset_VisualMaterialPreset.png" alt="" class="inline" title="Selecting IVSmoke Visual Material Preset"/>    </p>
-<h2><a class="anchor" id="autotoc_md46"></a>
+<h2><a class="anchor" id="autotoc_md44"></a>
 Preset Properties</h2>
 <div class="image">
 <img src="CustomMaterial_image2.png" alt=""/>
@@ -166,7 +166,7 @@ Visual Material Preset properties</div></div>
 <li><b>Median</b> — Removes noise while preserving edges.</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md48"></a>
+<h1><a class="anchor" id="autotoc_md46"></a>
 3. Registering the Preset</h1>
 <p>Open <b>Edit &gt; Project Settings</b> and search for <b><a class="el" href="classIVSmoke.html">IVSmoke</a></b>. In the <b>Rendering</b> section, assign your preset to the <b>Smoke Visual Material Preset</b> slot.</p>
 <div class="image">
@@ -174,7 +174,7 @@ Visual Material Preset properties</div></div>
 <div class="caption">
 Project Settings — Smoke Visual Material Preset slot</div></div>
     <hr  />
-<h1><a class="anchor" id="autotoc_md50"></a>
+<h1><a class="anchor" id="autotoc_md48"></a>
 Example</h1>
 <p>A working demo preset ships with the plugin:</p>
 <p><b>Plugins &gt; <a class="el" href="classIVSmoke.html">IVSmoke</a> &gt; DataAssets &gt; D_IVSmoke_VisualMaterialPreset</b></p>

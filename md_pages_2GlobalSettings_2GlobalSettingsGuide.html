@@ -92,15 +92,14 @@ $(document).ready(function(){initNavTree('md_pages_2GlobalSettings_2GlobalSettin
   <div class="headertitle"><div class="title">Global Settings Guide</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md52"></a> Access via <b>Edit &gt; Project Settings &gt; Plugins &gt; <a class="el" href="classIVSmoke.html">IVSmoke</a></b></p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md50"></a> Access via <b>Edit &gt; Project Settings &gt; Plugins &gt; <a class="el" href="classIVSmoke.html">IVSmoke</a></b></p>
 <p>These settings apply globally to all smoke volumes in your project. Settings are saved to <code>DefaultGame.ini</code>.</p>
 <blockquote class="doxtable">
-<p>&zwj;Note: Settings may be reorganized into sub-sections in future updates. The functionality remains the same.</p>
-<p></p>
+<p>&zwj;<b>Note:</b> Settings may be reorganized into sub-sections in future updates. The functionality remains the same. </p>
 </blockquote>
 <p><img src="GlobalSettings_image1.png" alt="" class="inline" title="GlobalSettings_image1.png"/>    </p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md54"></a>
+<h1><a class="anchor" id="autotoc_md52"></a>
 General</h1>
 <div class="image">
 <img src="GlobalSettings_image2.png" alt=""/>
@@ -120,7 +119,7 @@ GlobalSettings_image2.png</div></div>
 <li>Enable <b>Show Advanced Options</b> only when you need precise control over edge fade, light override, or shadow bias</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md56"></a>
+<h1><a class="anchor" id="autotoc_md54"></a>
 Quality</h1>
 <div class="image">
 <img src="GlobalSettings_image3.png" alt=""/>
@@ -133,7 +132,7 @@ GlobalSettings_image3.png</div></div>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Global Quality</b>   </td><td class="markdownTableBodyNone">Enum   </td><td class="markdownTableBodyNone"><code>Medium (Balanced)</code>   </td><td class="markdownTableBodyNone">Master quality preset that controls Ray Marching, Self-Shadow, and External Shadow quality together.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md57"></a>
+<h2><a class="anchor" id="autotoc_md55"></a>
 Global Quality Presets</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -147,10 +146,10 @@ Global Quality Presets</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>Custom</b>   </td><td class="markdownTableBodyNone">Per-section   </td><td class="markdownTableBodyNone">Per-section   </td><td class="markdownTableBodyNone">Per-section   </td><td class="markdownTableBodyNone">Per-section   </td><td class="markdownTableBodyNone">Independent control per section   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md58"></a>
+<h2><a class="anchor" id="autotoc_md56"></a>
 Custom Quality Mode</h2>
 <p>When <b>Global Quality</b> is set to <b>Custom</b>, you can configure each quality section independently. Each section (Ray March, Self-Shadow, External Shadow) has its own quality preset selector.</p>
-<h2><a class="anchor" id="autotoc_md59"></a>
+<h2><a class="anchor" id="autotoc_md57"></a>
 Ray March Quality</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -167,7 +166,7 @@ Ray March Quality</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>Custom Min Step Size</b>   </td><td class="markdownTableBodyNone">float   </td><td class="markdownTableBodyNone">5.0-100.0   </td><td class="markdownTableBodyNone">25.0   </td><td class="markdownTableBodyNone">Minimum distance (cm) between ray samples   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md60"></a>
+<h2><a class="anchor" id="autotoc_md58"></a>
 Self-Shadow Quality</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -182,7 +181,7 @@ Self-Shadow Quality</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Custom Light Marching Steps</b>   </td><td class="markdownTableBodyNone">int32   </td><td class="markdownTableBodyNone">1-16   </td><td class="markdownTableBodyNone">6   </td><td class="markdownTableBodyNone">Steps for light direction sampling   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md61"></a>
+<h2><a class="anchor" id="autotoc_md59"></a>
 External Shadow Quality</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -201,7 +200,7 @@ External Shadow Quality</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Custom Shadow Max Distance</b>   </td><td class="markdownTableBodyNone">float   </td><td class="markdownTableBodyNone">1000-100000   </td><td class="markdownTableBodyNone">50000   </td><td class="markdownTableBodyNone">Maximum shadow rendering distance (cm)   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md62"></a>
+<h2><a class="anchor" id="autotoc_md60"></a>
 Performance Impact</h2>
 <ul>
 <li><b>Max Steps</b>: Higher values increase GPU cost linearly</li>
@@ -209,7 +208,7 @@ Performance Impact</h2>
 <li><b>Cascade Resolution</b>: Memory usage scales quadratically (512x512 = 1MB, 1024x1024 = 4MB per cascade)</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md64"></a>
+<h1><a class="anchor" id="autotoc_md62"></a>
 Appearance</h1>
 <div class="image">
 <img src="GlobalSettings_image4.png" alt=""/>
@@ -226,7 +225,7 @@ GlobalSettings_image4.png</div></div>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Wind Direction</b>   </td><td class="markdownTableBodyNone">FVector   </td><td class="markdownTableBodyNone">-   </td><td class="markdownTableBodyNone">(0, 0, 0.1)   </td><td class="markdownTableBodyNone">Direction and speed of wind animation. The magnitude affects speed.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md65"></a>
+<h2><a class="anchor" id="autotoc_md63"></a>
 Advanced Options (Show Advanced Options = true)</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -244,7 +243,7 @@ Advanced Options (Show Advanced Options = true)</h2>
 <div class="line">  0.5 [======  ] Moderate definition</div>
 <div class="line">  1.0 [========] Sharp, hard edges</div>
 </div><!-- fragment --><hr  />
-<h1><a class="anchor" id="autotoc_md67"></a>
+<h1><a class="anchor" id="autotoc_md65"></a>
 Lighting</h1>
 <div class="image">
 <img src="GlobalSettings_image5.png" alt=""/>
@@ -269,7 +268,7 @@ GlobalSettings_image5.png</div></div>
 <div class="line">Typical values:</div>
 <div class="line">  Smoke/Fog: 0.3 ~ 0.6 (slight forward scattering)</div>
 <div class="line">  Clouds: 0.7 ~ 0.85 (strong forward scattering, silver lining effect)</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md68"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md66"></a>
 Advanced Options (Show Advanced Options = true)</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -284,14 +283,14 @@ Advanced Options (Show Advanced Options = true)</h2>
 <td class="markdownTableBodyNone"><b>Light Color Override</b>   </td><td class="markdownTableBodyNone">FLinearColor   </td><td class="markdownTableBodyNone">White   </td><td class="markdownTableBodyNone">Custom light color when override is enabled.   </td></tr>
 </table>
 <hr  />
-<h1><a class="anchor" id="autotoc_md70"></a>
+<h1><a class="anchor" id="autotoc_md68"></a>
 Shadows</h1>
 <div class="image">
 <img src="GlobalSettings_image6.png" alt=""/>
 <div class="caption">
 GlobalSettings_image6.png</div></div>
     <p>The Shadows section is divided into <b>Self</b> (internal smoke shadows) and <b>External</b> (shadows from scene objects).</p>
-<h2><a class="anchor" id="autotoc_md71"></a>
+<h2><a class="anchor" id="autotoc_md69"></a>
 Self Shadows</h2>
 <p>Self-shadowing creates depth within the smoke by calculating how much light is blocked as it travels through the volume.</p>
 <table class="markdownTable">
@@ -304,7 +303,7 @@ Self Shadows</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Light Marching Exp Factor</b>   </td><td class="markdownTableBodyNone">float   </td><td class="markdownTableBodyNone">1.0-5.0   </td><td class="markdownTableBodyNone">2.0   </td><td class="markdownTableBodyNone">Exponential distribution for light samples. Higher values concentrate samples near the surface.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md72"></a>
+<h2><a class="anchor" id="autotoc_md70"></a>
 External Shadows</h2>
 <p>External shadows allow smoke to receive shadows from scene geometry using Cascaded Shadow Maps (CSM).</p>
 <table class="markdownTable">
@@ -330,7 +329,7 @@ External Shadows</h2>
 <td class="markdownTableBodyNone"><b>VSM Light Bleeding Reduction</b>   </td><td class="markdownTableBodyNone">float   </td><td class="markdownTableBodyNone">0.0-0.5   </td><td class="markdownTableBodyNone">0.2   </td><td class="markdownTableBodyNone">Reduces light bleeding artifacts at shadow edges.   </td></tr>
 </table>
 <hr  />
-<h1><a class="anchor" id="autotoc_md74"></a>
+<h1><a class="anchor" id="autotoc_md72"></a>
 Post Processing</h1>
 <div class="image">
 <img src="GlobalSettings_image7.png" alt=""/>
@@ -348,7 +347,7 @@ GlobalSettings_image7.png</div></div>
 <td class="markdownTableBodyNone"><b>FXAA Sharpness</b>   </td><td class="markdownTableBodyNone">float   </td><td class="markdownTableBodyNone">0.1-8.0   </td><td class="markdownTableBodyNone">1.7   </td><td class="markdownTableBodyNone">Sharpening applied during FXAA. Counteracts blur from anti-aliasing.   </td></tr>
 </table>
 <hr  />
-<h1><a class="anchor" id="autotoc_md76"></a>
+<h1><a class="anchor" id="autotoc_md74"></a>
 Rendering</h1>
 <div class="image">
 <img src="GlobalSettings_image8.png" alt=""/>
@@ -361,7 +360,7 @@ GlobalSettings_image8.png</div></div>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Smoke Visual Material</b>   </td><td class="markdownTableBodyNone">Soft Object Path   </td><td class="markdownTableBodyNone">None   </td><td class="markdownTableBodyNone">Optional material for custom smoke visuals.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md77"></a>
+<h2><a class="anchor" id="autotoc_md75"></a>
 Advanced Options (Show Advanced Options = true)</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -378,7 +377,7 @@ Advanced Options (Show Advanced Options = true)</h2>
 <li>Default value of 50 cm works well for most use cases</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md79"></a>
+<h1><a class="anchor" id="autotoc_md77"></a>
 Debug</h1>
 <div class="image">
 <img src="GlobalSettings_image9.png" alt=""/>
@@ -391,14 +390,14 @@ GlobalSettings_image9.png</div></div>
 <td class="markdownTableBodyNone"><b>Show Debug Volumes</b>   </td><td class="markdownTableBodyNone">bool   </td><td class="markdownTableBodyNone"><code>false</code>   </td><td class="markdownTableBodyNone">Displays wireframe bounds for all smoke volumes in the viewport.   </td></tr>
 </table>
 <hr  />
-<h1><a class="anchor" id="autotoc_md81"></a>
+<h1><a class="anchor" id="autotoc_md79"></a>
 Smoke Preset</h1>
 <div class="image">
 <img src="GlobalSettings_image10.png" alt=""/>
 <div class="caption">
 GlobalSettings_image10.png</div></div>
     <p><b>Smoke Presets</b> are Data Assets that define per-volume appearance settings. Use presets to create reusable smoke configurations (white smoke, colored smoke, thick/thin smoke, etc.).</p>
-<h2><a class="anchor" id="autotoc_md82"></a>
+<h2><a class="anchor" id="autotoc_md80"></a>
 Creating a Smoke Preset</h2>
 <ol type="1">
 <li>In <b>Content Browser</b>, right-click</li>
@@ -406,7 +405,7 @@ Creating a Smoke Preset</h2>
 <li>Choose <code>IVSmokeSmokePreset</code> as the class</li>
 <li>Name it descriptively (e.g., <code>DA_SmokePreset_WhiteThick</code>)</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md83"></a>
+<h2><a class="anchor" id="autotoc_md81"></a>
 Preset Properties</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -418,7 +417,7 @@ Preset Properties</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Volume Density</b>   </td><td class="markdownTableBodyNone">float   </td><td class="markdownTableBodyNone">0.0-10.0   </td><td class="markdownTableBodyNone">1.0   </td><td class="markdownTableBodyNone">Overall density multiplier for this volume.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md84"></a>
+<h2><a class="anchor" id="autotoc_md82"></a>
 Applying a Preset</h2>
 <ol type="1">
 <li>Select your <code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code> actor in the level</li>
@@ -429,7 +428,7 @@ Applying a Preset</h2>
 <img src="GlobalSettings_image11.png" alt=""/>
 <div class="caption">
 GlobalSettings_image11.png</div></div>
-    <h2><a class="anchor" id="autotoc_md85"></a>
+    <h2><a class="anchor" id="autotoc_md83"></a>
 Preset Examples</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -444,10 +443,10 @@ Preset Examples</h2>
 <td class="markdownTableBodyNone">Thin Mist   </td><td class="markdownTableBodyNone">(0.7, 0.7, 0.8)   </td><td class="markdownTableBodyNone">0.05   </td><td class="markdownTableBodyNone">0.5   </td><td class="markdownTableBodyNone">Light fog/mist effect   </td></tr>
 </table>
 <hr  />
-<h1><a class="anchor" id="autotoc_md87"></a>
+<h1><a class="anchor" id="autotoc_md85"></a>
 Translucent Sorting</h1>
 <p>When smoke needs to correctly sort with translucent objects (like fire effects or glass), <a class="el" href="classIVSmoke.html">IVSmoke</a> uses a <b>Depth Write</b> system.</p>
-<h2><a class="anchor" id="autotoc_md88"></a>
+<h2><a class="anchor" id="autotoc_md86"></a>
 How It Works</h2>
 <p><a class="el" href="classIVSmoke.html">IVSmoke</a> writes smoke depth to the standard scene depth buffer during a pre-pass, before Unreal's translucent pass executes. This allows translucent particles (Niagara/Cascade) and other translucent objects to correctly depth-test against smoke.</p>
 <div class="fragment"><div class="line">Render Pipeline Order:</div>
@@ -463,7 +462,7 @@ How It Works</h2>
 <div class="line">├─────────────────────────────┤</div>
 <div class="line">│ 4. IVSmoke Post-Pass        │  ← Final composite</div>
 <div class="line">└─────────────────────────────┘</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md89"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md87"></a>
 Automatic Sorting</h2>
 <p>Unlike previous versions that required Custom Depth configuration, the current Depth Write system works automatically:</p>
 <ul>
@@ -471,7 +470,7 @@ Automatic Sorting</h2>
 <li>Particles behind opaque smoke regions are correctly occluded</li>
 <li>Only nearly opaque smoke pixels (Alpha &gt;= 0.99) write depth</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md90"></a>
+<h2><a class="anchor" id="autotoc_md88"></a>
 Troubleshooting</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -483,18 +482,18 @@ Troubleshooting</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">Particles pop through too early   </td><td class="markdownTableBodyNone">Decrease <b>Depth Write Bias</b> value   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md91"></a>
+<h2><a class="anchor" id="autotoc_md89"></a>
 Performance</h2>
 <p>The Depth Write system has minimal performance overhead as it runs as part of the pre-pass pipeline and only writes depth for opaque smoke regions.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md93"></a>
+<h1><a class="anchor" id="autotoc_md91"></a>
 Editor Preview</h1>
 <div class="image">
 <img src="GlobalSettings_image15.png" alt=""/>
 <div class="caption">
 GlobalSettings_image15.png</div></div>
     <p>The <b>Editor Preview</b> feature allows you to preview smoke simulation directly in the editor viewport without entering Play mode.</p>
-<h2><a class="anchor" id="autotoc_md94"></a>
+<h2><a class="anchor" id="autotoc_md92"></a>
 Starting Preview</h2>
 <ol type="1">
 <li>Select an <code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code> actor in your level</li>
@@ -503,10 +502,10 @@ Starting Preview</h2>
 <li>Click <b>Start Preview Simulation</b></li>
 </ol>
 <p>The smoke will begin simulating through its lifecycle phases (Expansion → Sustain → Dissipation) directly in the editor viewport.</p>
-<h2><a class="anchor" id="autotoc_md95"></a>
+<h2><a class="anchor" id="autotoc_md93"></a>
 Stopping Preview</h2>
 <p>Click <b>Stop Preview Simulation</b> to immediately halt the simulation and clear all voxel data.</p>
-<h2><a class="anchor" id="autotoc_md96"></a>
+<h2><a class="anchor" id="autotoc_md94"></a>
 Debug Visualization Options</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -532,14 +531,14 @@ Debug Visualization Options</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>Visible Step Count Percent</b>   </td><td class="markdownTableBodyNone">int32   </td><td class="markdownTableBodyNone">100   </td><td class="markdownTableBodyNone">Percentage of simulation steps to visualize.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md97"></a>
+<h2><a class="anchor" id="autotoc_md95"></a>
 Preview Workflow Tips</h2>
 <ol type="1">
 <li><b>Rapid Iteration</b>: Adjust Volume parameters, click Start Preview, observe results, stop, adjust, repeat</li>
 <li><b>Use Wireframe Mode</b>: Enable <code>Show Voxel Wireframe</code> to see the simulation structure without heavy mesh rendering</li>
 <li><b>Status Monitoring</b>: Keep <code>Show Status Text</code> enabled to track voxel count and current simulation phase</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md98"></a>
+<h2><a class="anchor" id="autotoc_md96"></a>
 Limitations</h2>
 <ul>
 <li>Editor Preview does not trigger network replication</li>
@@ -547,10 +546,10 @@ Limitations</h2>
 <li>Performance in preview may differ from packaged builds</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md100"></a>
+<h1><a class="anchor" id="autotoc_md98"></a>
 Stat IVSmoke</h1>
 <p><a class="el" href="classIVSmoke.html">IVSmoke</a> provides detailed statistics for performance profiling and VRAM monitoring.</p>
-<h2><a class="anchor" id="autotoc_md101"></a>
+<h2><a class="anchor" id="autotoc_md99"></a>
 Enabling Stats</h2>
 <p>Open the console (<code>~</code> key) and type:</p>
 <div class="fragment"><div class="line">stat IVSmoke</div>
@@ -558,9 +557,9 @@ Enabling Stats</h2>
 <img src="GlobalSettings_image16.png" alt=""/>
 <div class="caption">
 GlobalSettings_image16.png</div></div>
-    <h2><a class="anchor" id="autotoc_md102"></a>
+    <h2><a class="anchor" id="autotoc_md100"></a>
 Available Statistics</h2>
-<h3><a class="anchor" id="autotoc_md103"></a>
+<h3><a class="anchor" id="autotoc_md101"></a>
 Memory Stats (GPU VRAM)</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -574,7 +573,7 @@ Memory Stats (GPU VRAM)</h3>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>Total VRAM</b>   </td><td class="markdownTableBodyNone">Sum of all <a class="el" href="classIVSmoke.html">IVSmoke</a> GPU memory usage.   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md104"></a>
+<h3><a class="anchor" id="autotoc_md102"></a>
 Cycle Stats (CPU/GPU Time)</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -592,7 +591,7 @@ Cycle Stats (CPU/GPU Time)</h3>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><b>Process Dissipation</b>   </td><td class="markdownTableBodyNone">Actual voxel removal logic execution time.   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md105"></a>
+<h3><a class="anchor" id="autotoc_md103"></a>
 Counter Stats</h3>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -604,7 +603,7 @@ Counter Stats</h3>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><b>Destroyed Voxel Count (Per Frame)</b>   </td><td class="markdownTableBodyNone">Voxels removed this frame.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md106"></a>
+<h2><a class="anchor" id="autotoc_md104"></a>
 Using with Unreal Insights</h2>
 <p>For deeper analysis, use <b>Unreal Insights</b> profiler:</p>
 <ol type="1">
@@ -613,25 +612,25 @@ Using with Unreal Insights</h2>
 <li>Filter by "IVSmoke" to see detailed timing breakdown</li>
 </ol>
 <hr  />
-<h1><a class="anchor" id="autotoc_md108"></a>
+<h1><a class="anchor" id="autotoc_md106"></a>
 Best Practices</h1>
-<h2><a class="anchor" id="autotoc_md109"></a>
+<h2><a class="anchor" id="autotoc_md107"></a>
 Recommended Level Placement</h2>
 <p>When placing smoke volumes in your level, consider these guidelines:</p>
-<h3><a class="anchor" id="autotoc_md110"></a>
+<h3><a class="anchor" id="autotoc_md108"></a>
 Spacing and Distribution</h3>
 <ul>
 <li><b>Avoid clustering</b>: Do not spawn many smoke volumes in the same location simultaneously. Overlapping volumes in the same area can cause rendering artifacts and significant performance drops.</li>
 <li><b>Stagger activation</b>: If multiple smoke grenades land near each other, consider staggering their activation times slightly.</li>
 <li><b>Use adequate spacing</b>: Maintain reasonable distance between simultaneously active smoke volumes.</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md111"></a>
+<h3><a class="anchor" id="autotoc_md109"></a>
 Volume Sizing</h3>
 <ul>
 <li><b>Match gameplay needs</b>: Size your smoke volumes to cover the intended area without excessive overlap.</li>
 <li><b>Consider sightlines</b>: Place smoke to block key sightlines rather than covering entire areas.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md112"></a>
+<h2><a class="anchor" id="autotoc_md110"></a>
 Performance Tips</h2>
 <ul>
 <li><b>Limit simultaneous volumes</b>: Keep the number of simultaneously active smoke volumes reasonable for your target hardware.</li>

@@ -92,11 +92,11 @@ $(document).ready(function(){initNavTree('md_pages_2CollisionComponent_2Collisio
   <div class="headertitle"><div class="title">Collision Component Guide</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md26"></a> <code><a class="el" href="classUIVSmokeCollisionComponent.html">UIVSmokeCollisionComponent</a></code> is a dynamic primitive component attached to the <code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code>. It translates the abstract voxel grid data into actual <b>physics geometry</b> that the Unreal Engine physics system (Chaos/PhysX) can interact with.</p>
-<h1><a class="anchor" id="autotoc_md27"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md25"></a> <code><a class="el" href="classUIVSmokeCollisionComponent.html">UIVSmokeCollisionComponent</a></code> is a dynamic primitive component attached to the <code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code>. It translates the abstract voxel grid data into actual <b>physics geometry</b> that the Unreal Engine physics system (Chaos/PhysX) can interact with.</p>
+<h1><a class="anchor" id="autotoc_md26"></a>
 Overview</h1>
 <p>Unlike standard static meshes, the shape of the smoke changes every frame during expansion and dissipation. This component generates collision bodies dynamically to match the current smoke shape.</p>
-<h2><a class="anchor" id="autotoc_md28"></a>
+<h2><a class="anchor" id="autotoc_md27"></a>
 How It Works: Greedy Meshing</h2>
 <p>To maintain high performance, the component <b>does not</b> create a collision box for every single voxel. Instead, it utilizes a <b>Binary Greedy Meshing</b> algorithm.</p>
 <ol type="1">
@@ -106,16 +106,16 @@ How It Works: Greedy Meshing</h2>
 </ol>
 <p><b>Result:</b> A smoke cloud containing 1,000 active voxels might only require 100-200 large physics boxes to represent its volume, significantly reducing physics simulation overhead.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md30"></a>
+<h1><a class="anchor" id="autotoc_md29"></a>
 Common Use Cases</h1>
-<h2><a class="anchor" id="autotoc_md31"></a>
+<h2><a class="anchor" id="autotoc_md30"></a>
 1. Blocking AI Line of Sight (Default)</h2>
 <p>By default, the component is configured to <b>Block the Visibility channel</b> while ignoring everything else.</p>
 <ul>
 <li><b>Behavior:</b> AI perception systems using Line of Sight traces will be blocked by the smoke.</li>
 <li><b>Player:</b> Players and projectiles will pass through the smoke freely.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md32"></a>
+<h2><a class="anchor" id="autotoc_md31"></a>
 2. Physical Blockage</h2>
 <p>You can change the Collision Profile to <b>BlockAll</b> or <b>Pawn</b> to make the smoke physically solid.</p>
 <ul>
@@ -123,10 +123,10 @@ Common Use Cases</h1>
 <li><b>Context:</b> Useful for magic spells ("Ice Wall") or sci-fi force fields, rather than traditional gas smoke.</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md34"></a>
+<h1><a class="anchor" id="autotoc_md33"></a>
 Configuration</h1>
 <p>The component supports standard Unreal Engine collision settings in the <b>Details Panel</b>, along with specific performance tuning parameters.</p>
-<h2><a class="anchor" id="autotoc_md35"></a>
+<h2><a class="anchor" id="autotoc_md34"></a>
 Performance Throttling</h2>
 <p>Rebuilding physics geometry is an expensive CPU operation. To prevent framerate drops, the component includes a built-in throttling system that skips updates if the changes are insignificant.</p>
 <table class="markdownTable">
@@ -140,7 +140,7 @@ Performance Throttling</h2>
 <td class="markdownTableBodyNone"><b>Min Update Voxel Num</b>   </td><td class="markdownTableBodyNone">The minimum number of voxels that must spawn/die to trigger a rebuild.   </td><td class="markdownTableBodyNone"><b>50 - 100</b>. Prevents rebuilding when the smoke is barely changing.   </td></tr>
 </table>
 <hr  />
-<h1><a class="anchor" id="autotoc_md37"></a>
+<h1><a class="anchor" id="autotoc_md36"></a>
 Debugging</h1>
 <p>You can visualize the optimized physics geometry to verify that the Greedy Meshing is working effectively.</p>
 <ol type="1">
@@ -154,16 +154,17 @@ Debugging</h1>
 </ul>
 <hr  />
 <blockquote class="doxtable">
-<p>&zwj;<b>Note: Interaction with Voxel Simulation</b> This component does <b>not</b> affect the expansion of the smoke itself.</p><ul>
+<p>&zwj;<b>Note: Interaction with Voxel Simulation</b></p>
+<p>This component does <b>not</b> affect the expansion of the smoke itself.</p><ul>
 <li><b>Smoke Expansion:</b> Controlled by <code>VoxelCollisionChannel</code> in the Voxel Volume actor (Trace checks).</li>
 <li><b>Physics/AI Blocking:</b> Controlled by the Collision Profile of this component (Body Instance). </li>
 </ul>
 </blockquote>
 <blockquote class="doxtable">
-<p>&zwj;<b>Warning: Performance Cost</b> While Greedy Meshing is efficient, regenerating physics bodies forces the physics engine to rebuild its acceleration structures. <b>Avoid setting <code>MinCollisionUpdateInterval</code> to 0.0.</b> If the smoke is purely cosmetic and does not need to block AI vision, set <code>bCollisionEnabled = false</code> to save significant CPU performance. </p>
+<p>&zwj;<b>Warning: Performance Cost</b></p>
+<p>While Greedy Meshing is efficient, regenerating physics bodies forces the physics engine to rebuild its acceleration structures. <b>Avoid</b> setting <code>MinCollisionUpdateInterval</code> to 0.0. If the smoke is purely cosmetic and does not need to block AI vision, set <code>bCollisionEnabled = false</code> to save significant CPU performance. </p>
 </blockquote>
-<h1><a class="anchor" id="autotoc_md39"></a>
-&lt;/blockquote&gt;</h1>
+<hr  />
 <p><em>Copyright (c) 2026, Team SDB. All rights reserved.</em> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

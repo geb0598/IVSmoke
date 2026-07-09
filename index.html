@@ -105,69 +105,68 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <blockquote class="doxtable">
 <p>&zwj;<b>Note</b> This plugin requires <b>Unreal Engine 5.7</b> and a Windows 64-bit platform supporting <b>DirectX 11.3+</b> (Shader Model 5). </p>
 </blockquote>
+<hr  />
 <h1><a class="anchor" id="autotoc_md10"></a>
-&lt;/blockquote&gt;</h1>
-<h1><a class="anchor" id="autotoc_md11"></a>
 2. Basic Usage</h1>
 <p>The plugin includes a pre-configured Blueprint actor that contains all necessary components (<code>IVSmokeHoleGenerator</code>, <code>IVSmokeCollisionComponent</code>) for immediate use.</p>
-<h2><a class="anchor" id="autotoc_md12"></a>
+<h2><a class="anchor" id="autotoc_md11"></a>
 Placing the Actor</h2>
 <ol type="1">
 <li>In the <b>Content Browser</b>, navigate to the <b><a class="el" href="classIVSmoke.html">IVSmoke</a> Content &gt; Blueprints</b> folder. *(If you do not see the folder, enable "Show Plugin Content" in the Content Browser settings).*</li>
-<li>Drag and drop the **<code>B_IVSmoke_Smoke</code>** actor into your level.</li>
+<li>Drag and drop the <code>B_IVSmoke_Smoke</code> actor into your level.</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md13"></a>
+<h2><a class="anchor" id="autotoc_md12"></a>
 Simulation Controls</h2>
 <p>The actor provides two methods for viewing the smoke simulation:</p>
-<p><b>1. Play In Editor (PIE)</b> Ensure the **<code>bAutoPlay</code>** flag is enabled in the Details panel. When you press <b>Play</b> or <b>Simulate</b>, the smoke will automatically cycle through its lifecycle (Expansion → Sustain → Dissipation).</p>
+<p><b>1. Play In Editor (PIE)</b> Ensure the <code>bAutoPlay</code> flag is enabled in the Details panel. When you press <b>Play</b> or <b>Simulate</b>, the smoke will automatically cycle through its lifecycle (Expansion → Sustain → Dissipation).</p>
 <p><b>2. Editor Preview (No Play Required)</b> To preview the simulation without entering Play mode:</p><ol type="1">
 <li>Select the <code>B_IVSmoke_Smoke</code> actor.</li>
 <li>In the Details panel, locate the <b>IVSmoke|Debug</b> category.</li>
-<li>Enable **<code>bDebugEnabled</code>**.</li>
+<li>Enable <code>bDebugEnabled</code>.</li>
 <li>Click the <b>Start Preview Simulation</b> button to visualize the smoke expansion directly in the viewport.</li>
 </ol>
 <hr  />
-<h1><a class="anchor" id="autotoc_md15"></a>
+<h1><a class="anchor" id="autotoc_md14"></a>
 3. Documentation Roadmap</h1>
 <p>For detailed configuration and implementation guides, refer to the specific documents linked below.</p>
-<h2><a class="anchor" id="autotoc_md16"></a>
+<h2><a class="anchor" id="autotoc_md15"></a>
 Core Concepts &amp; Simulation Logic</h2>
 <p>Understand the voxel flood-fill algorithm, simulation phases (Expansion, Sustain, Dissipation), and network determinism.</p><ul>
-<li><b><a class="el" href="md_pages_2VoxelVolume_2VoxelVolumeGuide.html">Read the Voxel Volume Guide</a></b></li>
+<li><a class="el" href="md_pages_2VoxelVolume_2VoxelVolumeGuide.html">Read the Voxel Volume Guide</a></li>
 </ul>
-<h2><a class="anchor" id="autotoc_md17"></a>
+<h2><a class="anchor" id="autotoc_md16"></a>
 Gameplay Interaction (Holes &amp; Effects)</h2>
 <p>Implement smoke interaction such as bullet penetration, grenade explosions, and dynamic object tracking using the <code>IVSmokeHoleGeneratorComponent</code>.</p><ul>
-<li><b><a class="el" href="md_pages_2HoleGeneratorComponent_2HoleGeneratorComponentGuide.html">Read the Hole Generator Component Guide</a></b></li>
+<li><a class="el" href="md_pages_2HoleGeneratorComponent_2HoleGeneratorComponentGuide.html">Read the Hole Generator Component Guide</a></li>
 </ul>
-<h2><a class="anchor" id="autotoc_md18"></a>
+<h2><a class="anchor" id="autotoc_md17"></a>
 Collision &amp; AI Blocking</h2>
 <p>Configure the smoke to block AI Line of Sight (LoS) or create physical barriers using the <code>IVSmokeCollisionComponent</code>.</p><ul>
-<li><b><a class="el" href="md_pages_2CollisionComponent_2CollisionComponentGuide.html">Read the Collision Component Guide</a></b></li>
+<li><a class="el" href="md_pages_2CollisionComponent_2CollisionComponentGuide.html">Read the Collision Component Guide</a></li>
 </ul>
-<h2><a class="anchor" id="autotoc_md19"></a>
+<h2><a class="anchor" id="autotoc_md18"></a>
 Visual Customization</h2>
 <p>Learn how to apply custom materials, manage translucency sorting order, and utilize Custom Depth for correct rendering with particles.</p><ul>
-<li><b><a class="el" href="md_pages_2CustomMaterial_2CustomMaterialGuide.html">Read the Custom Material Guide</a></b></li>
+<li><a class="el" href="md_pages_2CustomMaterial_2CustomMaterialGuide.html">Read the Custom Material Guide</a></li>
 </ul>
-<h2><a class="anchor" id="autotoc_md20"></a>
+<h2><a class="anchor" id="autotoc_md19"></a>
 Global Settings &amp; Optimization</h2>
 <p>Configure global quality levels (Ray Marching steps), shadow settings, and performance profiling.</p><ul>
-<li><b><a class="el" href="md_pages_2GlobalSettings_2GlobalSettingsGuide.html">Read the Global Settings Guide</a></b></li>
+<li><a class="el" href="md_pages_2GlobalSettings_2GlobalSettingsGuide.html">Read the Global Settings Guide</a></li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md22"></a>
+<h1><a class="anchor" id="autotoc_md21"></a>
 4. API Reference</h1>
 <p>For specific class definitions, function parameters, and variable types, please refer to the auto-generated Doxygen <b>Class List</b> and <b>File List</b>.</p>
 <ul>
-<li>**<code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code>**: The core C++ actor handling the voxel simulation.</li>
-<li>**<code><a class="el" href="classUIVSmokeHoleGeneratorComponent.html" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e...">UIVSmokeHoleGeneratorComponent</a></code>**: Component responsible for managing smoke holes.</li>
-<li>**<code><a class="el" href="classUIVSmokeCollisionComponent.html">UIVSmokeCollisionComponent</a></code>**: Component responsible for dynamic physics body generation.</li>
+<li><code><a class="el" href="classAIVSmokeVoxelVolume.html">AIVSmokeVoxelVolume</a></code>: The core C++ actor handling the voxel simulation.</li>
+<li><code><a class="el" href="classUIVSmokeHoleGeneratorComponent.html" title="Component that generates hole texture for volumetric smoke. Provides public API for penetration and e...">UIVSmokeHoleGeneratorComponent</a></code>: Component responsible for managing smoke holes.</li>
+<li><code><a class="el" href="classUIVSmokeCollisionComponent.html">UIVSmokeCollisionComponent</a></code>: Component responsible for dynamic physics body generation.</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md24"></a>
+<h1><a class="anchor" id="autotoc_md23"></a>
 5. Release Notes</h1>
-<h2><a class="anchor" id="autotoc_md25"></a>
+<h2><a class="anchor" id="autotoc_md24"></a>
 Version 1.0.1 (Current)</h2>
 <p><b>Bug Fixes</b></p><ul>
 <li><b>Smoke Penetration:</b> Fixed an issue where smoke particles would clip through walls or static geometry.</li>
