@@ -92,93 +92,101 @@ $(document).ready(function(){initNavTree('md_pages_2CustomMaterial_2CustomMateri
   <div class="headertitle"><div class="title">Custom Material Guide</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md40"></a> </p>
-<h1><a class="anchor" id="autotoc_md41"></a>
-Material</h1>
-<h2><a class="anchor" id="autotoc_md42"></a>
-You must define how you want to mix the Scene and Smoke textures.</h2>
-<h2><a class="anchor" id="autotoc_md43"></a>
-Demo Example</h2>
+<div class="textblock"><p><a class="anchor" id="autotoc_md40"></a> <a class="el" href="classIVSmoke.html">IVSmoke</a> renders smoke through a built-in composite shader by default. If you want full control over how the smoke is blended with the scene, you can supply your own <b>Post Process material</b> and register it via a <b>Visual Material Preset</b>. This guide walks through creating the material, wiring up the <a class="el" href="classIVSmoke.html">IVSmoke</a> texture nodes, and registering the preset in Project Settings.</p>
+<hr  />
+<h1><a class="anchor" id="autotoc_md42"></a>
+1. Creating the Material</h1>
+<p>Create a new material and set its <b>Material Domain</b> to <b>Post Process</b>. Inside the material, you define how the Scene and Smoke textures are mixed.</p>
 <div class="image">
 <img src="CustomMaterial_image.png" alt=""/>
 <div class="caption">
-CustomMaterial_image.png</div></div>
-    <ul>
-<li>Material Domain : PostProcess</li>
-</ul>
-<div class="image">
+Demo custom material graph</div></div>
+    <div class="image">
 <img src="CustomMaterial_image1.png" alt=""/>
 <div class="caption">
-CustomMaterial_image1.png</div></div>
-    <h2><a class="anchor" id="autotoc_md44"></a>
-Expanssion Node</h2>
-<ul>
-<li>You can search and add the IVSmoke_TextureSample node.</li>
-</ul>
+Material Domain set to Post Process</div></div>
+    <h2><a class="anchor" id="autotoc_md43"></a>
+IVSmoke_TextureSample Node</h2>
+<p>Search for <b>IVSmoke_TextureSample</b> in the material palette and add it to your graph. This node gives you access to the smoke render targets.</p>
 <div class="image">
 <img src="IVSmoke_CustomMaterial_ExpanssionNode.png" alt=""/>
 <div class="caption">
-IVSmoke_CustomMaterial_ExpanssionNode.png</div></div>
-    <ul>
-<li>The IVSmoke_TextureSample node is configured as follows.</li>
-</ul>
-<p><img src="IVSmoke_CustomMaterial_ExpanssionNode_TextureType.png" alt="" class="inline" title="IVSmoke_CustomMaterial_ExpanssionNode_TextureType.png"/>    </p><ul>
-<li><b>Texture Type</b><ul>
-<li><b>SmokeColor</b> : Smoke color texture (SmokeAlbedo(R, G, B), SmokeAlpha)</li>
-<li><b>SmokeLocalPos</b> : Smoke local position texture (Local Position(x, y, z), 0)</li>
-<li><b>SceneColor</b> : Scene Color Texture</li>
-<li><b>SmokeWorldPosLinearDepth</b> : Smoke world position and linear depth (World Position (x, y, z), Linear Depth)</li>
-</ul>
-</li>
-<li>These textures are mapped to PostProcessInput[0, 1, 2, 4] on the SceneTexture node..</li>
-</ul>
+IVSmoke_TextureSample node</div></div>
+    <p>Select the node and choose a <b>Texture Type</b>:</p>
+<div class="image">
+<img src="IVSmoke_CustomMaterial_ExpanssionNode_TextureType.png" alt=""/>
+<div class="caption">
+Texture Type options</div></div>
+    <table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Texture Type   </th><th class="markdownTableHeadNone">Channels   </th><th class="markdownTableHeadNone">Description    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><b>SmokeColor</b>   </td><td class="markdownTableBodyNone">(R, G, B, A)   </td><td class="markdownTableBodyNone">Smoke albedo color + smoke alpha    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><b>SmokeLocalPos</b>   </td><td class="markdownTableBodyNone">(X, Y, Z, 0)   </td><td class="markdownTableBodyNone">Smoke local position    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><b>SceneColor</b>   </td><td class="markdownTableBodyNone">(R, G, B, A)   </td><td class="markdownTableBodyNone">Scene color behind the smoke    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><b>SmokeWorldPosLinearDepth</b>   </td><td class="markdownTableBodyNone">(X, Y, Z, Depth)   </td><td class="markdownTableBodyNone">Smoke world position + linear depth   </td></tr>
+</table>
+<p>Internally, these textures are mapped to <code>PostProcessInput[0, 1, 2, 4]</code> on the SceneTexture node.</p>
+<p>Use the <b>Color Mask</b> option to select which channels the node outputs:</p>
 <div class="image">
 <img src="IVSmoke_CustomMaterial_ExpanssionNode_ColorMask.png" alt=""/>
 <div class="caption">
-IVSmoke_CustomMaterial_ExpanssionNode_ColorMask.png</div></div>
-    <ul>
-<li><b>Color Mask</b> : Choose the color channel you want and use it</li>
-</ul>
-<hr  />
-<h1><a class="anchor" id="autotoc_md46"></a>
-Visual Material Preset</h1>
-<h2><a class="anchor" id="autotoc_md47"></a>
-Create</h2>
-<p>Content Drawer → Right-click → Miscellaneous → Data Asset → Select [<a class="el" href="classIVSmoke.html">IVSmoke</a> Visual Material Preset]</p>
-<p><img src="IVSmoke_DataAsset.png" alt="" class="inline" title="image.png"/>     <img src="IVSmoke_DataAsset_VisualMaterialPreset.png" alt="" class="inline" title="image.png"/>    </p>
-<h2><a class="anchor" id="autotoc_md48"></a>
-Configuration</h2>
-<p><img src="CustomMaterial_image2.png" alt="" class="inline" title="CustomMaterial_image2.png"/>    </p>
+Color Mask options</div></div>
+    <hr  />
+<h1><a class="anchor" id="autotoc_md45"></a>
+2. Creating a Visual Material Preset</h1>
+<p>The preset is a Data Asset that links your material to the <a class="el" href="classIVSmoke.html">IVSmoke</a> render pipeline.</p>
+<ol type="1">
+<li>In the <b>Content Drawer</b>, right-click and select <b>Miscellaneous &gt; Data Asset</b>.</li>
+<li>Choose <b><a class="el" href="classIVSmoke.html">IVSmoke</a> Visual Material Preset</b> as the class.</li>
+</ol>
+<p><img src="IVSmoke_DataAsset.png" alt="" class="inline" title="Data Asset creation menu"/>     <img src="IVSmoke_DataAsset_VisualMaterialPreset.png" alt="" class="inline" title="Selecting IVSmoke Visual Material Preset"/>    </p>
+<h2><a class="anchor" id="autotoc_md46"></a>
+Preset Properties</h2>
+<div class="image">
+<img src="CustomMaterial_image2.png" alt=""/>
+<div class="caption">
+Visual Material Preset properties</div></div>
+    <table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Property   </th><th class="markdownTableHeadNone">Description    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><b>Smoke Visual Material</b>   </td><td class="markdownTableBodyNone">Slot for your custom smoke material. If empty, the built-in composite shader is used.    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><b>UpSample Filter Type</b>   </td><td class="markdownTableBodyNone">Filter applied after upsampling the ray marching result. See options below.   </td></tr>
+</table>
+<p><b>UpSample Filter Type options:</b></p>
 <ul>
-<li><b>Smoke Visual Material</b>: User-custom smoke material slot<ul>
-<li>If empty, it will be rendered through a simple composite shader.</li>
-</ul>
-</li>
-<li><b>UpSample Filter Type</b> : This filter is applied after upsampling the raymarching results.<ul>
-<li><b>None</b> : Disable filters.</li>
-<li><b>Sharpen</b>: Enhances edges and details, making smoke contours more defined.</li>
-<li><b>Blur</b>: Softens with Gaussian blur for natural, smooth smoke appearance.</li>
-<li><b>Median</b>: Removes noise while preserving edges for clean smoke rendering.</li>
-</ul>
-</li>
+<li><b>None</b> — No filtering.</li>
+<li><b>Sharpen</b> — Enhances edges and details, making smoke contours more defined.</li>
+<li><b>Blur</b> — Softens with Gaussian blur for a smooth, natural look.</li>
+<li><b>Median</b> — Removes noise while preserving edges.</li>
 </ul>
 <hr  />
- <h1><a class="anchor" id="autotoc_md50"></a>
-Project Setting Visual Material Preset</h1>
-<p><img src="IVSmoke_ProjectSetting_VisualMaterialPreset.png" alt="" class="inline" title="IVSmoke_ProjectSetting_VisualMaterialPreset.png"/>    </p><ul>
-<li><b>Search project setting for <a class="el" href="classIVSmoke.html">IVSmoke</a></b> </li>
-</ul>
-<h1><a class="anchor" id="autotoc_md51"></a>
-- &lt;strong&gt;In the Rendering section, insert it into the Smoke Visual Material Preset slot.&lt;/strong&gt;</h1>
-<h1><a class="anchor" id="autotoc_md52"></a>
+<h1><a class="anchor" id="autotoc_md48"></a>
+3. Registering the Preset</h1>
+<p>Open <b>Edit &gt; Project Settings</b> and search for <b><a class="el" href="classIVSmoke.html">IVSmoke</a></b>. In the <b>Rendering</b> section, assign your preset to the <b>Smoke Visual Material Preset</b> slot.</p>
+<div class="image">
+<img src="IVSmoke_ProjectSetting_VisualMaterialPreset.png" alt=""/>
+<div class="caption">
+Project Settings — Smoke Visual Material Preset slot</div></div>
+    <hr  />
+<h1><a class="anchor" id="autotoc_md50"></a>
 Example</h1>
-<p><b>Demo Material Path</b> : Plugins → <a class="el" href="classIVSmoke.html">IVSmoke</a> → DataAssets → D_IVSmoke_VisualMaterialPreset</p>
+<p>A working demo preset ships with the plugin:</p>
+<p><b>Plugins &gt; <a class="el" href="classIVSmoke.html">IVSmoke</a> &gt; DataAssets &gt; D_IVSmoke_VisualMaterialPreset</b></p>
 <div class="image">
 <img src="CustomMaterial_image3.png" alt=""/>
 <div class="caption">
-CustomMaterial_image3.png</div></div>
-    <p><a href="IVSmoke_Option_Material.png">IVSmoke_Option_Material.png</a></p>
-<hr  />
+Demo preset result</div></div>
+    <div class="image">
+<img src="IVSmoke_Option_Material.png" alt=""/>
+<div class="caption">
+Demo material option setup</div></div>
+    <hr  />
 <p><em>Copyright (c) 2026, Team SDB. All rights reserved.</em> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

@@ -97,7 +97,8 @@ $(document).ready(function(){initNavTree('md_pages_2CollisionComponent_2Collisio
 Overview</h1>
 <p>Unlike standard static meshes, the shape of the smoke changes every frame during expansion and dissipation. This component generates collision bodies dynamically to match the current smoke shape.</p>
 <h2><a class="anchor" id="autotoc_md28"></a>
-How It Works: Greedy Meshing To maintain high performance, the component &lt;strong&gt;does not&lt;/strong&gt; create a collision box for every single voxel. Instead, it utilizes a &lt;strong&gt;Binary Greedy Meshing&lt;/strong&gt; algorithm.</h2>
+How It Works: Greedy Meshing</h2>
+<p>To maintain high performance, the component <b>does not</b> create a collision box for every single voxel. Instead, it utilizes a <b>Binary Greedy Meshing</b> algorithm.</p>
 <ol type="1">
 <li>It scans the voxel grid.</li>
 <li>It identifies adjacent active voxels along the X, Y, and Z axes.</li>
@@ -153,14 +154,13 @@ Debugging</h1>
 </ul>
 <hr  />
 <blockquote class="doxtable">
-<p>&zwj;<b>[!NOTE] Interaction with Voxel Simulation</b> This component does <b>not</b> affect the expansion of the smoke itself.</p><ul>
+<p>&zwj;<b>Note: Interaction with Voxel Simulation</b> This component does <b>not</b> affect the expansion of the smoke itself.</p><ul>
 <li><b>Smoke Expansion:</b> Controlled by <code>VoxelCollisionChannel</code> in the Voxel Volume actor (Trace checks).</li>
-<li><b>Physics/AI Blocking:</b> Controlled by the Collision Profile of this component (Body Instance).</li>
+<li><b>Physics/AI Blocking:</b> Controlled by the Collision Profile of this component (Body Instance). </li>
 </ul>
-<p></p>
 </blockquote>
 <blockquote class="doxtable">
-<p>&zwj;<b>[!WARNING] Performance Cost</b> While Greedy Meshing is efficient, regenerating physics bodies forces the physics engine to rebuild its acceleration structures. <b>Avoid setting <code>MinCollisionUpdateInterval</code> to 0.0.</b> If the smoke is purely cosmetic and does not need to block AI vision, set <code>bCollisionEnabled = false</code> to save significant CPU performance. </p>
+<p>&zwj;<b>Warning: Performance Cost</b> While Greedy Meshing is efficient, regenerating physics bodies forces the physics engine to rebuild its acceleration structures. <b>Avoid setting <code>MinCollisionUpdateInterval</code> to 0.0.</b> If the smoke is purely cosmetic and does not need to block AI vision, set <code>bCollisionEnabled = false</code> to save significant CPU performance. </p>
 </blockquote>
 <h1><a class="anchor" id="autotoc_md39"></a>
 &lt;/blockquote&gt;</h1>

@@ -1,10 +1,5 @@
 var NAVTREEINDEX2 =
 {
-"structFIVSmokeOccupancyResources.html#aed5fac0f3db2e59f8ea9889581c6e5eb":[6,0,22,4],
-"structFIVSmokePackedRenderData.html":[6,0,23],
-"structFIVSmokePackedRenderData.html#a052ac503c2be38868843e86597f1b9f9":[6,0,23,11],
-"structFIVSmokePackedRenderData.html#a0b6e2811efbfbcf5a64ee0bdce8a405b":[6,0,23,2],
-"structFIVSmokePackedRenderData.html#a0c37c6d9b877ddec1d606754bccb8a8d":[6,0,23,10],
 "structFIVSmokePackedRenderData.html#a0de09d83af0979e87959ae45760f17c0":[6,0,23,7],
 "structFIVSmokePackedRenderData.html#a0e62820c6ff566e98c5cbb6b09cb6d07":[6,0,23,12],
 "structFIVSmokePackedRenderData.html#a1da45d51d370d65bca0045104871a4aa":[6,0,23,15],
