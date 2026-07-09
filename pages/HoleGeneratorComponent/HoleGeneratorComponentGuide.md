@@ -76,7 +76,7 @@ All presets share these common properties:
 
 ### Prerequisite: Add UIVSmokeHoleRequestComponent
 
-Before calling any request node, add a **`UIVSmokeHoleRequestComponent`** to the Character or Pawn that will interact with the smoke. This component handles the interaction queries between the actor and the smoke volume, and is required whenever the target `AIVSmokeVoxelVolume` uses a `UIVSmokeHoleGeneratorComponent`.
+Before calling any request node, add a `UIVSmokeHoleRequestComponent` to the Character or Pawn that will interact with the smoke. This component handles the interaction queries between the actor and the smoke volume, and is required whenever the target `AIVSmokeVoxelVolume` uses a `UIVSmokeHoleGeneratorComponent`.
 
 ![Attach UIVSmokeHoleRequestComponent to the pawn class](HoleGeneratorComponent_image6.png)
 

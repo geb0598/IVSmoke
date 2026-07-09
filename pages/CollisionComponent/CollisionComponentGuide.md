@@ -67,15 +67,17 @@ You can visualize the optimized physics geometry to verify that the Greedy Meshi
 ---
 
 > **Note: Interaction with Voxel Simulation**
+>
 > This component does **not** affect the expansion of the smoke itself.
 > * **Smoke Expansion:** Controlled by `VoxelCollisionChannel` in the Voxel Volume actor (Trace checks).
 > * **Physics/AI Blocking:** Controlled by the Collision Profile of this component (Body Instance).
 
 > **Warning: Performance Cost**
+>
 > While Greedy Meshing is efficient, regenerating physics bodies forces the physics engine to rebuild its acceleration structures.
-> **Avoid setting `MinCollisionUpdateInterval` to 0.0.**
+> **Avoid** setting `MinCollisionUpdateInterval` to 0.0.
 > If the smoke is purely cosmetic and does not need to block AI vision, set `bCollisionEnabled = false` to save significant CPU performance.
 
----
+<hr>
 
 *Copyright (c) 2026, Team SDB. All rights reserved.*

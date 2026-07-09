@@ -14,7 +14,7 @@
 > **Note**
 > This plugin requires **Unreal Engine 5.7** and a Windows 64-bit platform supporting **DirectX 11.3+** (Shader Model 5).
 
----
+<hr>
 
 ## 2. Basic Usage
 
@@ -24,20 +24,20 @@ The plugin includes a pre-configured Blueprint actor that contains all necessary
 
 1.  In the **Content Browser**, navigate to the **IVSmoke Content > Blueprints** folder.
     *(If you do not see the folder, enable "Show Plugin Content" in the Content Browser settings).*
-2.  Drag and drop the **`B_IVSmoke_Smoke`** actor into your level.
+2.  Drag and drop the `B_IVSmoke_Smoke` actor into your level.
 
 ### Simulation Controls
 
 The actor provides two methods for viewing the smoke simulation:
 
 **1. Play In Editor (PIE)**
-Ensure the **`bAutoPlay`** flag is enabled in the Details panel. When you press **Play** or **Simulate**, the smoke will automatically cycle through its lifecycle (Expansion → Sustain → Dissipation).
+Ensure the `bAutoPlay` flag is enabled in the Details panel. When you press **Play** or **Simulate**, the smoke will automatically cycle through its lifecycle (Expansion → Sustain → Dissipation).
 
 **2. Editor Preview (No Play Required)**
 To preview the simulation without entering Play mode:
 1.  Select the `B_IVSmoke_Smoke` actor.
 2.  In the Details panel, locate the **IVSmoke|Debug** category.
-3.  Enable **`bDebugEnabled`**.
+3.  Enable `bDebugEnabled`.
 4.  Click the **Start Preview Simulation** button to visualize the smoke expansion directly in the viewport.
 
 ---
@@ -48,23 +48,23 @@ For detailed configuration and implementation guides, refer to the specific docu
 
 ### Core Concepts & Simulation Logic
 Understand the voxel flood-fill algorithm, simulation phases (Expansion, Sustain, Dissipation), and network determinism.
-* **[Read the Voxel Volume Guide](../VoxelVolume/VoxelVolumeGuide.md)**
+* [Read the Voxel Volume Guide](../VoxelVolume/VoxelVolumeGuide.md)
 
 ### Gameplay Interaction (Holes & Effects)
 Implement smoke interaction such as bullet penetration, grenade explosions, and dynamic object tracking using the `IVSmokeHoleGeneratorComponent`.
-* **[Read the Hole Generator Component Guide](../HoleGeneratorComponent/HoleGeneratorComponentGuide.md)**
+* [Read the Hole Generator Component Guide](../HoleGeneratorComponent/HoleGeneratorComponentGuide.md)
 
 ### Collision & AI Blocking
 Configure the smoke to block AI Line of Sight (LoS) or create physical barriers using the `IVSmokeCollisionComponent`.
-* **[Read the Collision Component Guide](../CollisionComponent/CollisionComponentGuide.md)**
+* [Read the Collision Component Guide](../CollisionComponent/CollisionComponentGuide.md)
 
 ### Visual Customization
 Learn how to apply custom materials, manage translucency sorting order, and utilize Custom Depth for correct rendering with particles.
-* **[Read the Custom Material Guide](../CustomMaterial/CustomMaterialGuide.md)**
+* [Read the Custom Material Guide](../CustomMaterial/CustomMaterialGuide.md)
 
 ### Global Settings & Optimization
 Configure global quality levels (Ray Marching steps), shadow settings, and performance profiling.
-* **[Read the Global Settings Guide](../GlobalSettings/GlobalSettingsGuide.md)**
+* [Read the Global Settings Guide](../GlobalSettings/GlobalSettingsGuide.md)
 
 ---
 
@@ -72,9 +72,9 @@ Configure global quality levels (Ray Marching steps), shadow settings, and perfo
 
 For specific class definitions, function parameters, and variable types, please refer to the auto-generated Doxygen **Class List** and **File List**.
 
-* **`AIVSmokeVoxelVolume`**: The core C++ actor handling the voxel simulation.
-* **`UIVSmokeHoleGeneratorComponent`**: Component responsible for managing smoke holes.
-* **`UIVSmokeCollisionComponent`**: Component responsible for dynamic physics body generation.
+* `AIVSmokeVoxelVolume`: The core C++ actor handling the voxel simulation.
+* `UIVSmokeHoleGeneratorComponent`: Component responsible for managing smoke holes.
+* `UIVSmokeCollisionComponent`: Component responsible for dynamic physics body generation.
 
 ---
 

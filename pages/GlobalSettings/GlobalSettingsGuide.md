@@ -4,8 +4,7 @@ Access via **Edit > Project Settings > Plugins > IVSmoke**
 
 These settings apply globally to all smoke volumes in your project. Settings are saved to `DefaultGame.ini`.
 
-> Note: Settings may be reorganized into sub-sections in future updates. The functionality remains the same.
-> 
+> **Note:** Settings may be reorganized into sub-sections in future updates. The functionality remains the same.
 
 ![GlobalSettings_image1.png](GlobalSettings_image1.png)
 
