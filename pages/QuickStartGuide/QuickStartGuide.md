@@ -7,7 +7,7 @@
 ## 1. Installation
 
 1.  Copy the `IVSmoke` folder into your project's `Plugins` directory (e.g., `MyProject/Plugins/`).
-2.  Regenerate your project files (Right-click `.uproject` file $\rightarrow$ **Generate Visual Studio project files**).
+2.  Regenerate your project files (Right-click `.uproject` file → **Generate Visual Studio project files**).
 3.  Open your project in Unreal Editor.
 4.  Navigate to **Edit > Plugins** and ensure **IVSmoke** is enabled. Restart the editor if prompted.
 
@@ -31,7 +31,7 @@ The plugin includes a pre-configured Blueprint actor that contains all necessary
 The actor provides two methods for viewing the smoke simulation:
 
 **1. Play In Editor (PIE)**
-Ensure the **`bAutoPlay`** flag is enabled in the Details panel. When you press **Play** or **Simulate**, the smoke will automatically cycle through its lifecycle (Expansion $\rightarrow$ Sustain $\rightarrow$ Dissipation).
+Ensure the **`bAutoPlay`** flag is enabled in the Details panel. When you press **Play** or **Simulate**, the smoke will automatically cycle through its lifecycle (Expansion → Sustain → Dissipation).
 
 **2. Editor Preview (No Play Required)**
 To preview the simulation without entering Play mode:

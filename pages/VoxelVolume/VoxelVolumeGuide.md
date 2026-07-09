@@ -26,12 +26,12 @@ Instead, the simulation is fully deterministic:
 
 > **CRITICAL: Network Determinism & Collision Channels**
 > The simulation is **deterministic**, meaning clients calculate the smoke shape locally to save bandwidth. However, they rely on the world geometry being identical to the server.
-
-If you set the `VoxelCollisionChannel` to detect **Dynamic Objects** (e.g., destructible walls, moving doors, or vehicles), you **MUST** ensure those objects are perfectly synchronized (replicated) across the network.
-
-* **Risk:** If a door is open on the Server but closed on a Client (due to lag or lack of replication), the smoke will flow through the door on the Server but be blocked on the Client.
-* **Result:** This causes a "Desync," where players see smoke in different locations, breaking competitive integrity.
-* **Recommendation:** It is safest to use `ECC_WorldStatic` or a custom channel dedicated to static level geometry.
+>
+> If you set the `VoxelCollisionChannel` to detect **Dynamic Objects** (e.g., destructible walls, moving doors, or vehicles), you **MUST** ensure those objects are perfectly synchronized (replicated) across the network.
+>
+> * **Risk:** If a door is open on the Server but closed on a Client (due to lag or lack of replication), the smoke will flow through the door on the Server but be blocked on the Client.
+> * **Result:** This causes a "Desync," where players see smoke in different locations, breaking competitive integrity.
+> * **Recommendation:** It is safest to use `ECC_WorldStatic` or a custom channel dedicated to static level geometry.
 
 ---
 
@@ -70,11 +70,7 @@ The visual fidelity and performance cost are managed by balancing the physical s
 
 | **Property** | **Description** | **Impact** |
 | --- | --- | --- |
-| **Voxel Size** | The physical scale of a single voxel (in cm). | **Visual Resolution.** Changing this *does not* affect performance (CPU/GPU) directly. It simply scales the resulting mesh. <br>
-
-<br>• **Large Value:** Covers a large area cheaply, but looks "blocky."<br>
-
-<br>• **Small Value:** Finer detail. To cover a large area with small voxels, you must increase `MaxVoxelNum`. |
+| **Voxel Size** | The physical scale of a single voxel (in cm). | **Visual Resolution.** Changing this *does not* affect performance (CPU/GPU) directly; it simply scales the resulting mesh.<br>• **Large Value:** Covers a large area cheaply, but looks "blocky."<br>• **Small Value:** Finer detail. To cover a large area with small voxels, you must increase `MaxVoxelNum`. |
 | **Max Voxel Num** | The hard limit on the number of active voxels. | **Performance Budget.** This is the primary factor for CPU simulation cost. |
 | **Volume Extent** | The grid index radius. | **Memory Usage.** Defines the maximum memory buffer size. Keep this optimized (e.g., 8-16) to minimize memory footprint. |
 
@@ -86,7 +82,8 @@ The overall shape of the smoke cloud is defined by the **Radii** and **Noise** s
 
 `Radii` defines the **relative shape ratio** of the expansion per axis. These are not absolute units; they function as weights for the flood-fill propagation.
 
-* **Examples:**
+**Examples:**
+
 * `(1.0, 1.0, 1.0)` : Creates a **Sphere**.
 * `(2.0, 2.0, 2.0)` : Also creates a **Sphere** (since the ratios are identical).
 * `(2.0, 1.0, 1.0)` : Creates an **Ellipsoid** that stretches twice as far along the X-axis compared to Y and Z.
@@ -126,21 +123,17 @@ The simulation relies on `GetSyncWorldTimeSeconds()` to ensure that the expansio
 This actor coordinates with helper components to handle gameplay interactions:
 
 1. **Hole Generator (`UIVSmokeHoleGeneratorComponent`):**
-* Handles dynamic modifications to the smoke texture (e.g., when a grenade explodes inside the smoke or a projectile passes through).
-* This is purely visual and does not alter the voxel grid topology.
-
-
+    * Handles dynamic modifications to the smoke texture (e.g., when a grenade explodes inside the smoke or a projectile passes through).
+    * This is purely visual and does not alter the voxel grid topology.
 2. **Collision Component (`UIVSmokeCollisionComponent`):**
-* Generates physics collision bodies based on the active voxels.
-* **Usage:** Primarily used for **AI Perception blocking**. It allows AI to understand that they cannot see through the smoke volume.
-
-
+    * Generates physics collision bodies based on the active voxels.
+    * **Usage:** Primarily used for **AI Perception blocking**. It allows AI to understand that they cannot see through the smoke volume.
 
 > **Interaction vs. Simulation**
 > Do not confuse `VoxelCollisionChannel` (Settings) with `UIVSmokeCollisionComponent` (Component).
-
-* **VoxelCollisionChannel:** Used by the *simulation* to detect walls and stop expansion.
-* **UIVSmokeCollisionComponent:** Created by the *simulation* to block other actors (like AI Line of Sight).
+>
+> * **VoxelCollisionChannel:** Used by the *simulation* to detect walls and stop expansion.
+> * **UIVSmokeCollisionComponent:** Created by the *simulation* to block other actors (like AI Line of Sight).
 
 ---
 
@@ -150,13 +143,11 @@ The class includes robust editor and runtime debugging tools located under `Debu
 
 * **Preview Simulation:** In the Editor Details panel, use `StartPreviewSimulation` to visualize the smoke expansion without entering Play Mode.
 * **Visualizers:**
-* **Wireframe:** Draws the bounds of active voxels.
-* **Heatmap:** Colors voxels based on their generation order (useful for debugging expansion logic).
-* **Status Text:** Displays the current State, Active Voxel Count, and the deterministic Checksum.
+    * **Wireframe:** Draws the bounds of active voxels.
+    * **Heatmap:** Colors voxels based on their generation order (useful for debugging expansion logic).
+    * **Status Text:** Displays the current State, Active Voxel Count, and the deterministic Checksum.
 
-
-
-> Note on Checksums: The debug text displays a CRC32 Checksum. If you suspect a desync issue, compare this number between the Server and Client. They must match exactly.
+> **Note on Checksums:** The debug text displays a CRC32 Checksum. If you suspect a desync issue, compare this number between the Server and Client. They must match exactly.
 
 ---
 

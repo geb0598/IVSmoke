@@ -37,7 +37,7 @@ The Quality section provides a tiered system for balancing visual quality agains
 | --- | --- | --- | --- |
 | **Global Quality** | Enum | `Medium (Balanced)` | Master quality preset that controls Ray Marching, Self-Shadow, and External Shadow quality together. |
 
-## Global Quality Presets
+### Global Quality Presets
 
 | Preset | Ray March Steps | Min Step Size | Self-Shadow | External Shadow | Use Case |
 | --- | --- | --- | --- | --- | --- |
@@ -46,11 +46,11 @@ The Quality section provides a tiered system for balancing visual quality agains
 | **High** | 512 | 16.0 cm | 8 steps | On (1024px) | High-end PC, Maximum quality |
 | **Custom** | Per-section | Per-section | Per-section | Per-section | Independent control per section |
 
-## Custom Quality Mode
+### Custom Quality Mode
 
 When **Global Quality** is set to **Custom**, you can configure each quality section independently. Each section (Ray March, Self-Shadow, External Shadow) has its own quality preset selector.
 
-## Ray March Quality
+### Ray March Quality
 
 | Setting | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -63,7 +63,7 @@ When Ray March Quality is **Custom**:
 | **Custom Max Steps** | int32 | 32-1024 | 256 | Maximum ray marching iterations per pixel |
 | **Custom Min Step Size** | float | 5.0-100.0 | 25.0 | Minimum distance (cm) between ray samples |
 
-## Self-Shadow Quality
+### Self-Shadow Quality
 
 | Setting | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -75,7 +75,7 @@ When Self-Shadow Quality is **Custom**:
 | --- | --- | --- | --- | --- |
 | **Custom Light Marching Steps** | int32 | 1-16 | 6 | Steps for light direction sampling |
 
-## External Shadow Quality
+### External Shadow Quality
 
 | Setting | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -89,7 +89,7 @@ When External Shadow Quality is **Custom**:
 | **Custom Cascade Resolution** | int32 | 256-2048 | 512 | Shadow map texture resolution |
 | **Custom Shadow Max Distance** | float | 1000-100000 | 50000 | Maximum shadow rendering distance (cm) |
 
-## Performance Impact
+### Performance Impact
 
 - **Max Steps**: Higher values increase GPU cost linearly
 - **Min Step Size**: Smaller values improve quality but require more steps
@@ -110,7 +110,7 @@ Controls the visual characteristics of the smoke.
 | **Wind Direction** | FVector | - | (0, 0, 0.1) | Direction and speed of wind animation. The magnitude affects speed. |
 
 
-## Advanced Options (Show Advanced Options = true)
+### Advanced Options (Show Advanced Options = true)
 
 | Setting | Type | Range | Default | Description |
 | --- | --- | --- | --- | --- |
@@ -125,11 +125,6 @@ Smoke Density Falloff:
   0.0 [====    ] Very soft, gradient edges
   0.5 [======  ] Moderate definition
   1.0 [========] Sharp, hard edges
-
-Sharpness:
- -1.0 [  blur  ] Maximum blur
-  0.0 [ normal ] No adjustment
-  1.0 [ sharp  ] Maximum sharpening
 ```
 
 ---
@@ -158,7 +153,7 @@ Typical values:
   Clouds: 0.7 ~ 0.85 (strong forward scattering, silver lining effect)
 ```
 
-## Advanced Options (Show Advanced Options = true)
+### Advanced Options (Show Advanced Options = true)
 
 | Setting | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -175,7 +170,7 @@ Typical values:
 
 The Shadows section is divided into **Self** (internal smoke shadows) and **External** (shadows from scene objects).
 
-## Self Shadows
+### Self Shadows
 
 Self-shadowing creates depth within the smoke by calculating how much light is blocked as it travels through the volume.
 
@@ -185,7 +180,7 @@ Self-shadowing creates depth within the smoke by calculating how much light is b
 | **Light Marching Distance** | float | 0.0-500.0 | 0.0 | Maximum distance (cm) to trace toward light. 0 = Automatic (traces until exiting volume). |
 | **Light Marching Exp Factor** | float | 1.0-5.0 | 2.0 | Exponential distribution for light samples. Higher values concentrate samples near the surface. |
 
-## External Shadows
+### External Shadows
 
 External shadows allow smoke to receive shadows from scene geometry using Cascaded Shadow Maps (CSM).
 
@@ -227,25 +222,14 @@ Controls the render pipeline integration.
 | --- | --- | --- | --- |
 | **Smoke Visual Material** | Soft Object Path | None | Optional material for custom smoke visuals. |
 
-## Advanced Options (Show Advanced Options = true)
+### Advanced Options (Show Advanced Options = true)
 
 | Setting | Type | Range | Default | Description |
 | --- | --- | --- | --- | --- |
 | **Enable Depth Write** | bool | - | `true` | Write smoke depth to scene depth buffer for correct translucent sorting. When enabled, particles behind opaque smoke regions are correctly occluded. |
 | **Depth Write Bias** | float | 0.0-100.0 | 50.0 | Depth bias in centimeters. Positive values push depth further from camera. Helps prevent z-fighting artifacts. |
 
-## Depth Write System
-
-IVSmoke uses a **pre-pass depth write** system for correct translucent object sorting:
-
-1. **Ray March Pass** - Reads opaque scene depth (before smoke modifies it)
-2. **Upscaling & Filtering** - Prepares smoke data at full resolution
-3. **Depth Write Pass** - Writes smoke depth to scene depth buffer
-
-**Key characteristics:**
-- Only writes depth for nearly opaque pixels (Alpha >= 0.99)
-- Executes in pre-pass pipeline before engine's translucent pass
-- Particles and other translucents are automatically sorted correctly behind opaque smoke regions
+These options control the **Depth Write** system, which writes smoke depth to the scene depth buffer so translucent objects (particles, glass, etc.) sort correctly against the smoke. See the **Translucent Sorting** section below for how it works and troubleshooting.
 
 **When to adjust Depth Write Bias:**
 - Increase if you see z-fighting (flickering) at smoke edges
@@ -414,7 +398,7 @@ stat IVSmoke
 
 ### Available Statistics
 
-### Memory Stats (GPU VRAM)
+#### Memory Stats (GPU VRAM)
 
 | Stat Name | Description |
 | --- | --- |
@@ -423,7 +407,7 @@ stat IVSmoke
 | **Per-Frame Textures** | Temporary textures allocated each frame (voxel atlas, occupancy, etc.). |
 | **Total VRAM** | Sum of all IVSmoke GPU memory usage. |
 
-### Cycle Stats (CPU/GPU Time)
+#### Cycle Stats (CPU/GPU Time)
 
 | Stat Name | Description |
 | --- | --- |
@@ -434,7 +418,7 @@ stat IVSmoke
 | **Prepare Dissipation** | Setup time for dissipation phase. |
 | **Process Dissipation** | Actual voxel removal logic execution time. |
 
-### Counter Stats
+#### Counter Stats
 
 | Stat Name | Description |
 | --- | --- |
@@ -458,13 +442,13 @@ For deeper analysis, use **Unreal Insights** profiler:
 
 When placing smoke volumes in your level, consider these guidelines:
 
-### Spacing and Distribution
+#### Spacing and Distribution
 
 - **Avoid clustering**: Do not spawn many smoke volumes in the same location simultaneously. Overlapping volumes in the same area can cause rendering artifacts and significant performance drops.
 - **Stagger activation**: If multiple smoke grenades land near each other, consider staggering their activation times slightly.
 - **Use adequate spacing**: Maintain reasonable distance between simultaneously active smoke volumes.
 
-### Volume Sizing
+#### Volume Sizing
 
 - **Match gameplay needs**: Size your smoke volumes to cover the intended area without excessive overlap.
 - **Consider sightlines**: Place smoke to block key sightlines rather than covering entire areas.

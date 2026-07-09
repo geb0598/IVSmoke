@@ -6,7 +6,9 @@
 
 Unlike standard static meshes, the shape of the smoke changes every frame during expansion and dissipation. This component generates collision bodies dynamically to match the current smoke shape.
 
-### How It Works: Greedy Meshing To maintain high performance, the component **does not** create a collision box for every single voxel. Instead, it utilizes a **Binary Greedy Meshing** algorithm.
+### How It Works: Greedy Meshing
+
+To maintain high performance, the component **does not** create a collision box for every single voxel. Instead, it utilizes a **Binary Greedy Meshing** algorithm.
 
 1. It scans the voxel grid.
 2. It identifies adjacent active voxels along the X, Y, and Z axes.
@@ -64,14 +66,12 @@ You can visualize the optimized physics geometry to verify that the Greedy Meshi
 
 ---
 
-> **[!NOTE] Interaction with Voxel Simulation**
+> **Note: Interaction with Voxel Simulation**
 > This component does **not** affect the expansion of the smoke itself.
 > * **Smoke Expansion:** Controlled by `VoxelCollisionChannel` in the Voxel Volume actor (Trace checks).
 > * **Physics/AI Blocking:** Controlled by the Collision Profile of this component (Body Instance).
-> 
-> 
 
-> **[!WARNING] Performance Cost**
+> **Warning: Performance Cost**
 > While Greedy Meshing is efficient, regenerating physics bodies forces the physics engine to rebuild its acceleration structures.
 > **Avoid setting `MinCollisionUpdateInterval` to 0.0.**
 > If the smoke is purely cosmetic and does not need to block AI vision, set `bCollisionEnabled = false` to save significant CPU performance.
